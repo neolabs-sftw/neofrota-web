@@ -4,8 +4,14 @@ import { useTema } from "../hooks/temaContext";
 import ListaEmpresasCadastradas from "../componentes/listaEmpresasCadastradas";
 import CardInfosMenor from "../componentes/cardInfosMenor";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 function Empresas() {
+
+  useEffect(() => {
+      document.title = "Empresas";
+    }, []);
+
   return BaseTelas({
     conteudo: (
       <>

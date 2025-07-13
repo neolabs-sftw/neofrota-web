@@ -3,9 +3,9 @@ import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
 function NavMenu({ sidebar }: { sidebar: boolean }) {
+
   const location = useLocation();
   const { Cor } = useTema();
-  console.log(location);
   return (
     <>
       <div style={{ width: "100%", height: "80vh" }}>
@@ -18,7 +18,7 @@ function NavMenu({ sidebar }: { sidebar: boolean }) {
           }}
         >
           {[
-            { tela: "Dashboard", icone: "dashboard", path: "/home" },
+            { tela: "Dashboard", icone: "dashboard", path: "/" },
             { tela: "Empresas", icone: "bubble_chart", path: "/empresas" },
             { tela: "Agregados", icone: "directions_car", path: "/agregados" },
             { tela: "Funcionários", icone: "person", path: "/funcionarios" },

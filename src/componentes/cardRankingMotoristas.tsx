@@ -77,13 +77,15 @@ function CardRankingMotoristas() {
               }`}
         </style>
         <table>
+          <thead>
           <tr style={{ fontSize: 11, color: Cor.texto2 }}>
             <th>Ranking</th>
             <th>Motorista</th>
             <th style={{ textAlign: "right" }}>Qnt.</th>
           </tr>
+          </thead>
           <tbody>
-            <tr>
+            <tr>          
               <td>2</td>
               <td>Fulano</td>
               <td style={{ textAlign: "right" }}>300</td>

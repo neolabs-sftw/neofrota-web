@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import PrivateRoute from "./hooks/rotasPrivadas";
 import Login from "./telas/login";
 import Home from "./telas/home";
 import Empresas from "./telas/empresas";
@@ -18,18 +19,24 @@ function App() {
       <div>
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Login />} />
-            <Route path="/agregados" element={<Agregados />} />
-            <Route path="/configuracoes" element={<Configuracoes />} />
-            <Route path="/empresas" element={<Empresas />} />
-            <Route path="/financeiro" element={<Financeiro />} />
-            <Route path="/funcionarios" element={<Funcionarios />} />
-            <Route path="/home" element={<Home />} />
-            <Route path="/operacao" element={<Operacao />} />
-            <Route path="/relatorios" element={<Relatorios />} />
-            <Route path="/verempresa/:cliente_id" element={<VerEmpresa />} />
-            <Route path="/editarempresa/:cliente_id" element={<EditarEmpresa />} />
-            <Route path="/criarempresa" element={<CriarEmpresa />} />
+            <Route path="/login" element={<Login />} />
+
+            <Route element={<PrivateRoute />}>
+              <Route path="/" element={<Home />} />
+              <Route path="/agregados" element={<Agregados />} />
+              <Route path="/configuracoes" element={<Configuracoes />} />
+              <Route path="/empresas" element={<Empresas />} />
+              <Route path="/financeiro" element={<Financeiro />} />
+              <Route path="/funcionarios" element={<Funcionarios />} />
+              <Route path="/operacao" element={<Operacao />} />
+              <Route path="/relatorios" element={<Relatorios />} />
+              <Route path="/verempresa/:cliente_id" element={<VerEmpresa />} />
+              <Route
+                path="/editarempresa/:cliente_id"
+                element={<EditarEmpresa />}
+              />
+              <Route path="/criarempresa" element={<CriarEmpresa />} />
+            </Route>
           </Routes>
         </BrowserRouter>
       </div>

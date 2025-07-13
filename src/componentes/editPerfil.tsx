@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { useTema } from "../hooks/temaContext";
 import { useNavigate } from "react-router-dom";
+import { useAdminLogado } from "../hooks/AdminLogado";
+
 
 function EditPerfil() {
+  const adminLogado = useAdminLogado();
   const { Cor, tema, alternarTema } = useTema();
   const [aberto, setAberto] = useState<boolean>(false);
   const Navigator = useNavigate();
@@ -49,7 +52,7 @@ function EditPerfil() {
             }}
           >
             <img
-              src={"../src/assets/image/img-bg.png"}
+              src={adminLogado?.foto_admin_operadora || "../src/assets/image/img-bg.png"}
               alt="Logo"
               style={{
                 width: "40px",
@@ -60,7 +63,7 @@ function EditPerfil() {
               }}
             />
             <p style={{ color: Cor.secundaria, fontSize: "14px", fontWeight:"bold" }}>
-              Jeferson Lima
+              {adminLogado?.nome || "Carregando..."}
             </p>
           </div>
           <p
@@ -139,7 +142,7 @@ function EditPerfil() {
             }}
             onClick={() => {
               localStorage.clear();
-              Navigator("/");
+              Navigator("/login");
             }}
           >
             <p

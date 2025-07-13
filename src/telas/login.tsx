@@ -1,15 +1,72 @@
 import { useState } from "react";
 import useTema from "../hooks/modoTema";
 import { useNavigate } from "react-router-dom";
+import { gql, useMutation } from "@apollo/client";
+import CircularProgress from "@mui/material/CircularProgress";
+
+const LOGIN_MUTATION = gql`
+  mutation Login($email: String!, $senha: String!) {
+    login(email: $email, senha: $senha) {
+      token
+      admin_usuario {
+        id
+        nome
+        email
+        senha
+        foto_admin_operadora
+        funcao
+        status_admin_operadora
+        data_criacao
+        operadora_id {
+          id
+          nome
+          slug
+          logo_operadora
+          cnpj
+          r_social
+          end_rua
+          end_numero
+          end_bairro
+          end_cep
+          end_cidade
+          end_uf
+          status_operadora
+          data_criacao
+        }
+      }
+    }
+  }
+`;
 
 function Login() {
-  const { Cor, tema } = useTema();
+  const { Cor } = useTema();
+
+  const token = localStorage.getItem("token");
+
+  if (token) window.location.href = "/";
 
   const navigator = useNavigate();
 
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [login, { loading, error }] = useMutation(LOGIN_MUTATION);
+
   const [verSenha, setVerSenha] = useState("password");
 
-  console.log(tema);
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await login({ variables: { email, senha } });
+      const token = res.data.login.token;
+      localStorage.setItem("token", token);
+      console.log(res.data.login.token);
+      console.log(res.data.login.admin_usuario);
+      // alert("Login realizado!");
+      navigator("/");
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
     <div
@@ -35,11 +92,14 @@ function Login() {
         }}
       >
         <img
-          src="src/assets/image/img-bg.png"
+          src="src/assets/image/bg.jpg"
           alt="S"
           style={{
-            width: "60vw",
+            width: "95vw",
             objectFit: "contain",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         />
         <div
@@ -163,6 +223,8 @@ function Login() {
           <input
             placeholder="Seu e-mail aqui"
             type="email"
+            onChange={(e) => setEmail(e.target.value)}
+            value={email}
             style={{
               width: "100%",
               border: "none",
@@ -186,6 +248,13 @@ function Login() {
           <input
             placeholder="Sua senha aqui"
             type={verSenha}
+            onChange={(e) => setSenha(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleLogin(e);
+              }
+            }}
+            value={senha}
             style={{
               width: "100%",
               border: "none",
@@ -203,36 +272,94 @@ function Login() {
               cursor: "pointer",
             }}
             onClick={() => {
-              if (verSenha === "password") {
+              if (verSenha === "Senha") {
                 setVerSenha("text");
               } else {
-                setVerSenha("password");
+                setVerSenha("Senha");
               }
             }}
           >
-            {verSenha === "password" ? "visibility" : "visibility_off"}
+            {verSenha === "Senha" ? "visibility" : "visibility_off"}
           </p>
         </div>
         <div
           style={{
             cursor: "pointer",
             width: "50%",
+            height: "50px",
             padding: "10px 20px",
-            backgroundColor: Cor.primaria,
-            borderRadius: "18px",
+            backgroundColor: loading ? Cor.texto1 + 30 : Cor.primaria,
+            borderRadius: "22px",
             alignItems: "center",
             justifyContent: "center",
             display: "flex",
           }}
-          onClick={() => {
-            navigator("/home");
-          }}
+          onClick={handleLogin}
         >
-          <p style={{ color: Cor.texto1, fontWeight: "500" }}>Login</p>
+          <p style={{ color: Cor.texto1, fontWeight: "500" }}>
+            {loading ? (
+              <CircularProgress size={25} thickness={3} color="inherit" />
+            ) : (
+              "Login"
+            )}
+          </p>
         </div>
-      <text style={{ color: Cor.primaria, fontWeight: "500" }}>
-        Esqueci minha senha
-      </text>
+        {error && (
+          <div
+            style={{
+              width: "100vw",
+              height: "100vh",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: Cor.base + "50",
+              backdropFilter: "blur(5px)",
+              position: "absolute",
+              top: 0,
+              left: 0,
+            }}
+            onClick={() => window.location.reload()}
+          >
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                gap: 10,
+                width: "30%",
+                height: "100px",
+                alignItems: "center",
+                justifyContent: "flex-start",
+                backgroundColor: Cor.base,
+                padding: "20px",
+                borderRadius: "22px",
+                boxShadow: Cor.sombra,
+                border: "1px solid" + Cor.texto2 + 50,
+                cursor: "pointer",
+              }}
+              onClick={() => window.location.reload()}
+            >
+              <img src={Cor.logo} width="100px" alt="" />
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                <p
+                  style={{ color: "red", fontSize: "16px", fontWeight: "500" }}
+                >
+                  {error.message}
+                </p>
+                <p style={{ color: Cor.texto1, fontSize: "12px" }}>
+                  Verifique suas credenciais, e tente novamente.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+        <p style={{ color: Cor.primaria, fontWeight: "500" }}>
+          Esqueci minha senha
+        </p>
       </div>
     </div>
   );
