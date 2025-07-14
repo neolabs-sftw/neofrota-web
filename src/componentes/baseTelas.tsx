@@ -45,23 +45,15 @@ function BaseTelas({ conteudo }: { conteudo: any }) {
     return salvo === "true";
   });
 
-  const token = localStorage.getItem("token");
-
-  function getAdminId() {
-    if (token) {
-      const decoded = jwtDecode<JwtPayload>(token);
-      return decoded.admin_usuarioId;
-    } else {
-      console.log("Nenhum token encontrado");
-    }
-  } 
-
   useEffect(() => {
     localStorage.setItem("menuAberto", String(aberto));
   }, [aberto]);
 
+  const token = localStorage.getItem("token");
+  const decoded = token ? jwtDecode<JwtPayload>(token) : null;
+  const adminUsuarioId = decoded ? decoded.admin_usuarioId : null;
   const { loading, error, data } = useQuery(GET_USUARIO, {
-    variables: { adminUsuarioId: getAdminId() },
+    variables: { adminUsuarioId },
   });
 
   if (loading)
@@ -146,7 +138,7 @@ function BaseTelas({ conteudo }: { conteudo: any }) {
                   <p
                     style={{
                       color: Cor.primaria,
-                      fontSize: "18px",
+                      fontSize: "16px",
                       fontWeight: "bold",
                     }}
                   >
@@ -187,7 +179,7 @@ function BaseTelas({ conteudo }: { conteudo: any }) {
                 chevron_right
               </p>
             </div>
-            {<NavMenu sidebar={aberto} />}
+            {<NavMenu sidebar={aberto} logado={logado} />}
           </nav>
           <main
             className="scrollbox"

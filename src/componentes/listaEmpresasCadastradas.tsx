@@ -1,112 +1,61 @@
 import { useTema } from "../hooks/temaContext";
 import { useNavigate } from "react-router-dom";
+import { gql, useQuery } from "@apollo/client";
+import { jwtDecode, type JwtPayload } from "jwt-decode";
+import { useEffect, useMemo, useState } from "react";
 
-const clientes = [
-  {
-    id: 1,
-    logo: "https://img.freepik.com/vetores-premium/um-logotipo-para-a-empresa-empresa-sobre-um-fundo-branco_1072857-23733.jpg?semt=ais_hybrid&w=740",
-    empresa: "Empresa 1",
-    contato: "Contato 1",
-    telefone: "Telefone 1",
-    email: "email1@mail.com",
-    cnpj: "000.000.001/0000-01",
-    statusCliente: "Ativo",
-  },
-  {
-    id: 2,
-    logo: "https://img.freepik.com/vetores-premium/desenho-de-logotipo-bonito-e-unico-para-empresa-de-comercio-eletronico-e-varejo_1287271-14561.jpg",
-    empresa: "Empresa 2",
-    contato: "Contato 2",
-    telefone: "Telefone 2",
-    email: "email2@mail.com",
-    cnpj: "000.000.002/0000-02",
-    statusCliente: "Inativo",
-  },
-  {
-    id: 3,
-    logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR-nuBzsGwqhxuMohWpYeHlzozjgdgH-rquGw&s",
-    empresa: "Empresa 3",
-    contato: "Contato 3",
-    telefone: "Telefone 3",
-    email: "email3@mail.com",
-    cnpj: "000.000.003/0000-03",
-    statusCliente: "Ativo",
-  },
-  {
-    id: 4,
-    logo: "https://png.pngtree.com/png-clipart/20200727/original/pngtree-vector-logo-concept-for-accounting-or-real-estate-company-logo-design-png-image_5137690.jpg",
-    empresa: "Empresa 4",
-    contato: "Contato 4",
-    telefone: "Telefone 4",
-    email: "email4@mail.com",
-    cnpj: "000.000.004/0000-04",
-    statusCliente: "Inativo",
-  },
-  {
-    id: 5,
-    logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTU7NR0NrclO0OvuAMHnWRiyOsslunuCOt93g&s",
-    empresa: "Empresa 5",
-    contato: "Contato 5",
-    telefone: "Telefone 5",
-    email: "email5@mail.com",
-    cnpj: "000.000.005/0000-05",
-    statusCliente: "Ativo",
-  },
-  {
-    id: 6,
-    logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTU7NR0NrclO0OvuAMHnWRiyOsslunuCOt93g&s",
-    empresa: "Empresa 6",
-    contato: "Contato 6",
-    telefone: "Telefone 6",
-    email: "email6@mail.com",
-    cnpj: "000.000.006/0000-06",
-    statusCliente: "Ativo",
-  },
-  {
-    id: 7,
-    logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTU7NR0NrclO0OvuAMHnWRiyOsslunuCOt93g&s",
-    empresa: "Empresa 7",
-    contato: "Contato 7",
-    telefone: "Telefone 7",
-    email: "email7@mail.com",
-    cnpj: "000.000.007/0000-07",
-    statusCliente: "Ativo",
-  },
-  {
-    id: 8,
-    logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTU7NR0NrclO0OvuAMHnWRiyOsslunuCOt93g&s",
-    empresa: "Empresa 8",
-    contato: "Contato 8",
-    telefone: "Telefone 8",
-    email: "email8@mail.com",
-    cnpj: "000.000.008/0000-08",
-    statusCliente: "Ativo",
-  },
-  {
-    id: 9,
-    logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTU7NR0NrclO0OvuAMHnWRiyOsslunuCOt93g&s",
-    empresa: "Empresa 9",
-    contato: "Contato 9",
-    telefone: "Telefone 9",
-    email: "email9@mail.com",
-    cnpj: "000.000.009/0000-09",
-    statusCliente: "Ativo",
-  },
-  {
-    id: 10,
-    logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTU7NR0NrclO0OvuAMHnWRiyOsslunuCOt93g&s",
-    empresa: "Empresa 10",
-    contato: "Contato 10",
-    telefone: "Telefone 10",
-    email: "email10@mail.com",
-    cnpj: "000.000.010/0000-10",
-    statusCliente: "Ativo",
-  },
-];
+const GET_EMPRESAS_CLIENTES = gql`
+  query Empresa_cliente_oper($operadora_id: ID) {
+    empresa_cliente_oper(operadora_id: $operadora_id) {
+      id
+      nome
+      r_social
+      cnpj
+      foto_logo_cliente
+      slug
+      status_cliente
+      operadora_id {
+        id
+        nome
+      }
+    }
+  }
+`;
 
 function ListaEmpresasCadastradas() {
   const Cor = useTema().Cor;
   const navigate = useNavigate();
+
+  const [busca, setBusca] = useState("");
+
+  const decoded = useMemo(() => {
+    const token = localStorage.getItem("token");
+    return token ? jwtDecode<JwtPayload>(token) : null;
+  }, []);
+
+  const { loading, error, data } = useQuery(GET_EMPRESAS_CLIENTES, {
+    skip: !decoded?.operadora_id,
+    variables: { operadora_id: decoded?.operadora_id },
+  });
+
+  const [clientes, setClientes] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (data?.empresa_cliente_oper) {
+      setClientes(data.empresa_cliente_oper);
+    }
+  }, [data]);
+
+  const clientesFiltrados = useMemo(() => {
+    if (!busca) return clientes;
+    return clientes.filter((cliente: any) =>
+      cliente.nome.toLowerCase().includes(busca.toLowerCase())
+    );
+  }, [clientes, busca]);
+
+  if (loading) return <p>Carregando...</p>;
+  if (error) return <p>Erro ao carregar os dados</p>;
+
   return (
     <div
       style={{
@@ -183,6 +132,9 @@ function ListaEmpresasCadastradas() {
                 outline: "none",
                 color: Cor.texto1,
               }}
+              placeholder="Buscar..."
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
             />
             <p
               style={{
@@ -246,7 +198,7 @@ function ListaEmpresasCadastradas() {
             </tr>
           </thead>
           <tbody>
-            {clientes.map((cliente) => (
+            {clientesFiltrados.map((cliente: any) => (
               <tr key={cliente.id}>
                 <td
                   style={{
@@ -256,7 +208,7 @@ function ListaEmpresasCadastradas() {
                   }}
                 >
                   <img
-                    src={cliente.logo}
+                    src={cliente.foto_logo_cliente}
                     alt=""
                     style={{
                       width: 30,
@@ -268,8 +220,8 @@ function ListaEmpresasCadastradas() {
                     }}
                   />
                 </td>
-                <td style={{ color: Cor.texto1 }}>{cliente.empresa}</td>
-                <td style={{ color: Cor.texto1 }}>{cliente.contato}</td>
+                <td style={{ color: Cor.texto1 }}>{cliente.nome}</td>
+                <td style={{ color: Cor.texto1 }}>{cliente.r_social}</td>
                 <td style={{ color: Cor.texto1 }}>{cliente.email}</td>
                 <td style={{ color: Cor.texto1 }}>{cliente.telefone}</td>
                 <td style={{ color: Cor.texto1 }}>{cliente.cnpj}</td>
@@ -277,14 +229,14 @@ function ListaEmpresasCadastradas() {
                   <p
                     style={{
                       color:
-                        cliente.statusCliente === "Ativo"
+                        cliente.status_cliente === true
                           ? Cor.ativo
                           : Cor.inativo,
                       textAlign: "center",
                       fontSize: 12,
                       fontWeight: "bold",
                       backgroundColor:
-                        cliente.statusCliente === "Ativo"
+                        cliente.status_cliente === true
                           ? Cor.ativo + 30
                           : Cor.inativo + 30,
                       width: 80,
@@ -295,7 +247,7 @@ function ListaEmpresasCadastradas() {
                       justifyContent: "center",
                     }}
                   >
-                    {cliente.statusCliente}
+                    {cliente.status_cliente ? "Ativo" : "Inativo"}
                   </p>
                 </td>
                 <td>

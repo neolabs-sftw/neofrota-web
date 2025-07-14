@@ -1,11 +1,54 @@
+import { useState } from "react";
 import { useTema } from "../hooks/temaContext";
 import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
-function NavMenu({ sidebar }: { sidebar: boolean }) {
-
+function NavMenu({ sidebar, logado }: { sidebar: boolean; logado: any }) {
   const location = useLocation();
   const { Cor } = useTema();
+
+  console.log(logado.funcao);
+
+  const listaTelasMaster = [
+    { tela: "Dashboard", icone: "dashboard", path: "/" },
+    { tela: "Empresas", icone: "bubble_chart", path: "/empresas" },
+    { tela: "Agregados", icone: "directions_car", path: "/agregados" },
+    { tela: "Funcionários", icone: "person", path: "/funcionarios" },
+    { tela: "Operação", icone: "mediation", path: "/operacao" },
+    { tela: "Financeiro", icone: "money_bag", path: "/financeiro" },
+    { tela: "Relatórios", icone: "list", path: "/relatorios" },
+    { tela: "Configurações", icone: "settings", path: "/configuracoes" },
+  ];
+  const listaTelasAdmin = [
+    { tela: "Dashboard", icone: "dashboard", path: "/" },
+    { tela: "Empresas", icone: "bubble_chart", path: "/empresas" },
+    { tela: "Agregados", icone: "directions_car", path: "/agregados" },
+    { tela: "Funcionários", icone: "person", path: "/funcionarios" },
+    { tela: "Operação", icone: "mediation", path: "/operacao" },
+    { tela: "Financeiro", icone: "money_bag", path: "/financeiro" },
+    { tela: "Relatórios", icone: "list", path: "/relatorios" },
+  ];
+  const listaTelasFinc = [
+    { tela: "Dashboard", icone: "dashboard", path: "/" },
+    { tela: "Financeiro", icone: "money_bag", path: "/financeiro" },
+    { tela: "Agregados", icone: "directions_car", path: "/agregados" },
+    { tela: "Relatórios", icone: "list", path: "/relatorios" },
+  ];
+  const listaTelasOper = [
+    { tela: "Dashboard", icone: "dashboard", path: "/" },
+    { tela: "Operação", icone: "mediation", path: "/operacao" },
+    { tela: "Relatórios", icone: "list", path: "/relatorios" },
+  ];
+
+  const listaTelas =
+    logado.funcao === "Master"
+      ? listaTelasMaster
+      : logado.funcao === "Admin"
+      ? listaTelasAdmin
+      : logado.funcao === "Finc"
+      ? listaTelasFinc
+      : listaTelasOper;
+
   return (
     <>
       <div style={{ width: "100%", height: "80vh" }}>
@@ -17,20 +60,7 @@ function NavMenu({ sidebar }: { sidebar: boolean }) {
             marginTop: 10,
           }}
         >
-          {[
-            { tela: "Dashboard", icone: "dashboard", path: "/" },
-            { tela: "Empresas", icone: "bubble_chart", path: "/empresas" },
-            { tela: "Agregados", icone: "directions_car", path: "/agregados" },
-            { tela: "Funcionários", icone: "person", path: "/funcionarios" },
-            { tela: "Operação", icone: "mediation", path: "/operacao" },
-            { tela: "Financeiro", icone: "money_bag", path: "/financeiro" },
-            { tela: "Relatórios", icone: "list", path: "/relatorios" },
-            {
-              tela: "Configurações",
-              icone: "settings",
-              path: "/configuracoes",
-            },
-          ].map(({ tela, icone, path }) => (
+          {listaTelas.map(({ tela, icone, path }) => (
             <BtnMenu
               key={path}
               sidebar={sidebar}

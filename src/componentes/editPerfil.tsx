@@ -62,7 +62,7 @@ function EditPerfil() {
                 transition: "width 0.3s ease-in-out",
               }}
             />
-            <p style={{ color: Cor.secundaria, fontSize: "14px", fontWeight:"bold" }}>
+            <p style={{ color: Cor.secundaria, fontSize: "12px", fontWeight:"bold" }}>
               {adminLogado?.nome || "Carregando..."}
             </p>
           </div>
