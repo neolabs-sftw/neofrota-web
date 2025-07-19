@@ -9,9 +9,9 @@ import Funcionarios from "./telas/funcionarios";
 import Operacao from "./telas/operacao";
 import Relatorios from "./telas/relatorios";
 import Configuracoes from "./telas/configiracao";
-import VerEmpresa from "./telas/subtelas/verEmpresa";
-import EditarEmpresa from "./telas/subtelas/editarEmpresa";
-import CriarEmpresa from "./telas/subtelas/criarEmpresa";
+import VerEmpresa from "./telas/subtelas/empresaCliente/verEmpresa";
+import EditarEmpresa from "./telas/subtelas/empresaCliente/editarEmpresa";
+import CriarEmpresa from "./telas/subtelas/empresaCliente/criarEmpresa";
 
 function App() {
   return (

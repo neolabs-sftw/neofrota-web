@@ -7,8 +7,6 @@ function NavMenu({ sidebar, logado }: { sidebar: boolean; logado: any }) {
   const location = useLocation();
   const { Cor } = useTema();
 
-  console.log(logado.funcao);
-
   const listaTelasMaster = [
     { tela: "Dashboard", icone: "dashboard", path: "/" },
     { tela: "Empresas", icone: "bubble_chart", path: "/empresas" },

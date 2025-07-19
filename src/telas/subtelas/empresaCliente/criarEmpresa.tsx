@@ -1,7 +1,10 @@
 import { useState } from "react";
-import BaseTelas from "../../componentes/baseTelas";
-import EditPerfil from "../../componentes/editPerfil";
-import { useTema } from "../../hooks/temaContext";
+import BaseTelas from "../../../componentes/baseTelas";
+import EditPerfil from "../../../componentes/editPerfil";
+import { useTema } from "../../../hooks/temaContext";
+import { gql, useMutation } from "@apollo/client";
+import { jwtDecode, type JwtPayload } from "jwt-decode";
+import { supabase } from "../../../hooks/supabaseClient";
 
 function CriarEmpresa() {
   return BaseTelas({
@@ -16,21 +19,110 @@ function CriarEmpresa() {
 
 export default CriarEmpresa;
 
+const CRIAR_EMPRESA_CLIENTE = gql`
+  mutation Criar_empresa_cliente($input: Empresa_ClienteInput!) {
+    criar_empresa_cliente(input: $input) {
+      nome
+      r_social
+      cnpj
+      foto_logo_cliente
+      status_cliente
+      operadora_id {
+        id
+        nome
+      }
+    }
+  }
+`;
+
 function CriarClienteConteudo() {
   const Cor = useTema().Cor;
 
   const [nome, setNome] = useState("");
   const [cnpj, setCnpj] = useState("");
   const [razaoSocial, setRazaoSocial] = useState("");
-  const [imgLogo, setImgLogo] = useState("");
+  const [imgLogo, setImgLogo] = useState<File>();
   const [imgPreview, setImgPreview] = useState("");
-  const [nomeUnidade, setNomeUnidade] = useState("");
-  const [cnpjUnidade, setCnpjUnidade] = useState("");
+  const [status, setStatus] = useState("");
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [criarEmpresa, { loading, error }] = useMutation(CRIAR_EMPRESA_CLIENTE);
+
+  const carregarImagem = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setImgPreview(URL.createObjectURL(file)); // gera a URL temporária
+      setImgPreview(URL.createObjectURL(file));
+      setImgLogo(file); // gera a URL temporária
+    }
+  };
+
+  const token = localStorage.getItem("token");
+  const decoded = token ? jwtDecode<JwtPayload>(token) : null;
+
+  const operadoraId = decoded ? decoded.operadora_id : null;
+  const adminUsuarioId = decoded ? decoded.admin_usuarioId : null;
+
+  const criarEmpresaFunc = async () => {
+    setStatus("Carregando...");
+
+    // Validação da imagem
+    if (!imgLogo) {
+      setStatus("Por favor, insira uma imagem de logo.");
+      return;
+    }
+
+    // PASSO 1: Validação dos IDs obtidos do token.
+    // Garante que o usuário está devidamente autenticado e com os dados corretos.
+    if (!operadoraId || !adminUsuarioId) {
+      setStatus(
+        "Erro: Informações de autenticação não encontradas. Por favor, faça login novamente."
+      );
+      console.error("operadoraId ou adminUsuarioId são nulos.", {
+        operadoraId,
+        adminUsuarioId,
+      });
+      return;
+    }
+
+    try {
+      setStatus("Fazendo upload da imagem...");
+
+      const nomeImg = `${cnpj.replace(/\D/g, "")}-${Date.now()}.png`;
+      const bucket = "neofrotabkt";
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from(bucket)
+        .upload(nomeImg, imgLogo);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from(bucket)
+        .getPublicUrl(uploadData.path);
+
+      const fotoUrl = urlData.publicUrl;
+      setStatus("Imagem enviada, criando registro...");
+
+      await criarEmpresa({
+        variables: {
+          input: {
+             nome,
+             r_social: razaoSocial,
+             cnpj,
+             foto_logo_cliente: fotoUrl,
+             operadora_id: parseInt(operadoraId, 10)
+          },
+        },
+      });
+
+      setStatus("Empresa criada com sucesso!");
+      // Limpar o formulário aqui, se desejar.
+    } catch (error: any) {
+      console.error("Falha ao criar empresa:", error);
+      // Tenta pegar uma mensagem de erro mais detalhada do GraphQL, se disponível
+      const errorMessage = error.graphQLErrors?.[0]?.message || error.message;
+      setStatus(`Erro ao criar empresa: ${errorMessage}`);
     }
   };
 
@@ -160,7 +252,7 @@ function CriarClienteConteudo() {
                 backgroundColor: Cor.base2,
                 borderRadius: 22,
                 border: "4px solid",
-                borderColor: Cor.secundaria + 20,
+                borderColor: Cor.texto1 + "DD",
                 backgroundImage: `url(${imgPreview})`,
                 backgroundSize: "cover",
               }}
@@ -191,197 +283,9 @@ function CriarClienteConteudo() {
                     borderRadius: 22,
                     padding: 10,
                   }}
-                  onChange={handleChange}
+                  onChange={carregarImagem}
                 />
               </div>
-            </div>
-          </div>
-          <div
-            style={{
-              width: "100%",
-              height: 1,
-              backgroundColor: Cor.texto2,
-              margin: "20px 0",
-            }}
-          />
-          <div
-            style={{
-              padding: "0 20px",
-              display: "flex",
-              gap: 20,
-              flexDirection: "column",
-            }}
-          >
-            <p
-              style={{
-                color: Cor.secundaria,
-                fontSize: 14,
-                fontWeight: "500",
-              }}
-            >
-              Dados Unidade Matriz
-            </p>
-            <div style={{ display: "flex", flexDirection: "row", gap: 20 }}>
-              <TextoEntrada
-                placeholder="Nome"
-                onChange={(e: { target: { value: any } }) =>
-                  setNomeUnidade(e.target.value)
-                }
-                value={nomeUnidade}
-                type="text"
-                largura="50%"
-              />
-              <TextoEntrada
-                placeholder="CNPJ"
-                onChange={(e: { target: { value: any } }) =>
-                  setCnpjUnidade(formatCNPJ(e.target.value))
-                }
-                value={cnpjUnidade}
-                type="text"
-                largura="50%"
-              />
-            </div>
-            <div style={{ display: "flex", flexDirection: "row", gap: 20 }}>
-              <TextoEntrada
-                placeholder="Endereço"
-                onChange={(e: { target: { value: any } }) =>
-                  setNomeUnidade(e.target.value)
-                }
-                value={nomeUnidade}
-                type="text"
-                largura="40%"
-              />
-              <TextoEntrada
-                placeholder="Número"
-                onChange={(e: { target: { value: any } }) =>
-                  setCnpjUnidade(formatCNPJ(e.target.value))
-                }
-                value={cnpjUnidade}
-                type="text"
-                largura="10%"
-              />
-              <TextoEntrada
-                placeholder="Bairro"
-                onChange={(e: { target: { value: any } }) =>
-                  setCnpjUnidade(formatCNPJ(e.target.value))
-                }
-                value={cnpjUnidade}
-                type="text"
-                largura="25%"
-              />{" "}
-              <TextoEntrada
-                placeholder="Cidade"
-                onChange={(e: { target: { value: any } }) =>
-                  setNomeUnidade(e.target.value)
-                }
-                value={nomeUnidade}
-                type="text"
-                largura="25%"
-              />
-            </div>
-            <div style={{ display: "flex", flexDirection: "row", gap: 20 }}>
-              <TextoEntrada
-                placeholder="Complemento"
-                onChange={(e: { target: { value: any } }) =>
-                  setNomeUnidade(e.target.value)
-                }
-                value={nomeUnidade}
-                type="text"
-                largura="60%"
-              />
-              <TextoEntrada
-                placeholder="CEP"
-                onChange={(e: { target: { value: any } }) =>
-                  setCnpjUnidade(formatCNPJ(e.target.value))
-                }
-                value={cnpjUnidade}
-                type="text"
-                largura="25%"
-              />
-              <TextoEntrada
-                placeholder="UF"
-                onChange={(e: { target: { value: any } }) =>
-                  setCnpjUnidade(formatCNPJ(e.target.value))
-                }
-                value={cnpjUnidade}
-                type="text"
-                largura="15%"
-              />
-            </div>
-          </div>
-          <div
-            style={{
-              width: "100%",
-              height: 1,
-              backgroundColor: Cor.texto2,
-              margin: "20px 0",
-            }}
-          />
-          <div
-            style={{
-              padding: "0 20px",
-              display: "flex",
-              gap: 20,
-              flexDirection: "column",
-            }}
-          >
-            <p
-              style={{
-                color: Cor.secundaria,
-                fontSize: 14,
-                fontWeight: "500",
-              }}
-            >
-              Dados Gestor Responsável
-            </p>
-            <div style={{ display: "flex", flexDirection: "row", gap: 20 }}>
-              <TextoEntrada
-                placeholder="Nome"
-                onChange={(e: { target: { value: any } }) =>
-                  setNomeUnidade(e.target.value)
-                }
-                value={nomeUnidade}
-                type="text"
-                largura="50%"
-              />
-              <TextoEntrada
-                placeholder="Email"
-                onChange={(e: { target: { value: any } }) =>
-                  setCnpjUnidade(formatTelefone(e.target.value))
-                }
-                value={cnpjUnidade}
-                type="text"
-                largura="50%"
-              />
-            </div>
-            <div style={{ display: "flex", flexDirection: "row", gap: 20 }}>
-              <TextoEntrada
-                placeholder="Nome"
-                onChange={(e: { target: { value: any } }) =>
-                  setNomeUnidade(e.target.value)
-                }
-                value={nomeUnidade}
-                type="text"
-                largura="33%"
-              />
-              <TextoEntrada
-                placeholder="Telefone"
-                onChange={(e: { target: { value: any } }) =>
-                  setCnpjUnidade(formatTelefone(e.target.value))
-                }
-                value={cnpjUnidade}
-                type="text"
-                largura="33%"
-              />
-              <TextoEntrada
-                placeholder="Senha"
-                onChange={(e: { target: { value: any } }) =>
-                  setCnpjUnidade(formatTelefone(e.target.value))
-                }
-                value={cnpjUnidade}
-                type="text"
-                largura="33%"
-              />
             </div>
           </div>
           <div
@@ -405,11 +309,16 @@ function CriarClienteConteudo() {
               fontWeight: "bold",
               cursor: "pointer",
             }}
+            onClick={criarEmpresaFunc}
           >
-            Salvar
+            {loading ? "Salvando..." : "Salvar"}
           </button>
         </div>
       </div>
+      {status && <p>{status}</p>}
+      {error && (
+        <p style={{ color: "red" }}>Erro na mutation: {error.message}</p>
+      )}
     </div>
   );
 }

@@ -5,12 +5,62 @@ import ListaEmpresasCadastradas from "../componentes/listaEmpresasCadastradas";
 import CardInfosMenor from "../componentes/cardInfosMenor";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import {gql, useQuery} from "@apollo/client";
+import { jwtDecode, type JwtPayload } from "jwt-decode";
+
+
+const GET_USUARIO = gql`
+  query Admin_usuario_id($adminUsuarioId: ID!) {
+    admin_usuario_id(id: $adminUsuarioId) {
+      id
+      nome
+      email
+      senha
+      foto_admin_operadora
+      funcao
+      status_admin_operadora
+      data_criacao
+      operadora_id {
+        id
+        nome
+        slug
+        logo_operadora
+        cnpj
+        r_social
+        end_rua
+        end_numero
+        end_bairro
+        end_cep
+        end_cidade
+        end_uf
+        status_operadora
+        data_criacao
+      }
+    }
+  }
+`;
 
 function Empresas() {
 
-  useEffect(() => {
-      document.title = "Empresas";
-    }, []);
+   const token = localStorage.getItem("token");
+     function getAdminId() {
+        if (token) {
+          const decoded = jwtDecode<JwtPayload>(token);
+          return decoded.admin_usuarioId;
+        } else {
+          console.log("Nenhum token encontrado");
+        }
+      } 
+  
+    const { loading, data } = useQuery(GET_USUARIO, {
+      variables: { adminUsuarioId: getAdminId() || null },
+    });
+  
+    const adminLogado = data?.admin_usuario_id;
+  
+    useEffect(() => {
+      document.title = `NeoFrota | ${adminLogado?.operadora_id.nome}`;
+    }, [loading, adminLogado]);
 
   return BaseTelas({
     conteudo: (

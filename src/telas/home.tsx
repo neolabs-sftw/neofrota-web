@@ -57,8 +57,6 @@ function Home() {
 
   const adminLogado = data?.admin_usuario_id;
 
-  console.log(adminLogado);
-
   useEffect(() => {
     document.title = `NeoFrota | ${adminLogado?.operadora_id.nome}`;
   }, [loading, adminLogado]);

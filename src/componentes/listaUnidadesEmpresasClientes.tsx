@@ -1,19 +1,27 @@
-import { useTema } from "../hooks/temaContext";
-import { useNavigate } from "react-router-dom";
-import { gql, useQuery } from "@apollo/client";
-import { jwtDecode, type JwtPayload } from "jwt-decode";
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { exportarPlanilha } from "../hooks/exportarPlanilha";
+import useTema from "../hooks/modoTema";
+import { gql, useQuery } from "@apollo/client";
+import Checkbox from "@mui/material/Checkbox";
 
-const GET_EMPRESAS_CLIENTES = gql`
-  query Empresa_cliente_oper($operadora_id: ID) {
-    empresa_cliente_oper(operadora_id: $operadora_id) {
-      id
+const GET_UNIDADES_EMPRESA_CLIENTE = gql`
+  query Lista_unidades_empresa_cliente_id($listaUnidadesEmpresaClienteId: ID!) {
+    lista_unidades_empresa_cliente_id(id: $listaUnidadesEmpresaClienteId) {
       nome
-      r_social
       cnpj
-      foto_logo_cliente
-      status_cliente
+      end_rua
+      end_numero
+      end_bairro
+      end_cep
+      end_cidade
+      end_complemento
+      end_uf
+      status_unidade_cliente
+      matriz
+      empresa_cliente_id {
+        id
+        nome
+      }
       operadora_id {
         id
         nome
@@ -22,48 +30,54 @@ const GET_EMPRESAS_CLIENTES = gql`
   }
 `;
 
-function ListaEmpresasCadastradas() {
+const GET_EMPRESA_CLIENTE = gql`
+  query Empresa_cliente_id($empresaClienteIdId: ID!) {
+    empresa_cliente_id(id: $empresaClienteIdId) {
+      id
+      nome
+      r_social
+      cnpj
+      foto_logo_cliente
+      status_cliente
+    }
+  }
+`;
+
+function ListaUnidadesEmpresasClientes({
+  empresaClienteId,
+}: {
+  empresaClienteId: any;
+}) {
   const Cor = useTema().Cor;
-  const navigate = useNavigate();
 
   const [busca, setBusca] = useState("");
-
-  const decoded = useMemo(() => {
-    const token = localStorage.getItem("token");
-    return token ? jwtDecode<JwtPayload>(token) : null;
-  }, []);
-
-  const { loading, error, data } = useQuery(GET_EMPRESAS_CLIENTES, {
-    skip: !decoded?.operadora_id,
-    variables: { operadora_id: decoded?.operadora_id },
+  const { data: unidades } = useQuery(GET_UNIDADES_EMPRESA_CLIENTE, {
+    variables: {
+      listaUnidadesEmpresaClienteId: empresaClienteId,
+    },
   });
 
-  const [clientes, setClientes] = useState<any[]>([]);
+  const { data: empresa } = useQuery(GET_EMPRESA_CLIENTE, {
+    variables: {
+      empresaClienteIdId: empresaClienteId,
+    },
+  });
 
-  useEffect(() => {
-    if (data?.empresa_cliente_oper) {
-      setClientes(data.empresa_cliente_oper);
-    }
-  }, [data]);
+  const empresaCliente = empresa?.empresa_cliente_id || {};
 
-  const clientesFiltrados = useMemo(() => {
-    if (!busca) return clientes;
-    return clientes.filter((cliente: any) =>
-      cliente.nome.toLowerCase().includes(busca.toLowerCase())
-    );
-  }, [clientes, busca]);
+  console.log(empresa);
 
-  if (loading) return <p>Carregando...</p>;
-  if (error) return <p>Erro ao carregar os dados</p>;
+  const lista_unidades = unidades?.lista_unidades_empresa_cliente_id || [];
 
   return (
     <div
       style={{
-        backgroundColor: Cor.base2,
         width: "100%",
+        height: 350,
+        backgroundColor: Cor.base2,
         borderRadius: 22,
-        padding: 15,
         boxShadow: Cor.sombra,
+        padding: 15,
       }}
     >
       <div
@@ -79,9 +93,11 @@ function ListaEmpresasCadastradas() {
       >
         <div>
           <p style={{ fontWeight: "500", color: Cor.primaria }}>
-            Lista de Clientes
+            Lista de Unidades
           </p>
-          <p style={{ fontSize: 12, color: Cor.secundaria }}>Cadastros</p>
+          <p style={{ fontSize: 12, color: Cor.secundaria }}>
+            Unidades cadastradas na empresa {empresaCliente?.nome}
+          </p>
         </div>
         <div
           style={{
@@ -100,7 +116,13 @@ function ListaEmpresasCadastradas() {
               color: Cor.primaria,
               cursor: "pointer",
             }}
-            onClick={() => exportarPlanilha(clientesFiltrados, "Clientes", "csv")}
+            onClick={() =>
+              exportarPlanilha(
+                lista_unidades,
+                `Unidades ${empresa?.nome}`,
+                "csv"
+              )
+            }
           >
             download
           </p>
@@ -163,7 +185,6 @@ function ListaEmpresasCadastradas() {
               text-align: left;
               padding: 5px;
               color: ${Cor.texto1};
-              border-bottom: 1px solid ${Cor.texto2 + 20};
               }
 
             tr:nth-child(even) {
@@ -171,7 +192,7 @@ function ListaEmpresasCadastradas() {
               }
 
             tr:hover {
-              background-color: ${Cor.texto1 + "05"};
+              background-color: ${Cor.texto1 + "15"};
               }`}
           </style>
           <thead
@@ -188,59 +209,122 @@ function ListaEmpresasCadastradas() {
                 height: 30,
               }}
             >
-              <th style={{ width: "5%", textAlign: "center" }}>Logo</th>
               <th style={{ width: "20%" }}>Nome</th>
-              <th style={{ width: "10%" }}>Contato</th>
-              <th style={{ width: "20%" }}>E-mail</th>
-              <th style={{ width: "10%" }}>Telefone</th>
               <th style={{ width: "15%" }}>CNPJ</th>
+              <th style={{ width: "20%" }}>Rua</th>
+              <th style={{ width: "10%" }}>Bairro</th>
+              <th style={{ width: "5%" }}>Número</th>
+              <th style={{ width: "10%", textAlign: "center" }}>Matriz</th>
               <th style={{ width: "10%", textAlign: "center" }}>Status</th>
               <th style={{ width: "10%", textAlign: "center" }}>Ações</th>
             </tr>
           </thead>
-          <tbody style={{
+          <tbody
+            style={{
               fontSize: 14,
               textAlign: "left",
-            }}>
-            {clientesFiltrados.map((cliente: any) => (
+            }}
+          >
+            {lista_unidades.map((cliente: any) => (
               <tr key={cliente.id}>
+                <td style={{ color: Cor.texto1 }}>{cliente.nome}</td>
+                <td style={{ color: Cor.texto1 }}>{cliente.cnpj}</td>
+                <td style={{ color: Cor.texto1 }}>{cliente.end_rua}</td>
+                <td style={{ color: Cor.texto1 }}>{cliente.end_bairro}</td>
+                <td style={{ color: Cor.texto1 }}>{cliente.end_numero}</td>
                 <td
                   style={{
+                    color: Cor.texto1,
+                    textAlign: "center",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                   }}
                 >
-                  <img
-                    src={cliente.foto_logo_cliente}
-                    alt=""
-                    style={{
-                      width: 30,
-                      height: 30,
-                      borderRadius: 8,
-                      objectFit: "cover",
-                      objectPosition: "center",
-                      boxShadow: "2px 2px 1px rgba(0, 0, 0, 0.05)",
-                    }}
-                  />
+                  <style>
+                    {`.container {
+                        display: block;
+                        position: relative;
+                        color: ${Cor.secundaria};
+                        cursor: pointer;
+                        font-size: 22px;
+                        -webkit-user-select: none;
+                        -moz-user-select: none;
+                        -ms-user-select: none;
+                        user-select: none;
+                    }
+
+                      /* Hide the browser's default checkbox */
+                      .container input {
+                        position: absolute;
+                        opacity: 0;
+                        cursor: pointer;
+                        height: 0;
+                        width: 0;
+                      }
+
+                      /* Create a custom checkbox */
+                      .checkmark {
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        height: 18px;
+                        width: 18px;
+                        background-color: ${Cor.texto2 + 50};
+                        border-radius: 4px;
+                      }
+
+                      /* On mouse-over, add a grey background color */
+                      .container:hover input ~ .checkmark {
+                        background-color: #ccc;
+                      }
+
+                      /* When the checkbox is checked, add a blue background */
+                      .container input:checked ~ .checkmark {
+                        background-color: ${Cor.primaria};
+                      }
+
+                      /* Create the checkmark/indicator (hidden when not checked) */
+                      .checkmark:after {
+                        content: "";
+                        position: absolute;
+                        display: none;
+                      }
+
+                      /* Show the checkmark when checked */
+                      .container input:checked ~ .checkmark:after {
+                        display: block;
+                      }
+
+                      /* Style the checkmark/indicator */
+                      .container .checkmark:after {
+                        left: 5px;
+                        top: 2px;
+                        width: 5px;
+                        height: 10px;
+                        border: solid white;
+                        border-width: 0 3px 3px 0;
+                        border-radius: 8px;
+                        transform: rotate(45deg);
+                      }`}
+                  </style>
+                  <label className="container">
+                    <input type="checkbox" checked={cliente.matriz} />
+                    <span className="checkmark"></span>
+                  </label>
                 </td>
-                <td style={{ color: Cor.texto1 }}>{cliente.nome}</td>
-                <td style={{ color: Cor.texto1 }}>Pessoa Responsável</td>
-                <td style={{ color: Cor.texto1 }}>Email Responsável</td>
-                <td style={{ color: Cor.texto1 }}>Contato Responsável </td>
-                <td style={{ color: Cor.texto1 }}>{cliente.cnpj}</td>
                 <td>
                   <p
                     style={{
                       color:
-                        cliente.status_cliente === true
+                        cliente.status_unidada_cliente === true
                           ? Cor.ativo
                           : Cor.inativo,
                       textAlign: "center",
                       fontSize: 12,
                       fontWeight: "bold",
                       backgroundColor:
-                        cliente.status_cliente === true
+                        cliente.status_unidada_cliente === true
                           ? Cor.ativo + 30
                           : Cor.inativo + 30,
                       width: 80,
@@ -251,7 +335,7 @@ function ListaEmpresasCadastradas() {
                       justifyContent: "center",
                     }}
                   >
-                    {cliente.status_cliente ? "Ativo" : "Inativo"}
+                    {cliente.status_unidada_cliente ? "Ativo" : "Inativo"}
                   </p>
                 </td>
                 <td>
@@ -272,9 +356,9 @@ function ListaEmpresasCadastradas() {
                         color: Cor.texto1,
                         fontSize: 20,
                       }}
-                      onClick={() => navigate("/verempresa/" + cliente.id)}
+                      //   onClick={() => navigate("/verempresa/" + cliente.id)}
                     >
-                      visibility
+                      lock_open
                     </p>
                     <p
                       style={{
@@ -285,7 +369,7 @@ function ListaEmpresasCadastradas() {
                         fontSize: 20,
                       }}
                     >
-                      edit
+                      delete
                     </p>
                   </div>
                 </td>
@@ -293,22 +377,9 @@ function ListaEmpresasCadastradas() {
             ))}
           </tbody>
         </table>
-        <div
-          style={{
-            width: "100%",
-            height: 25,
-            display: "flex",
-            flexDirection: "row",
-            paddingRight: 20,
-            alignItems: "center",
-            justifyContent: "flex-end",
-            backgroundColor: Cor.texto1 + 30,
-            borderRadius: "0 0 10px 10px",
-          }}
-        />
       </div>
     </div>
   );
 }
 
-export default ListaEmpresasCadastradas;
+export default ListaUnidadesEmpresasClientes;

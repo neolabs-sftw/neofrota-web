@@ -1,10 +1,28 @@
 import { useState } from "react";
-import BaseTelas from "../../componentes/baseTelas";
-import EditPerfil from "../../componentes/editPerfil";
-import { useTema } from "../../hooks/temaContext";
+import BaseTelas from "../../../componentes/baseTelas";
+import EditPerfil from "../../../componentes/editPerfil";
+import { useTema } from "../../../hooks/temaContext";
 import { useNavigate, useParams } from "react-router-dom";
+import { gql, useQuery, useMutation } from "@apollo/client";
+import CriarUnidades from "./btnComponentes/criarUnidades";
+import ListaUnidadesEmpresasClientes from "../../../componentes/listaUnidadesEmpresasClientes";
+
+const GET_EMPRESA_CLIENTE = gql`
+  query Empresa_cliente_id($empresaClienteId: ID!) {
+    empresa_cliente_id(id: $empresaClienteId) {
+      nome
+      r_social
+      cnpj
+      foto_logo_cliente
+      status_cliente
+    }
+  }
+`;
 
 function VerEmpresa() {
+  
+  const { cliente_id } = useParams();
+
   const [CxAlertaExcluirCliente, setCxAlertaExcluirCliente] = useState(false);
   return BaseTelas({
     conteudo: (
@@ -29,6 +47,7 @@ function VerEmpresaConteudo({
 }: {
   setCxAlertaExcluirCliente: any;
 }) {
+  const {cliente_id} = useParams();
   const Cor = useTema().Cor;
   return (
     <div
@@ -73,15 +92,64 @@ function VerEmpresaConteudo({
         <TabelaSolicitantes />
         <TabelaCentroCusto />
       </div>
-      <TabelaUnidadesCliente />
+      <ListaUnidadesEmpresasClientes empresaClienteId={cliente_id} />
       <ExcluirCliente setCxAlertaExcluirCliente={setCxAlertaExcluirCliente} />
     </div>
   );
 }
 
+function CriarSolicitantes() {
+  const Cor = useTema().Cor;
+
+  return (
+    <div
+      style={{
+        width: "30%",
+        height: 100,
+        backgroundColor: Cor.base2,
+        borderRadius: 22,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        border: "2px solid" + Cor.primaria + 50,
+        boxShadow: Cor.sombra,
+        cursor: "pointer",
+      }}
+    >
+      <p
+        style={{
+          fontFamily: "Icone",
+          fontSize: 30,
+          color: Cor.primaria,
+          fontWeight: "bold",
+        }}
+      >
+        person_add
+      </p>
+      <p style={{ textAlign: "center", fontSize: 12, color: Cor.texto1 }}>
+        Solicitante
+      </p>
+    </div>
+  );
+}
+
+
 function Cabecalho() {
   const Cor = useTema().Cor;
   const { cliente_id } = useParams();
+
+  const { data, loading, error } = useQuery(GET_EMPRESA_CLIENTE, {
+    variables: {
+      empresaClienteId: cliente_id,
+    },
+  });
+
+  if (loading) return <p>Carregando...</p>;
+  if (error) return <p>Erro ao carregar os dados: {error.message}</p>;
+
+  const empresaCliente = data.empresa_cliente_id;
+
   return (
     <div
       style={{
@@ -101,7 +169,7 @@ function Cabecalho() {
         }}
       >
         <img
-          src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTU7NR0NrclO0OvuAMHnWRiyOsslunuCOt93g&s"
+          src={empresaCliente.foto_logo_cliente}
           alt=""
           style={{
             width: "60%",
@@ -118,7 +186,9 @@ function Cabecalho() {
             alignItems: "center",
           }}
         >
-          <h2 style={{ color: Cor.primaria }}>Empresa {cliente_id}</h2>
+          <h2 style={{ color: Cor.primaria, fontSize: "20px" }}>
+            {empresaCliente.nome}
+          </h2>
           <div
             style={{
               display: "flex",
@@ -130,13 +200,23 @@ function Cabecalho() {
             <p style={{ fontSize: 11, color: Cor.texto1 }}>Status: </p>
             <div
               style={{
-                backgroundColor: Cor.ativo + 20,
+                backgroundColor: empresaCliente.status_cliente
+                  ? Cor.ativo + 20
+                  : Cor.inativo + 20,
                 borderRadius: 12,
                 padding: "5px 15px",
               }}
             >
-              <p style={{ fontSize: 12, fontWeight: "700", color: Cor.ativo }}>
-                Ativo
+              <p
+                style={{
+                  fontSize: 12,
+                  fontWeight: "700",
+                  color: empresaCliente.status_cliente
+                    ? Cor.ativo
+                    : Cor.inativo,
+                }}
+              >
+                {empresaCliente.status_cliente ? "Ativo" : "Inativo"}
               </p>
             </div>
           </div>
@@ -184,7 +264,9 @@ function Cabecalho() {
             }}
           >
             <p style={{ fontSize: 11, color: Cor.texto2 }}>Nome</p>
-            <p style={{ fontSize: 16, color: Cor.texto1 }}>Nome Completo</p>
+            <p style={{ fontSize: 16, color: Cor.texto1 }}>
+              {empresaCliente.r_social}
+            </p>
           </div>
           <div
             style={{
@@ -196,7 +278,7 @@ function Cabecalho() {
           >
             <p style={{ fontSize: 11, color: Cor.texto2 }}>CNPJ</p>
             <p style={{ fontSize: 16, color: Cor.texto1 }}>
-              00.000.000/0000-00
+              {empresaCliente.cnpj}
             </p>
           </div>
           <div
@@ -300,68 +382,9 @@ function Cabecalho() {
               width: "100%",
             }}
           >
-            <div
-              style={{
-                width: "25%",
-                height: 100,
-                backgroundColor: Cor.base2,
-                borderRadius: 22,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                border: "2px solid" + Cor.primaria + 50,
-                cursor: "pointer",
-                boxShadow: Cor.sombra,
-              }}
-            >
-              <p
-                style={{
-                  fontFamily: "Icone",
-                  fontSize: 30,
-                  color: Cor.primaria,
-                  fontWeight: "bold",
-                }}
-              >
-                add_home_work
-              </p>
-              <p
-                style={{ textAlign: "center", fontSize: 12, color: Cor.texto1 }}
-              >
-                Unidade
-              </p>
-            </div>
-            <div
-              style={{
-                width: "30%",
-                height: 100,
-                backgroundColor: Cor.base2,
-                borderRadius: 22,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                border: "2px solid" + Cor.primaria + 50,
-                boxShadow: Cor.sombra,
-                cursor: "pointer",
-              }}
-            >
-              <p
-                style={{
-                  fontFamily: "Icone",
-                  fontSize: 30,
-                  color: Cor.primaria,
-                  fontWeight: "bold",
-                }}
-              >
-                person_add
-              </p>
-              <p
-                style={{ textAlign: "center", fontSize: 12, color: Cor.texto1 }}
-              >
-                Solicitante
-              </p>
-            </div>
+            <CriarUnidades />
+            <CriarSolicitantes />
+
             <div
               style={{
                 width: "35%",
@@ -422,21 +445,6 @@ function TabelaCentroCusto() {
     <div
       style={{
         width: "50%",
-        height: 350,
-        backgroundColor: Cor.base2,
-        borderRadius: 22,
-        boxShadow: Cor.sombra,
-      }}
-    ></div>
-  );
-}
-
-function TabelaUnidadesCliente() {
-  const Cor = useTema().Cor;
-  return (
-    <div
-      style={{
-        width: "100%",
         height: 350,
         backgroundColor: Cor.base2,
         borderRadius: 22,
@@ -796,5 +804,6 @@ function AlertasExcluirCliente({
     </div>
   );
 }
+
 
 export default VerEmpresa;
