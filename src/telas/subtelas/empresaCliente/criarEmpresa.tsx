@@ -374,14 +374,3 @@ function formatCNPJ(value: any) {
     .replace(/(\d{4})(\d)/, "$1-$2")
     .slice(0, 18); // Limita o tamanho
 }
-
-function formatTelefone(value: any) {
-  const numero = value.replace(/\D/g, ""); // Remove tudo que não é número
-
-  // Aplica a máscara
-  const formatado = numero
-    .replace(/^(\d{2})(\d)/, "($1) $2") // (71) 9
-    .replace(/(\d{1})?(\d{4})(\d{4})$/, "$1 $2-$3"); // 9 9999-9999
-
-  return formatado.slice(0, 19); // Limita o tamanho
-}

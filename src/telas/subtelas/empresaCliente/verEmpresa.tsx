@@ -3,9 +3,10 @@ import BaseTelas from "../../../componentes/baseTelas";
 import EditPerfil from "../../../componentes/editPerfil";
 import { useTema } from "../../../hooks/temaContext";
 import { useNavigate, useParams } from "react-router-dom";
-import { gql, useQuery, useMutation } from "@apollo/client";
+import { gql, useQuery } from "@apollo/client";
 import CriarUnidades from "./btnComponentes/criarUnidades";
 import ListaUnidadesEmpresasClientes from "../../../componentes/listaUnidadesEmpresasClientes";
+import CriarSolicitante from "./btnComponentes/criarSolicitante";
 
 const GET_EMPRESA_CLIENTE = gql`
   query Empresa_cliente_id($empresaClienteId: ID!) {
@@ -15,15 +16,17 @@ const GET_EMPRESA_CLIENTE = gql`
       cnpj
       foto_logo_cliente
       status_cliente
+      operadora_id {
+        id
+        nome
+      }
     }
   }
 `;
 
 function VerEmpresa() {
-  
-  const { cliente_id } = useParams();
-
   const [CxAlertaExcluirCliente, setCxAlertaExcluirCliente] = useState(false);
+
   return BaseTelas({
     conteudo: (
       <>
@@ -47,7 +50,7 @@ function VerEmpresaConteudo({
 }: {
   setCxAlertaExcluirCliente: any;
 }) {
-  const {cliente_id} = useParams();
+  const { cliente_id } = useParams();
   const Cor = useTema().Cor;
   return (
     <div
@@ -98,48 +101,45 @@ function VerEmpresaConteudo({
   );
 }
 
-function CriarSolicitantes() {
-  const Cor = useTema().Cor;
-
-  return (
-    <div
-      style={{
-        width: "30%",
-        height: 100,
-        backgroundColor: Cor.base2,
-        borderRadius: 22,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        border: "2px solid" + Cor.primaria + 50,
-        boxShadow: Cor.sombra,
-        cursor: "pointer",
-      }}
-    >
-      <p
-        style={{
-          fontFamily: "Icone",
-          fontSize: 30,
-          color: Cor.primaria,
-          fontWeight: "bold",
-        }}
-      >
-        person_add
-      </p>
-      <p style={{ textAlign: "center", fontSize: 12, color: Cor.texto1 }}>
-        Solicitante
-      </p>
-    </div>
-  );
-}
-
-
 function Cabecalho() {
+  const GET_UNIDADE_MATRIZ = gql`
+    query Unidade_matriz_empresa_cliente($empresaClienteId: ID!) {
+      unidade_matriz_empresa_cliente(empresa_cliente_id: $empresaClienteId) {
+        id
+        nome
+        cnpj
+        end_rua
+        end_numero
+        end_bairro
+        end_cep
+        end_cidade
+        end_complemento
+        end_uf
+        status_unidade_cliente
+        matriz
+        empresa_cliente_id {
+          id
+          nome
+        }
+        operadora_id {
+          id
+          nome
+        }
+      }
+    }
+  `;
   const Cor = useTema().Cor;
   const { cliente_id } = useParams();
 
-  const { data, loading, error } = useQuery(GET_EMPRESA_CLIENTE, {
+  const { data : empresa, loading, error } = useQuery(GET_EMPRESA_CLIENTE, {
+    variables: {
+      empresaClienteId: cliente_id,
+    },
+  });
+
+  const {
+    data: unidadeMatriz
+  } = useQuery(GET_UNIDADE_MATRIZ, {
     variables: {
       empresaClienteId: cliente_id,
     },
@@ -148,7 +148,9 @@ function Cabecalho() {
   if (loading) return <p>Carregando...</p>;
   if (error) return <p>Erro ao carregar os dados: {error.message}</p>;
 
-  const empresaCliente = data.empresa_cliente_id;
+  const empresaCliente = empresa.empresa_cliente_id;
+
+  const unidadeMatrizEmpresa = unidadeMatriz?.unidade_matriz_empresa_cliente;
 
   return (
     <div
@@ -291,7 +293,7 @@ function Cabecalho() {
           >
             <p style={{ fontSize: 11, color: Cor.texto2 }}>Endereço</p>
             <p style={{ fontSize: 16, color: Cor.texto1 }}>
-              Av. Rui Silva, 123
+              {unidadeMatrizEmpresa?.end_rua || "Sem Matriz Cadastrada"}, {unidadeMatrizEmpresa?.end_numero}, {unidadeMatrizEmpresa?.end_bairro}
             </p>
           </div>
           <div
@@ -304,7 +306,7 @@ function Cabecalho() {
           >
             <p style={{ fontSize: 11, color: Cor.texto2 }}>Complemento</p>
             <p style={{ fontSize: 16, color: Cor.texto1 }}>
-              Complemento do Endereço
+              {unidadeMatrizEmpresa?.end_complemento}
             </p>
           </div>
           <div
@@ -319,15 +321,15 @@ function Cabecalho() {
           >
             <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
               <p style={{ fontSize: 11, color: Cor.texto2 }}>Cidade</p>
-              <p style={{ fontSize: 16, color: Cor.texto1 }}>Cidade</p>
+              <p style={{ fontSize: 16, color: Cor.texto1 }}>{unidadeMatrizEmpresa?.end_cidade}</p>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
               <p style={{ fontSize: 11, color: Cor.texto2 }}>CEP</p>
-              <p style={{ fontSize: 16, color: Cor.texto1 }}>45612-123</p>
+              <p style={{ fontSize: 16, color: Cor.texto1 }}>{unidadeMatrizEmpresa?.end_cep}</p>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
               <p style={{ fontSize: 11, color: Cor.texto2 }}>UF</p>
-              <p style={{ fontSize: 16, color: Cor.texto1 }}>BA</p>
+              <p style={{ fontSize: 16, color: Cor.texto1 }}>{unidadeMatrizEmpresa?.end_uf}</p>
             </div>
           </div>
         </div>
@@ -383,7 +385,7 @@ function Cabecalho() {
             }}
           >
             <CriarUnidades />
-            <CriarSolicitantes />
+            <CriarSolicitante operadoraId={empresa.operadora_id} empresaClienteId={cliente_id} />
 
             <div
               style={{
@@ -600,7 +602,6 @@ function ExcluirCliente({
 }
 
 function AlertasExcluirCliente({
-  cxAlertaExcluirCliente,
   setCxAlertaExcluirCliente,
 }: {
   setCxAlertaExcluirCliente: any;
@@ -804,6 +805,5 @@ function AlertasExcluirCliente({
     </div>
   );
 }
-
 
 export default VerEmpresa;

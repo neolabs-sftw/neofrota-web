@@ -163,7 +163,6 @@ function ListaEmpresasCadastradas() {
               text-align: left;
               padding: 5px;
               color: ${Cor.texto1};
-              border-bottom: 1px solid ${Cor.texto2 + 20};
               }
 
             tr:nth-child(even) {
@@ -203,7 +202,7 @@ function ListaEmpresasCadastradas() {
               textAlign: "left",
             }}>
             {clientesFiltrados.map((cliente: any) => (
-              <tr key={cliente.id}>
+              <tr key={cliente.id} style={{ borderBottom: "1px solid" + Cor.texto2 + 10 }}>
                 <td
                   style={{
                     display: "flex",

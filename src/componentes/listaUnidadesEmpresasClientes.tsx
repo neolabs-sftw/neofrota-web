@@ -1,12 +1,12 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { exportarPlanilha } from "../hooks/exportarPlanilha";
-import useTema from "../hooks/modoTema";
+import { useTema } from "../hooks/temaContext";
 import { gql, useQuery } from "@apollo/client";
-import Checkbox from "@mui/material/Checkbox";
 
 const GET_UNIDADES_EMPRESA_CLIENTE = gql`
   query Lista_unidades_empresa_cliente_id($listaUnidadesEmpresaClienteId: ID!) {
     lista_unidades_empresa_cliente_id(id: $listaUnidadesEmpresaClienteId) {
+      id
       nome
       cnpj
       end_rua
@@ -65,9 +65,14 @@ function ListaUnidadesEmpresasClientes({
 
   const empresaCliente = empresa?.empresa_cliente_id || {};
 
-  console.log(empresa);
+  const lista_unidades_full = unidades?.lista_unidades_empresa_cliente_id || [];
 
-  const lista_unidades = unidades?.lista_unidades_empresa_cliente_id || [];
+  const lista_unidades = useMemo(() => {
+      if (!busca) return lista_unidades_full;
+      return lista_unidades_full.filter((cliente: any) =>
+        cliente.nome.toLowerCase().includes(busca.toLowerCase())
+      );
+    }, [lista_unidades_full, busca]);
 
   return (
     <div
@@ -225,7 +230,7 @@ function ListaUnidadesEmpresasClientes({
               textAlign: "left",
             }}
           >
-            {lista_unidades.map((cliente: any) => (
+            {lista_unidades.map((cliente: any) => (              
               <tr key={cliente.id}>
                 <td style={{ color: Cor.texto1 }}>{cliente.nome}</td>
                 <td style={{ color: Cor.texto1 }}>{cliente.cnpj}</td>
@@ -309,7 +314,7 @@ function ListaUnidadesEmpresasClientes({
                       }`}
                   </style>
                   <label className="container">
-                    <input type="checkbox" checked={cliente.matriz} />
+                    <input type="checkbox" defaultChecked={cliente.matriz} />
                     <span className="checkmark"></span>
                   </label>
                 </td>
@@ -317,14 +322,14 @@ function ListaUnidadesEmpresasClientes({
                   <p
                     style={{
                       color:
-                        cliente.status_unidada_cliente === true
+                        cliente.status_unidade_cliente === true
                           ? Cor.ativo
                           : Cor.inativo,
                       textAlign: "center",
                       fontSize: 12,
                       fontWeight: "bold",
                       backgroundColor:
-                        cliente.status_unidada_cliente === true
+                        cliente.status_unidade_cliente === true
                           ? Cor.ativo + 30
                           : Cor.inativo + 30,
                       width: 80,
@@ -335,7 +340,7 @@ function ListaUnidadesEmpresasClientes({
                       justifyContent: "center",
                     }}
                   >
-                    {cliente.status_unidada_cliente ? "Ativo" : "Inativo"}
+                    {cliente.status_unidade_cliente ? "Ativo" : "Inativo"}
                   </p>
                 </td>
                 <td>

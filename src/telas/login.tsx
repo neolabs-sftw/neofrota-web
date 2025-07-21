@@ -1,5 +1,5 @@
 import { useState } from "react";
-import useTema from "../hooks/modoTema";
+import { useTema } from "../hooks/temaContext";
 import { useNavigate } from "react-router-dom";
 import { gql, useMutation } from "@apollo/client";
 import CircularProgress from "@mui/material/CircularProgress";
