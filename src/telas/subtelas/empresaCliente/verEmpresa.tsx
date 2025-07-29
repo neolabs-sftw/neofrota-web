@@ -7,6 +7,9 @@ import { gql, useQuery } from "@apollo/client";
 import CriarUnidades from "./btnComponentes/criarUnidades";
 import ListaUnidadesEmpresasClientes from "../../../componentes/listaUnidadesEmpresasClientes";
 import CriarSolicitante from "./btnComponentes/criarSolicitante";
+import ListaSolicitantesEmpresasClientes from "../../../componentes/listaSolicitantesEmpresasClientes";
+import CriarCentroCusto from "./btnComponentes/criarCentroCusto";
+import ListaCentrosCustoEmpresaCliente from "../../../componentes/listaCentrosCustoEmpresaCliente";
 
 const GET_EMPRESA_CLIENTE = gql`
   query Empresa_cliente_id($empresaClienteId: ID!) {
@@ -92,8 +95,8 @@ function VerEmpresaConteudo({
           width: "100%",
         }}
       >
-        <TabelaSolicitantes />
-        <TabelaCentroCusto />
+        <ListaSolicitantesEmpresasClientes />
+        <ListaCentrosCustoEmpresaCliente />
       </div>
       <ListaUnidadesEmpresasClientes empresaClienteId={cliente_id} />
       <ExcluirCliente setCxAlertaExcluirCliente={setCxAlertaExcluirCliente} />
@@ -385,74 +388,13 @@ function Cabecalho() {
             }}
           >
             <CriarUnidades />
-            <CriarSolicitante operadoraId={empresa.operadora_id} empresaClienteId={cliente_id} />
-
-            <div
-              style={{
-                width: "35%",
-                height: 100,
-                backgroundColor: Cor.base2,
-                borderRadius: 22,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                border: "2px solid" + Cor.primaria + 50,
-                boxShadow: Cor.sombra,
-                cursor: "pointer",
-              }}
-            >
-              <p
-                style={{
-                  fontFamily: "Icone",
-                  fontSize: 30,
-                  color: Cor.primaria,
-                  fontWeight: "bold",
-                }}
-              >
-                arrows_input
-              </p>
-              <p
-                style={{ textAlign: "center", fontSize: 12, color: Cor.texto1 }}
-              >
-                Centro de Custo
-              </p>
-            </div>
+            <CriarSolicitante empresaClienteId={cliente_id} />
+            <CriarCentroCusto />
           </div>
         </div>
         {/*Fim Coluna Lado Direito detalhes Cliente */}
       </div>
     </div>
-  );
-}
-
-function TabelaSolicitantes() {
-  const Cor = useTema().Cor;
-  return (
-    <div
-      style={{
-        width: "50%",
-        height: 350,
-        backgroundColor: Cor.base2,
-        borderRadius: 22,
-        boxShadow: Cor.sombra,
-      }}
-    ></div>
-  );
-}
-
-function TabelaCentroCusto() {
-  const Cor = useTema().Cor;
-  return (
-    <div
-      style={{
-        width: "50%",
-        height: 350,
-        backgroundColor: Cor.base2,
-        borderRadius: 22,
-        boxShadow: Cor.sombra,
-      }}
-    ></div>
   );
 }
 

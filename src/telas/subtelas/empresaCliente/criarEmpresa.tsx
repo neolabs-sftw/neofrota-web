@@ -5,6 +5,7 @@ import { useTema } from "../../../hooks/temaContext";
 import { gql, useMutation } from "@apollo/client";
 import { jwtDecode, type JwtPayload } from "jwt-decode";
 import { supabase } from "../../../hooks/supabaseClient";
+import { useNavigate } from "react-router-dom";
 
 function CriarEmpresa() {
   return BaseTelas({
@@ -55,6 +56,8 @@ function CriarClienteConteudo() {
     }
   };
 
+  const navigate = useNavigate();
+
   const token = localStorage.getItem("token");
   const decoded = token ? jwtDecode<JwtPayload>(token) : null;
 
@@ -86,7 +89,7 @@ function CriarClienteConteudo() {
     try {
       setStatus("Fazendo upload da imagem...");
 
-      const nomeImg = `${cnpj.replace(/\D/g, "")}-${Date.now()}.png`;
+      const nomeImg = `foto_logo_cliente/${cnpj.replace(/\D/g, "")}-${Date.now()}.png`;
       const bucket = "neofrotabkt";
 
       const { data: uploadData, error: uploadError } = await supabase.storage
@@ -117,6 +120,8 @@ function CriarClienteConteudo() {
       });
 
       setStatus("Empresa criada com sucesso!");
+      navigate("/empresas");
+      window.location.reload();
       // Limpar o formulário aqui, se desejar.
     } catch (error: any) {
       console.error("Falha ao criar empresa:", error);

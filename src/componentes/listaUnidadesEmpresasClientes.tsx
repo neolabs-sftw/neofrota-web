@@ -68,11 +68,11 @@ function ListaUnidadesEmpresasClientes({
   const lista_unidades_full = unidades?.lista_unidades_empresa_cliente_id || [];
 
   const lista_unidades = useMemo(() => {
-      if (!busca) return lista_unidades_full;
-      return lista_unidades_full.filter((cliente: any) =>
-        cliente.nome.toLowerCase().includes(busca.toLowerCase())
-      );
-    }, [lista_unidades_full, busca]);
+    if (!busca) return lista_unidades_full;
+    return lista_unidades_full.filter((cliente: any) =>
+      cliente.nome.toLowerCase().includes(busca.toLowerCase())
+    );
+  }, [lista_unidades_full, busca]);
 
   return (
     <div
@@ -230,7 +230,7 @@ function ListaUnidadesEmpresasClientes({
               textAlign: "left",
             }}
           >
-            {lista_unidades.map((cliente: any) => (              
+            {lista_unidades.map((cliente: any) => (
               <tr key={cliente.id}>
                 <td style={{ color: Cor.texto1 }}>{cliente.nome}</td>
                 <td style={{ color: Cor.texto1 }}>{cliente.cnpj}</td>
@@ -361,7 +361,10 @@ function ListaUnidadesEmpresasClientes({
                         color: Cor.texto1,
                         fontSize: 20,
                       }}
-                      //   onClick={() => navigate("/verempresa/" + cliente.id)}
+                      // onClick={() => {
+                      //   setCxAlterarUnidade(true);
+                      //   setUnidade(cliente);
+                      // }}
                     >
                       lock_open
                     </p>

@@ -12,6 +12,9 @@ import Configuracoes from "./telas/configiracao";
 import VerEmpresa from "./telas/subtelas/empresaCliente/verEmpresa";
 import EditarEmpresa from "./telas/subtelas/empresaCliente/editarEmpresa";
 import CriarEmpresa from "./telas/subtelas/empresaCliente/criarEmpresa";
+import CriarMotorista from "./telas/subtelas/motoristasAgregados/criarMotosita";
+import EditarMotorista from "./telas/subtelas/motoristasAgregados/editarMotorista";
+import VerMotorista from "./telas/subtelas/motoristasAgregados/verMotorista";
 
 function App() {
   return (
@@ -36,6 +39,15 @@ function App() {
                 element={<EditarEmpresa />}
               />
               <Route path="/criarempresa" element={<CriarEmpresa />} />
+              <Route
+                path="/vermotorista/:motorista_id"
+                element={<VerMotorista />}
+              />
+              <Route
+                path="/editarmotorista/:motorista_id"
+                element={<EditarMotorista />}
+              />
+              <Route path="/criarmotorista" element={<CriarMotorista />} />
             </Route>
           </Routes>
         </BrowserRouter>

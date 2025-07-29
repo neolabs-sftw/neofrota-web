@@ -1,0 +1,60 @@
+Page: **Início**
+ - Barras de Navegação
+ - Seção de Cabeçalho Principal: Introdução ao NeoFrota e chamada para ação para saber mais
+ - Seção da Lista de Recursos: Lista de recursos principais do NeoFrota com descrições detalhadas
+ - Seção de Benefícios: Benefícios de utilizar o NeoFrota para empresas e motoristas
+ - Seção de CTA: Chamada para ação incentivando visitas a se inscreverem ou solicitarem uma demonstração
+ - Seção de Depoimentos: Depoimentos de clientes satisfeitos usando o NeoFrota
+ - Rodapé
+
+Sub-pages: Sobre Nós, Blog, Produtos
+
+
+Page: **Sobre Nós**
+ - Barras de Navegação
+ - Seção de Cabeçalho Principal: Apresentação da empresa NeoFrota e visão geral da missão e valores
+ - Seção Sobre: História da empresa, missão, visão e valores
+ - Seção para Equipes: Apresentação da equipe de fundadores e principais membros da empresa
+ - Seção de Depoimentos: Depoimentos de clientes e parceiros sobre a empresa
+ - Seção para Perguntas Frequentes: Respostas para perguntas comuns sobre a empresa e seus serviços
+ - Rodapé
+
+Page: **Blog**
+ - Barras de Navegação
+ - Seção de Lista de Blog: Lista de todas as postagens do blog com títulos, resumos e links para as postagens completas
+ - Rodapé
+
+Sub-pages: Postagem do Blog
+
+
+Page: **Postagem do Blog**
+ - Barras de Navegação
+ - Seção de Cabeçalho para Postagens de Blog: Título da postagem do blog, autor e data da publicação
+ - Seção de Conteúdo para Postagem de Blog: Corpo principal do artigo do blog com texto, imagens e outros elementos multimídia
+ - Seção de Depoimentos: Comentários e opiniões dos leitores sobre a postagem do blog
+ - Seção de Lista de Blog: Links para outras postagens relacionadas no blog
+ - Seção de CTA: Chamada para ação para assinar o boletim informativo ou seguir o blog
+ - Rodapé
+
+Page: **Produtos**
+ - Barras de Navegação
+ - Seção de Cabeçalho Principal: Introdução aos produtos oferecidos pelo NeoFrota, com uma breve visão geral
+ - Seção de Lista de Recursos: Lista dos principais recursos dos produtos NeoFrota, cada um com uma breve descrição
+ - Seção de Serviços: Descrição detalhada dos serviços oferecidos pelo NeoFrota, incluindo suporte técnico e integração
+ - Seção de Benefícios: Benefícios de utilizar cada produto NeoFrota, destacando vantagens específicas para diferentes tipos de usuários (empresas, motoristas, clientes)
+ - Seção de Preços: Informações sobre os planos de assinatura e preços dos produtos NeoFrota
+ - Seção de CTA: Chamada para ação incentivando os visitantes a se inscreverem para uma avaliação gratuita ou solicitar uma demonstração
+ - Seção de Depoimentos: Depoimentos de clientes destacando a eficácia e os benefícios dos produtos NeoFrota
+ - Rodapé
+
+Sub-pages: Produto
+
+
+Page: **Produto**
+ - Barras de Navegação
+ - Seção de Cabeçalho do Produto de Ecommerce: Introdução ao produto específico do NeoFrota, com título e resumo
+ - Seção do Produto de Ecommerce: Descrição detalhada do produto, suas funcionalidades e benefícios
+ - Seção de Depoimentos: Depoimentos de usuários que utilizam o produto específico
+ - Seção de Avaliações: Avaliações e notas dadas pelos usuários
+ - Seção de CTA: Chamada para ação para compra, inscrição ou solicitação de demonstração
+ - Rodapé

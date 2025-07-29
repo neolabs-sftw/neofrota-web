@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useTema } from "../../../../hooks/temaContext";
+import { useParams } from "react-router-dom";
 import { gql, useMutation } from "@apollo/client";
 import { jwtDecode, type JwtPayload } from "jwt-decode";
 
-function criarSolicitante({ empresaClienteId }: { empresaClienteId: any }) {
+function CriarCentroCusto() {
   const Cor = useTema().Cor;
-  const [cxCriarSolicitante, setCxCriarSolicitante] = useState(false);
+  const [cxCriarCentroCusto, setCxCriarCentroCusto] = useState(false);
 
   return (
     <>
@@ -23,7 +24,7 @@ function criarSolicitante({ empresaClienteId }: { empresaClienteId: any }) {
           boxShadow: Cor.sombra,
           cursor: "pointer",
         }}
-        onClick={() => setCxCriarSolicitante(true)}
+        onClick={() => setCxCriarCentroCusto(true)}
       >
         <p
           style={{
@@ -33,54 +34,43 @@ function criarSolicitante({ empresaClienteId }: { empresaClienteId: any }) {
             fontWeight: "bold",
           }}
         >
-          person_add
+          arrows_input
         </p>
         <p style={{ textAlign: "center", fontSize: 12, color: Cor.texto1 }}>
-          Solicitante
+          Centro de Custo
         </p>
       </div>
       <ModalCriarSolicitante
-        cxCriarSolicitante={cxCriarSolicitante}
-        setCxCriarSolicitante={setCxCriarSolicitante}
-        empresaClienteId={empresaClienteId}
+        cxCriarCentroCusto={cxCriarCentroCusto}
+        setCxCriarCentroCusto={setCxCriarCentroCusto}
       />
     </>
   );
 }
 
-export default criarSolicitante;
+export default CriarCentroCusto;
 
 function ModalCriarSolicitante({
-  cxCriarSolicitante,
-  setCxCriarSolicitante,
-  empresaClienteId,
+  cxCriarCentroCusto,
+  setCxCriarCentroCusto,
 }: {
-  cxCriarSolicitante: any;
-  setCxCriarSolicitante: any;
-  empresaClienteId: any;
+  cxCriarCentroCusto: any;
+  setCxCriarCentroCusto: any;
 }) {
   const Cor = useTema().Cor;
+  const { cliente_id } = useParams();
 
-  const token = localStorage.getItem("token");
-
-  const decoded = token ? jwtDecode<JwtPayload>(token) : null;
-
-  const operadoraId = decoded ? decoded.operadora_id : null;
-
-  const CRIAR_SOLICITANTE = gql`
-    mutation Criar_solicitante($input: SolicitanteInput!) {
-      criar_solicitante(input: $input) {
+  const CRIAR_CENTRO_CUSTO = gql`
+    mutation Criar_centro_custo($input: Centro_CustoInput!) {
+      criar_centro_custo(input: $input) {
         id
         nome
-        email
-        senha
-        funcao
+        codigo
+        descricao
         empresa_cliente_id {
           id
           nome
         }
-        foto_url_solicitante
-        status_solicitante
         operadora_id {
           id
           nome
@@ -90,34 +80,25 @@ function ModalCriarSolicitante({
   `;
 
   const [nome, setNome] = useState("");
-  const [email, setEmail] = useState("");
-  const [telefone, setTelefone] = useState("");
-  const [funcao, setFuncao] = useState("");
+  const [codigo, setCodigo] = useState("");
+  const [descricao, setDescricao] = useState("");
 
-  const [criarSolicitanteMutation] = useMutation(CRIAR_SOLICITANTE);
+  const token = localStorage.getItem("token");
 
-  const verCadastro = () => {
-    const input = {
-      nome: nome,
-      email: email,
-      telefone: telefone,
-      funcao: funcao,
-      empresa_cliente_id: empresaClienteId,
-      operadora_id: operadoraId,
-    };
+  const decoded = token ? jwtDecode<JwtPayload>(token) : null;
 
-    console.log(input);
-  };
+  const operadoraId = decoded ? decoded.operadora_id : null;
 
-  const criarSolicitanteFunc = async () => {
-    await criarSolicitanteMutation({
+  const [criar_centro_custo] = useMutation(CRIAR_CENTRO_CUSTO);
+
+  const criar_centro_custoFunc = async () => {
+    await criar_centro_custo({
       variables: {
         input: {
-          nome,
-          email,
-          funcao,
-          telefone,
-          empresa_cliente_id: parseInt(empresaClienteId),
+          nome: nome,
+          codigo: codigo,
+          descricao: descricao,
+          empresa_cliente_id: parseInt(cliente_id || "0"),
           operadora_id: Number(operadoraId),
         },
       },
@@ -129,7 +110,7 @@ function ModalCriarSolicitante({
       style={{
         width: "100vw",
         height: "100vh",
-        display: cxCriarSolicitante ? "flex" : "none",
+        display: cxCriarCentroCusto ? "flex" : "none",
         position: "absolute",
         zIndex: 10,
         top: 0,
@@ -139,7 +120,7 @@ function ModalCriarSolicitante({
         justifyContent: "center",
         alignItems: "center",
       }}
-      onClick={() => setCxCriarSolicitante(false)}
+      onClick={() => setCxCriarCentroCusto(false)}
     >
       <div
         style={{
@@ -172,10 +153,10 @@ function ModalCriarSolicitante({
               <p
                 style={{ fontSize: 14, color: Cor.texto1, fontWeight: "bold" }}
               >
-                Criar Novo Solicitante
+                Criar Novo Centro de Custo
               </p>
               <p style={{ fontSize: 12, color: Cor.texto2, marginBottom: 5 }}>
-                Gestores responsáveis por solicitações de corridas.
+                Melhores o controle de faturamento, criando centros de custo
               </p>
             </div>
 
@@ -186,7 +167,7 @@ function ModalCriarSolicitante({
                 fontSize: 24,
                 color: Cor.primaria,
               }}
-              onClick={() => setCxCriarSolicitante(false)}
+              onClick={() => setCxCriarCentroCusto(false)}
             >
               close
             </p>
@@ -202,11 +183,10 @@ function ModalCriarSolicitante({
         <div
           style={{
             width: "100%",
-            padding: 15,
+            padding: "0px 15px",
             display: "flex",
             flexDirection: "column",
             gap: 10,
-            justifyContent: "space-between",
           }}
         >
           <TextoEntrada
@@ -219,68 +199,25 @@ function ModalCriarSolicitante({
             largura="100%"
           />
           <TextoEntrada
-            placeholder="Email"
+            placeholder="Código"
             onChange={(e) => {
-              setEmail(e.target.value);
+              setCodigo(e.target.value);
             }}
-            value={email}
+            value={codigo}
             type="text"
             largura="100%"
           />
           <TextoEntrada
-            placeholder="Telefone"
+            placeholder="Descrição"
             onChange={(e) => {
-              setTelefone(formatTelefone(e.target.value));
+              setDescricao(e.target.value);
             }}
-            value={telefone}
+            value={descricao}
             type="text"
             largura="100%"
           />
-          <label
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              gap: 5,
-              alignItems: "center",
-              justifyContent: "flex-start",
-            }}
-          >
-            <p style={{ fontSize: 12, color: Cor.texto2 }}>Função</p>
-            <select
-              style={{
-                width: "100%",
-                padding: 10,
-                borderRadius: 22,
-                backgroundColor: Cor.texto2 + 20,
-                border: "none",
-                color: Cor.texto1,
-                appearance: "none",
-              }}
-              onChange={(e) => {
-                setFuncao(e.target.value);
-              }}
-            >
-              <option value="" style={{ color: "#555555" }}>
-                Selecione uma Função
-              </option>
-              <option value="Finc" style={{ color: "#555555" }}>
-                Administrador
-              </option>
-              <option value="Oper" style={{ color: "#555555" }}>
-                Operacional
-              </option>
-            </select>
-          </label>
-
-          <div style={{ display: "flex", flexDirection: "row", gap: 5 }}>
-            <p style={{ fontSize: 12, color: Cor.texto2, marginBottom: -10 }}>
-              Obs.: Por padrão, a senha do solicitante é{" "}
-              <strong style={{ color: Cor.primaria }}> "0000"</strong>. O
-              solicitante pode alterar a senha no menu{" "}
-              <strong style={{ color: Cor.primaria }}>"Minha Conta"</strong>.
-            </p>
-          </div>
         </div>
+
         <div
           style={{
             width: "100%",
@@ -306,13 +243,8 @@ function ModalCriarSolicitante({
               borderRadius: 22,
             }}
             onClick={() => {
-              criarSolicitanteFunc();
-              verCadastro();
-              setCxCriarSolicitante(false);
-              setNome("");
-              setEmail("");
-              setTelefone("");
-              setFuncao("");
+              criar_centro_custoFunc();
+              setCxCriarCentroCusto(false);
               window.location.reload();
             }}
           >
@@ -366,15 +298,4 @@ function TextoEntrada({
       />
     </div>
   );
-}
-
-function formatTelefone(value: any) {
-  const numero = value.replace(/\D/g, ""); // Remove tudo que não é número
-
-  // Aplica a máscara
-  const formatado = numero
-    .replace(/^(\d{2})(\d)/, "($1) $2") // (71) 9
-    .replace(/(\d{1})?(\d{4})(\d{4})$/, "$1 $2-$3"); // 9 9999-9999
-
-  return formatado.slice(0, 19); // Limita o tamanho
 }

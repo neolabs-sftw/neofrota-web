@@ -214,8 +214,8 @@ function ListaEmpresasCadastradas() {
                     src={cliente.foto_logo_cliente}
                     alt=""
                     style={{
-                      width: 30,
-                      height: 30,
+                      width: 60,
+                      height: 60,
                       borderRadius: 8,
                       objectFit: "cover",
                       objectPosition: "center",
