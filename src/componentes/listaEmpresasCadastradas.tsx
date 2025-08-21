@@ -6,20 +6,19 @@ import { useEffect, useMemo, useState } from "react";
 import { exportarPlanilha } from "../hooks/exportarPlanilha";
 
 const GET_EMPRESAS_CLIENTES = gql`
-  query Empresa_cliente_oper($operadora_id: ID) {
-    empresa_cliente_oper(operadora_id: $operadora_id) {
+query EmpresaClienteOper($operadoraId: String) {
+  empresaClienteOper(operadoraId: $operadoraId) {
+    id
+    nome
+    rSocial
+    cnpj
+    fotoLogoCliente
+    operadoraId {
       id
-      nome
-      r_social
-      cnpj
-      foto_logo_cliente
-      status_cliente
-      operadora_id {
-        id
-        nome
-      }
     }
+    statusCliente
   }
+}
 `;
 
 function ListaEmpresasCadastradas() {
@@ -34,15 +33,15 @@ function ListaEmpresasCadastradas() {
   }, []);
 
   const { loading, error, data } = useQuery(GET_EMPRESAS_CLIENTES, {
-    skip: !decoded?.operadora_id,
-    variables: { operadora_id: decoded?.operadora_id },
+    skip: !decoded?.operadoraId,
+    variables: { operadoraId: decoded?.operadoraId },
   });
 
   const [clientes, setClientes] = useState<any[]>([]);
 
   useEffect(() => {
-    if (data?.empresa_cliente_oper) {
-      setClientes(data.empresa_cliente_oper);
+    if (data?.empresaClienteOper) {
+      setClientes(data.empresaClienteOper);
     }
   }, [data]);
 
@@ -100,7 +99,9 @@ function ListaEmpresasCadastradas() {
               color: Cor.primaria,
               cursor: "pointer",
             }}
-            onClick={() => exportarPlanilha(clientesFiltrados, "Clientes", "csv")}
+            onClick={() =>
+              exportarPlanilha(clientesFiltrados, "Clientes", "csv")
+            }
           >
             download
           </p>
@@ -187,7 +188,7 @@ function ListaEmpresasCadastradas() {
                 height: 30,
               }}
             >
-              <th style={{ width: "5%", textAlign: "center" }}>Logo</th>
+              <th style={{ width: 60, textAlign: "center" }}>Logo</th>
               <th style={{ width: "20%" }}>Nome</th>
               <th style={{ width: "10%" }}>Contato</th>
               <th style={{ width: "20%" }}>E-mail</th>
@@ -197,12 +198,17 @@ function ListaEmpresasCadastradas() {
               <th style={{ width: "10%", textAlign: "center" }}>Ações</th>
             </tr>
           </thead>
-          <tbody style={{
+          <tbody
+            style={{
               fontSize: 14,
               textAlign: "left",
-            }}>
+            }}
+          >
             {clientesFiltrados.map((cliente: any) => (
-              <tr key={cliente.id} style={{ borderBottom: "1px solid" + Cor.texto2 + 10 }}>
+              <tr
+                key={cliente.id}
+                style={{ borderBottom: "1px solid" + Cor.texto2 + 10 }}
+              >
                 <td
                   style={{
                     display: "flex",
@@ -211,15 +217,15 @@ function ListaEmpresasCadastradas() {
                   }}
                 >
                   <img
-                    src={cliente.foto_logo_cliente}
+                    src={cliente.fotoLogoCliente}
                     alt=""
                     style={{
-                      width: 60,
-                      height: 60,
-                      borderRadius: 8,
+                      width: 50,
+                      height: 50,
+                      borderRadius: 10,
+                      boxShadow: "2px 2px 1px rgba(0, 0, 0, 0.05)",
                       objectFit: "cover",
                       objectPosition: "center",
-                      boxShadow: "2px 2px 1px rgba(0, 0, 0, 0.05)",
                     }}
                   />
                 </td>
@@ -232,14 +238,14 @@ function ListaEmpresasCadastradas() {
                   <p
                     style={{
                       color:
-                        cliente.status_cliente === true
+                        cliente.statusCliente === true
                           ? Cor.ativo
                           : Cor.inativo,
                       textAlign: "center",
                       fontSize: 12,
                       fontWeight: "bold",
                       backgroundColor:
-                        cliente.status_cliente === true
+                        cliente.statusCliente === true
                           ? Cor.ativo + 30
                           : Cor.inativo + 30,
                       width: 80,
@@ -250,7 +256,7 @@ function ListaEmpresasCadastradas() {
                       justifyContent: "center",
                     }}
                   >
-                    {cliente.status_cliente ? "Ativo" : "Inativo"}
+                    {cliente.statusCliente ? "Ativo" : "Inativo"}
                   </p>
                 </td>
                 <td>
@@ -269,7 +275,7 @@ function ListaEmpresasCadastradas() {
                         fontWeight: "bold",
                         cursor: "pointer",
                         color: Cor.texto1,
-                        fontSize: 20,
+                        fontSize: 22,
                       }}
                       onClick={() => navigate("/verempresa/" + cliente.id)}
                     >
@@ -281,7 +287,7 @@ function ListaEmpresasCadastradas() {
                         fontWeight: "bold",
                         cursor: "pointer",
                         color: Cor.texto1,
-                        fontSize: 20,
+                        fontSize: 22,
                       }}
                     >
                       edit

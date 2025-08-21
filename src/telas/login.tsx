@@ -5,37 +5,37 @@ import { gql, useMutation } from "@apollo/client";
 import CircularProgress from "@mui/material/CircularProgress";
 
 const LOGIN_MUTATION = gql`
-  mutation Login($email: String!, $senha: String!) {
-    login(email: $email, senha: $senha) {
-      token
-      admin_usuario {
+  mutation Mutation($email: String!, $senha: String!) {
+  login(email: $email, senha: $senha) {
+    token
+    adminUsuario {
+      id
+      nome
+      email
+      senha
+      fotoAdminOperadora
+      funcao
+      statusAdminOperadora
+      dataCriacao
+      operadora {
         id
         nome
-        email
-        senha
-        foto_admin_operadora
-        funcao
-        status_admin_operadora
-        data_criacao
-        operadora_id {
-          id
-          nome
-          slug
-          logo_operadora
-          cnpj
-          r_social
-          end_rua
-          end_numero
-          end_bairro
-          end_cep
-          end_cidade
-          end_uf
-          status_operadora
-          data_criacao
-        }
+        slug
+        logoOperadora
+        cnpj
+        rSocial
+        endRua
+        endNumero
+        endBairro
+        endCep
+        endCidade
+        endUf
+        statusOperadora
+        dataCriacao
       }
     }
   }
+}
 `;
 
 function Login() {
@@ -53,14 +53,14 @@ function Login() {
 
   const [verSenha, setVerSenha] = useState("password");
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const fazerLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const res = await login({ variables: { email, senha } });
       const token = res.data.login.token;
       localStorage.setItem("token", token);
       console.log(res.data.login.token);
-      console.log(res.data.login.admin_usuario);
+      console.log(res.data.login.adminUsuario);
       // alert("Login realizado!");
       navigator("/");
     } catch (err) {
@@ -251,7 +251,7 @@ function Login() {
             onChange={(e) => setSenha(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
-                handleLogin(e);
+                fazerLogin(e);
               }
             }}
             value={senha}
@@ -294,7 +294,7 @@ function Login() {
             justifyContent: "center",
             display: "flex",
           }}
-          onClick={handleLogin}
+          onClick={fazerLogin}
         >
           <p style={{ color: Cor.texto1, fontWeight: "500" }}>
             {loading ? (

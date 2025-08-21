@@ -12,17 +12,18 @@ import CriarCentroCusto from "./btnComponentes/criarCentroCusto";
 import ListaCentrosCustoEmpresaCliente from "../../../componentes/listaCentrosCustoEmpresaCliente";
 
 const GET_EMPRESA_CLIENTE = gql`
-  query Empresa_cliente_id($empresaClienteId: ID!) {
-    empresa_cliente_id(id: $empresaClienteId) {
+  query EmpresaClienteId($empresaClienteId: ID!) {
+    empresaClienteId(id: $empresaClienteId) {
+      id
       nome
-      r_social
+      rSocial
       cnpj
-      foto_logo_cliente
-      status_cliente
-      operadora_id {
+      fotoLogoCliente
+      operadoraId {
         id
         nome
       }
+      statusCliente
     }
   }
 `;
@@ -53,7 +54,7 @@ function VerEmpresaConteudo({
 }: {
   setCxAlertaExcluirCliente: any;
 }) {
-  const { cliente_id } = useParams();
+  const { clienteId } = useParams();
   const Cor = useTema().Cor;
   return (
     <div
@@ -98,7 +99,7 @@ function VerEmpresaConteudo({
         <ListaSolicitantesEmpresasClientes />
         <ListaCentrosCustoEmpresaCliente />
       </div>
-      <ListaUnidadesEmpresasClientes empresaClienteId={cliente_id} />
+      <ListaUnidadesEmpresasClientes empresaClienteId={clienteId} />
       <ExcluirCliente setCxAlertaExcluirCliente={setCxAlertaExcluirCliente} />
     </div>
   );
@@ -106,54 +107,54 @@ function VerEmpresaConteudo({
 
 function Cabecalho() {
   const GET_UNIDADE_MATRIZ = gql`
-    query Unidade_matriz_empresa_cliente($empresaClienteId: ID!) {
-      unidade_matriz_empresa_cliente(empresa_cliente_id: $empresaClienteId) {
-        id
-        nome
-        cnpj
-        end_rua
-        end_numero
-        end_bairro
-        end_cep
-        end_cidade
-        end_complemento
-        end_uf
-        status_unidade_cliente
-        matriz
-        empresa_cliente_id {
-          id
-          nome
-        }
-        operadora_id {
-          id
-          nome
-        }
-      }
+   query UnidadeMatrizEmpresaCliente($empresaClienteId: ID!) {
+  unidadeMatrizEmpresaCliente(empresaClienteId: $empresaClienteId) {
+    id
+    nome
+    cnpj
+    endRua
+    endNumero
+    endBairro
+    endCep
+    endCidade
+    endComplemento
+    endUf
+    statusUnidadeCliente
+    matriz
+    empresaClienteId {
+      id
     }
+    operadoraId {
+      id
+    }
+  }
+}
   `;
   const Cor = useTema().Cor;
-  const { cliente_id } = useParams();
+  const { clienteId } = useParams();
 
-  const { data : empresa, loading, error } = useQuery(GET_EMPRESA_CLIENTE, {
+  const {
+    data: empresa,
+    loading,
+    error,
+  } = useQuery(GET_EMPRESA_CLIENTE, {
     variables: {
-      empresaClienteId: cliente_id,
+      empresaClienteId: clienteId,
     },
   });
 
-  const {
-    data: unidadeMatriz
-  } = useQuery(GET_UNIDADE_MATRIZ, {
+  const { data: unidadeMatriz } = useQuery(GET_UNIDADE_MATRIZ, {
     variables: {
-      empresaClienteId: cliente_id,
+      empresaClienteId: clienteId,
     },
   });
 
   if (loading) return <p>Carregando...</p>;
   if (error) return <p>Erro ao carregar os dados: {error.message}</p>;
 
-  const empresaCliente = empresa.empresa_cliente_id;
+  const empresaCliente = empresa.empresaClienteId;
 
-  const unidadeMatrizEmpresa = unidadeMatriz?.unidade_matriz_empresa_cliente;
+  const unidadeMatrizEmpresa = unidadeMatriz?.unidadeMatrizEmpresaCliente;
 
   return (
     <div
@@ -174,7 +175,7 @@ function Cabecalho() {
         }}
       >
         <img
-          src={empresaCliente.foto_logo_cliente}
+          src={empresaCliente.fotoLogoCliente}
           alt=""
           style={{
             width: "60%",
@@ -205,7 +206,7 @@ function Cabecalho() {
             <p style={{ fontSize: 11, color: Cor.texto1 }}>Status: </p>
             <div
               style={{
-                backgroundColor: empresaCliente.status_cliente
+                backgroundColor: empresaCliente.statusCliente
                   ? Cor.ativo + 20
                   : Cor.inativo + 20,
                 borderRadius: 12,
@@ -216,12 +217,12 @@ function Cabecalho() {
                 style={{
                   fontSize: 12,
                   fontWeight: "700",
-                  color: empresaCliente.status_cliente
+                  color: empresaCliente.statusCliente
                     ? Cor.ativo
                     : Cor.inativo,
                 }}
               >
-                {empresaCliente.status_cliente ? "Ativo" : "Inativo"}
+                {empresaCliente.statusCliente ? "Ativo" : "Inativo"}
               </p>
             </div>
           </div>
@@ -296,7 +297,9 @@ function Cabecalho() {
           >
             <p style={{ fontSize: 11, color: Cor.texto2 }}>Endereço</p>
             <p style={{ fontSize: 16, color: Cor.texto1 }}>
-              {unidadeMatrizEmpresa?.end_rua || "Sem Matriz Cadastrada"}, {unidadeMatrizEmpresa?.end_numero}, {unidadeMatrizEmpresa?.end_bairro}
+              {unidadeMatrizEmpresa?.endRua || "Sem Matriz Cadastrada"},{" "}
+              {unidadeMatrizEmpresa?.endNumero},{" "}
+              {unidadeMatrizEmpresa?.endBairro}
             </p>
           </div>
           <div
@@ -309,7 +312,7 @@ function Cabecalho() {
           >
             <p style={{ fontSize: 11, color: Cor.texto2 }}>Complemento</p>
             <p style={{ fontSize: 16, color: Cor.texto1 }}>
-              {unidadeMatrizEmpresa?.end_complemento}
+              {unidadeMatrizEmpresa?.endComplemento}
             </p>
           </div>
           <div
@@ -324,15 +327,21 @@ function Cabecalho() {
           >
             <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
               <p style={{ fontSize: 11, color: Cor.texto2 }}>Cidade</p>
-              <p style={{ fontSize: 16, color: Cor.texto1 }}>{unidadeMatrizEmpresa?.end_cidade}</p>
+              <p style={{ fontSize: 16, color: Cor.texto1 }}>
+                {unidadeMatrizEmpresa?.endCidade}
+              </p>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
               <p style={{ fontSize: 11, color: Cor.texto2 }}>CEP</p>
-              <p style={{ fontSize: 16, color: Cor.texto1 }}>{unidadeMatrizEmpresa?.end_cep}</p>
+              <p style={{ fontSize: 16, color: Cor.texto1 }}>
+                {unidadeMatrizEmpresa?.end_cep}
+              </p>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
               <p style={{ fontSize: 11, color: Cor.texto2 }}>UF</p>
-              <p style={{ fontSize: 16, color: Cor.texto1 }}>{unidadeMatrizEmpresa?.end_uf}</p>
+              <p style={{ fontSize: 16, color: Cor.texto1 }}>
+                {unidadeMatrizEmpresa?.endUf}
+              </p>
             </div>
           </div>
         </div>
@@ -388,7 +397,7 @@ function Cabecalho() {
             }}
           >
             <CriarUnidades />
-            <CriarSolicitante empresaClienteId={cliente_id} />
+            <CriarSolicitante empresaClienteId={clienteId} />
             <CriarCentroCusto />
           </div>
         </div>

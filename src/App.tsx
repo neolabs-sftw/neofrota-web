@@ -33,18 +33,18 @@ function App() {
               <Route path="/funcionarios" element={<Funcionarios />} />
               <Route path="/operacao" element={<Operacao />} />
               <Route path="/relatorios" element={<Relatorios />} />
-              <Route path="/verempresa/:cliente_id" element={<VerEmpresa />} />
+              <Route path="/verempresa/:clienteId" element={<VerEmpresa />} />
               <Route
-                path="/editarempresa/:cliente_id"
+                path="/editarempresa/:clienteId"
                 element={<EditarEmpresa />}
               />
               <Route path="/criarempresa" element={<CriarEmpresa />} />
               <Route
-                path="/vermotorista/:motorista_id"
+                path="/motorista/:motoristaId"
                 element={<VerMotorista />}
               />
               <Route
-                path="/editarmotorista/:motorista_id"
+                path="/editarmotorista/:motoristaId"
                 element={<EditarMotorista />}
               />
               <Route path="/criarmotorista" element={<CriarMotorista />} />

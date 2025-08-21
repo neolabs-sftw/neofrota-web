@@ -65,66 +65,54 @@ function ModalCriarUnidade({
   const [endBairro, setEndBairro] = useState<string>("");
   const [endCidade, setEndCidade] = useState<string>("");
   const [endCep, setEndCep] = useState<string>("");
-  const [endComp, setEndComp] = useState<string>("");
+  const [endComplemento, setEndComplemento] = useState<string>("");
   const [endUf, setEndUf] = useState<string>("");
 
   const CRIAR_UNIDADE_CLIENTE = gql`
-    mutation Criar_unidade_empresa_cliente(
-      $input: Unidade_Empresa_ClienteInput!
-    ) {
-      criar_unidade_empresa_cliente(input: $input) {
-        nome
-        cnpj
-        end_rua
-        end_numero
-        end_bairro
-        end_cep
-        end_cidade
-        end_complemento
-        end_uf
-        status_unidade_cliente
-        matriz
-        empresa_cliente_id {
-          id
-        }
-        operadora_id {
-          id
-        }
+    mutation CreateUnidadeEmpresaCliente($input: UnidadeEmpresaClienteInput!) {
+      createUnidadeEmpresaCliente(input: $input) {
+        id
       }
     }
   `;
 
-  const { cliente_id } = useParams();
+  const { clienteId } = useParams();
 
-  const empresaClienteId = cliente_id ? parseInt(cliente_id) : null;
+  const empresaClienteId = clienteId ? parseInt(clienteId) : null;
 
   const token = localStorage.getItem("token");
 
   const decoded = token ? jwtDecode<JwtPayload>(token) : null;
 
-  const operadoraId = decoded ? decoded.operadora_id : null;
+  const operadoraIdBigInt = decoded ? decoded.operadoraId : null;
+  const operadoraId = operadoraIdBigInt ? parseInt(operadoraIdBigInt) : null;
 
-  const [criarUnidadeMutation] = useMutation(
-    CRIAR_UNIDADE_CLIENTE
-  );
+  const [criarUnidadeMutation] = useMutation(CRIAR_UNIDADE_CLIENTE);
 
+  const [carregando, setCarregando] = useState(false);
 
   const criarUnidadeFunc = async () => {
+    setCarregando(true);
+
+    if (!nome || !cnpj || !endRua) {
+      alert("Preencha os campos obrigatórios");
+      return;
+    }
     try {
       await criarUnidadeMutation({
         variables: {
           input: {
-            nome: nome,
-            cnpj: cnpj,
-            end_rua: endRua,
-            end_numero: endNumero,
-            end_bairro: endBairro,
-            end_cep: endCep,
-            end_cidade: endCidade,
-            end_complemento: endComp,
-            end_uf: endUf,
-            empresa_cliente_id: empresaClienteId,
-            operadora_id: Number(operadoraId),
+            nome,
+            cnpj,
+            endRua,
+            endNumero,
+            endBairro,
+            endCep,
+            endCidade,
+            endComplemento,
+            endUf,
+            empresaClienteId,
+            operadoraId,
           },
         },
       });
@@ -132,6 +120,8 @@ function ModalCriarUnidade({
       window.location.reload(); // Recarrega a página
     } catch (error) {
       console.error("Erro ao criar unidade:", error);
+    } finally {
+      setCarregando(false);
     }
   };
 
@@ -303,8 +293,8 @@ function ModalCriarUnidade({
               placeholder="Complemento"
               type="text"
               largura="85%"
-              onChange={(e) => setEndComp(e.target.value)}
-              value={endComp}
+              onChange={(e) => setEndComplemento(e.target.value)}
+              value={endComplemento}
             />
             <TextoEntrada
               placeholder="UF"
@@ -348,6 +338,7 @@ function ModalCriarUnidade({
               Salvar
             </p>
           </div>
+          <p>{carregando ? "Carregando..." : "Aguardando"}</p>
         </div>
       </div>
     </div>

@@ -22,22 +22,10 @@ function CriarMotorista() {
 export default CriarMotorista;
 
 const CRIAR_MOTORISTA = gql`
-  mutation Criar_motorista($input: MotoristaInput!) {
-    criar_motorista(input: $input) {
+  mutation CreateMotorista($input: MotoristaInput!) {
+    createMotorista(input: $input) {
+      id
       nome
-      email
-      senha
-      foto_motorista
-      cpf
-      cnh
-      v_cnh
-      status_motorista
-      tipo_motorista
-      data_criacao
-      operadora_id {
-        nome
-        id
-      }
     }
   }
 `;
@@ -49,31 +37,20 @@ function CriarMotoristaConteudo() {
 
   const token = localStorage.getItem("token");
   const decoded = token ? jwtDecode<JwtPayload>(token) : null;
-  const operadoraId = decoded ? decoded.operadora_id : null;
+  const operadoraId = decoded ? decoded.operadoraId : null;
 
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
-  const [foto_motorista, setFoto_motorista] = useState<File>();
+  const [fotoMotorista, setFoto_motorista] = useState<File>();
   const [cpf, setCpf] = useState("");
   const [cnh, setCnh] = useState("");
-  const [v_cnh, setV_cnh] = useState("");
-  const [tipo_motorista, setTipo_motorista] = useState("");
+  const [vCnh, setV_cnh] = useState("");
+  const [tipoMotorista, setTipo_motorista] = useState("");
   const [imgPreview, setImgPreview] = useState("");
   const [status, setStatus] = useState<string>("");
   const [statusCx, setStatusCx] = useState<boolean>(false);
 
   const [criarMotorista, { loading, error }] = useMutation(CRIAR_MOTORISTA);
-
-  const motoristaCriado = {
-    nome,
-    email,
-    foto_motorista,
-    cpf,
-    cnh,
-    v_cnh,
-    tipo_motorista,
-    operadora_id: operadoraId,
-  };
 
   const carregarImagem = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -84,77 +61,92 @@ function CriarMotoristaConteudo() {
   };
 
   const criarMotoristaFunc = async () => {
+    // Passo 1: Inicia o processo e mostra o modal de carregamento.
     setStatusCx(true);
-    setStatus(`Carregando... ${loading}`);
+    setStatus("A validar os dados...");
 
-    if (!foto_motorista) {
-      setStatus("Salvando motorista sem Foto.");
-      return;
-    }
-
-    // PASSO 1: Validação dos IDs obtidos do token.
-    // Garante que o usuário está devidamente autenticado e com os dados corretos.
+    // Passo 2: Validações essenciais que ocorrem sempre.
     if (!operadoraId) {
       setStatus(
         "Erro: Informações de autenticação não encontradas. Por favor, faça login novamente."
       );
-      console.error("operadoraId está nulo.", {
-        operadoraId,
-      });
+      setTimeout(() => setStatusCx(false), 4000); // Esconde o modal após 4s
+      return;
+    }
+
+    if (!nome || !email || !cpf || !cnh || !vCnh || !tipoMotorista) {
+      setStatus("Erro: Por favor, preencha todos os campos obrigatórios.");
+      setTimeout(() => setStatusCx(false), 4000);
       return;
     }
 
     try {
-      setStatus("Fazendo upload da imagem...");
+      // Passo 3: Prepara a variável da URL da foto, começando como nula.
+      let fotoUrlFinal = null;
 
-      const nomeImg = `foto_perfil_motorista/${cpf.replace(
-        /\D/g,
-        ""
-      )}-${Date.now()}.png`;
-      const bucket = "neofrotabkt";
+      // Passo 4: Bloco condicional para o upload. Só executa se houver um arquivo.
+      if (fotoMotorista) {
+        setStatus("A fazer o upload da imagem...");
 
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from(bucket)
-        .upload(nomeImg, foto_motorista);
+        const nomeImg = `foto_perfil_motorista/${cpf.replace(
+          /\D/g,
+          ""
+        )}-${Date.now()}.png`;
+        const bucket = "neofrotabkt";
 
-      if (uploadError) {
-        throw uploadError;
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from(bucket)
+          .upload(nomeImg, fotoMotorista);
+
+        if (uploadError) {
+          // Se o upload falhar, lança o erro para o bloco catch.
+          throw uploadError;
+        }
+
+        // Se o upload for bem-sucedido, obtém a URL pública.
+        const { data: urlData } = supabase.storage
+          .from(bucket)
+          .getPublicUrl(uploadData.path);
+
+        // Atualiza a nossa variável com a URL final.
+        fotoUrlFinal = urlData.publicUrl;
+      } else {
+        setStatus("A criar registo sem foto...");
       }
 
-      const { data: urlData } = supabase.storage
-        .from(bucket)
-        .getPublicUrl(uploadData.path);
-
-      const fotoUrl = urlData.publicUrl;
-
-      setStatus("Imagem enviada, criando registro...");
-
-      console.log(motoristaCriado);
+      // Passo 5: Executa a mutation do GraphQL.
+      // A variável 'fotoUrlFinal' terá a URL da imagem ou será 'null'.
+      setStatus("A enviar dados para o servidor...");
 
       await criarMotorista({
         variables: {
           input: {
             nome,
             email,
-            foto_motorista: fotoUrl,
+            fotoMotorista: fotoUrlFinal, // Usa a variável final aqui
             cpf,
             cnh,
-            v_cnh,
-            tipo_motorista,
-            operadora_id: parseInt(operadoraId, 10),
+            vCnh,
+            tipoMotorista,
+            operadoraId: parseInt(operadoraId, 10),
           },
         },
       });
+
+      // Passo 6: Lida com o sucesso da operação.
       setStatus("Motorista criado com sucesso!");
       setTimeout(() => {
-        setStatusCx(false); // Esconde o modal
-        navigate("/agregados"); // Navega para a outra página
-      }, 2000); // 2000 milissegundos = 2 segundos
+        setStatusCx(false); // Esconde o modal.
+        navigate("/agregados"); // Navega para a lista.
+        window.location.reload();
+      }, 2000); // Espera 2 segundos para o utilizador ver a mensagem.
     } catch (err) {
-      console.error(err, error);
+      // Passo 7: Lida com qualquer erro que possa ter ocorrido (upload ou graphql).
+      console.error("Erro ao criar motorista:", err);
+      setStatus(`Ocorreu um erro: ${err}`);
       setTimeout(() => {
         setStatusCx(false);
-      }, 4000);
+      }, 4000); // Deixa a mensagem de erro visível por 5 segundos.
     }
   };
 
@@ -195,8 +187,8 @@ function CriarMotoristaConteudo() {
                 justifyContent: "center",
                 gap: 20,
                 width: "20%",
-                height: "50%",
-
+                height: "40%",
+                padding: 22,
                 backgroundColor: Cor.base,
                 borderRadius: 22,
                 boxShadow: Cor.sombra,
@@ -205,7 +197,7 @@ function CriarMotoristaConteudo() {
             >
               <CircularProgress sx={{ color: Cor.primaria }} thickness={5} />
               <p style={{ color: Cor.texto1 }}>Salvando...</p>
-              {status && <p>{status}</p>}
+              {status && <p style={{ color: Cor.texto1 }}>{status}</p>}
               {error && (
                 <p style={{ color: "red" }}>
                   Erro na mutation: {error.message}
@@ -347,7 +339,7 @@ function CriarMotoristaConteudo() {
                       onChange={(e: { target: { value: any } }) =>
                         setV_cnh(e.target.value)
                       }
-                      value={v_cnh}
+                      value={vCnh}
                       type="date"
                       largura="100%"
                     />
@@ -360,7 +352,7 @@ function CriarMotoristaConteudo() {
                     gap: 10,
                     alignItems: "center",
                     justifyContent:
-                      tipo_motorista === "Funcionario"
+                      tipoMotorista === "Funcionario"
                         ? "space-between"
                         : "flex-start",
                   }}
@@ -383,7 +375,7 @@ function CriarMotoristaConteudo() {
                     <option value="Agregado">Agredado</option>
                     <option value="Funcionario">Funcionário</option>
                   </select>
-                  {tipo_motorista === "Funcionario" ? (
+                  {tipoMotorista === "Funcionario" ? (
                     <TextoEntrada
                       placeholder="Cód. Agregado"
                       onChange={() => {}}

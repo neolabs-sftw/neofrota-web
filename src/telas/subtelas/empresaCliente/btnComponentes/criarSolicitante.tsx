@@ -65,26 +65,25 @@ function ModalCriarSolicitante({
 
   const decoded = token ? jwtDecode<JwtPayload>(token) : null;
 
-  const operadoraId = decoded ? decoded.operadora_id : null;
+  const operadoraId = decoded ? decoded.operadoraId : null;
 
   const CRIAR_SOLICITANTE = gql`
-    mutation Criar_solicitante($input: SolicitanteInput!) {
-      criar_solicitante(input: $input) {
+    mutation CreateSolicitante($input: SolicitanteInput!) {
+      createSolicitante(input: $input) {
         id
         nome
         email
         senha
         funcao
-        empresa_cliente_id {
+        telefone
+        operadoraId {
           id
-          nome
         }
-        foto_url_solicitante
-        status_solicitante
-        operadora_id {
+        statusSolicitante
+        empresaClienteId {
           id
-          nome
         }
+        fotoUrlSolicitante
       }
     }
   `;
@@ -117,8 +116,8 @@ function ModalCriarSolicitante({
           email,
           funcao,
           telefone,
-          empresa_cliente_id: parseInt(empresaClienteId),
-          operadora_id: Number(operadoraId),
+          empresaClienteId: parseInt(empresaClienteId),
+          operadoraId: Number(operadoraId),
         },
       },
     });

@@ -4,16 +4,16 @@ import { gql, useQuery } from "@apollo/client";
 import { useParams } from "react-router-dom";
 
 const GET_CENTROS_CUSTO_CLIENTE_ID = gql`
-  query Centro_custo_empresa_cliente_id($centroCustoEmpresaClienteIdId: ID!) {
-    centro_custo_empresa_cliente_id(id: $centroCustoEmpresaClienteIdId) {
+  query CentroCustoEmpresaClienteId($centroCustoEmpresaClienteId: ID!) {
+    centroCustoEmpresaClienteId(id: $centroCustoEmpresaClienteId) {
       id
       nome
       codigo
       descricao
-      empresa_cliente_id {
+      empresaClienteId {
         id
       }
-      operadora_id {
+      operadoraId {
         id
       }
     }
@@ -23,22 +23,22 @@ const GET_CENTROS_CUSTO_CLIENTE_ID = gql`
 function ListaCentrosCustoEmpresaCliente() {
   const Cor = useTema().Cor;
 
-  const { cliente_id } = useParams();
+  const { clienteId } = useParams();
 
   const [busca, setBusca] = useState("");
 
   const { data } = useQuery(GET_CENTROS_CUSTO_CLIENTE_ID, {
-    variables: { centroCustoEmpresaClienteIdId: cliente_id },
+    variables: { centroCustoEmpresaClienteId: clienteId },
   });
 
-  const centros_custo = data?.centro_custo_empresa_cliente_id;
+  const centrosCusto = data?.centroCustoEmpresaClienteId;
 
-  const centros_custo_filtrados = useMemo(() => {
-    if (!busca) return centros_custo;
-    return centros_custo.filter((centro_custo: any) =>
+  const centrosCustoFiltrados = useMemo(() => {
+    if (!busca) return centrosCusto;
+    return centrosCusto.filter((centro_custo: any) =>
       centro_custo.nome.toLowerCase().includes(busca.toLowerCase())
     );
-  }, [centros_custo, busca]);
+  }, [centrosCusto, busca]);
 
   return (
     <div
@@ -192,11 +192,11 @@ function ListaCentrosCustoEmpresaCliente() {
             textAlign: "left",
           }}
         >
-          {centros_custo_filtrados?.map((solicitante: any) => (
+          {centrosCustoFiltrados?.map((solicitante: any) => (
             <tr key={solicitante.id}>
               <td>{solicitante.nome}</td>
               <td>{solicitante.codigo}</td>
-              <td>{solicitante.descricao}</td>{" "}
+              <td>{solicitante.descricao}</td>
               <td>
                 <div
                   style={{

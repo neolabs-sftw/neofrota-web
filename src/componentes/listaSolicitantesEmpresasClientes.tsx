@@ -4,39 +4,37 @@ import { gql, useQuery } from "@apollo/client";
 import { useParams } from "react-router-dom";
 
 const GET_SOLICITANTES_EMPRESA_CLIENTE = gql`
-  query Solicitantes_empresa_cliente_id($solicitantesEmpresaClienteId: ID!) {
-    solicitantes_empresa_cliente_id(id: $solicitantesEmpresaClienteId) {
+  query SolicitantesEmpresaClienteId($solicitantesEmpresaClienteId: ID!) {
+  solicitantesEmpresaClienteId(id: $solicitantesEmpresaClienteId) {
+    id
+    nome
+    email
+    senha
+    funcao
+    telefone
+    operadoraId {
       id
-      nome
-      email
-      senha
-      funcao
-      telefone
-      operadora_id {
-        id
-        nome
-      }
-      status_solicitante
-      empresa_cliente_id {
-        id
-        nome
-      }
-      foto_url_solicitante
     }
+    statusSolicitante
+    empresaClienteId {
+      id
+    }
+    fotoUrlSolicitante
   }
+}
 `;
 
 function listaSolicitantesEmpresasClientes() {
   const Cor = useTema().Cor;
-  const { cliente_id } = useParams();
+  const { clienteId } = useParams();
 
   const [busca, setBusca] = useState("");
 
   const { data } = useQuery(GET_SOLICITANTES_EMPRESA_CLIENTE, {
-    variables: { solicitantesEmpresaClienteId: cliente_id },
+    variables: { solicitantesEmpresaClienteId: clienteId },
   });
 
-  const solicitantes = data?.solicitantes_empresa_cliente_id;
+  const solicitantes = data?.solicitantesEmpresaClienteId;
 
   const solicitantesFiltrados = useMemo(() => {
     if (!busca) return solicitantes;
@@ -206,14 +204,14 @@ function listaSolicitantesEmpresasClientes() {
                 <p
                   style={{
                     color:
-                      solicitante.status_solicitante === true
+                      solicitante.statusSolicitante === true
                         ? Cor.ativo
                         : Cor.inativo,
                     textAlign: "center",
                     fontSize: 12,
                     fontWeight: "bold",
                     backgroundColor:
-                      solicitante.status_solicitante === true
+                      solicitante.statusSolicitante === true
                         ? Cor.ativo + 30
                         : Cor.inativo + 30,
                     width: 80,
@@ -224,7 +222,7 @@ function listaSolicitantesEmpresasClientes() {
                     justifyContent: "center",
                   }}
                 >
-                  {solicitante.status_solicitante ? "Ativo" : "Inativo"}
+                  {solicitante.statusSolicitante ? "Ativo" : "Inativo"}
                 </p>
               </td>
             </tr>

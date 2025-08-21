@@ -21,17 +21,17 @@ function CriarEmpresa() {
 export default CriarEmpresa;
 
 const CRIAR_EMPRESA_CLIENTE = gql`
-  mutation Criar_empresa_cliente($input: Empresa_ClienteInput!) {
-    criar_empresa_cliente(input: $input) {
+  mutation CreateEmpresaCliente($data: EmpresaClienteInput!) {
+    createEmpresaCliente(data: $data) {
+      id
       nome
-      r_social
+      rSocial
       cnpj
-      foto_logo_cliente
-      status_cliente
-      operadora_id {
+      fotoLogoCliente
+      operadoraId {
         id
-        nome
       }
+      statusCliente
     }
   }
 `;
@@ -61,8 +61,8 @@ function CriarClienteConteudo() {
   const token = localStorage.getItem("token");
   const decoded = token ? jwtDecode<JwtPayload>(token) : null;
 
-  const operadoraId = decoded ? decoded.operadora_id : null;
-  const adminUsuarioId = decoded ? decoded.admin_usuarioId : null;
+  const operadoraId = decoded ? decoded.operadoraId : null;
+  const adminUsuarioId = decoded ? decoded.adminUsuarioId : null;
 
   const criarEmpresaFunc = async () => {
     setStatus("Carregando...");
@@ -89,7 +89,10 @@ function CriarClienteConteudo() {
     try {
       setStatus("Fazendo upload da imagem...");
 
-      const nomeImg = `foto_logo_cliente/${cnpj.replace(/\D/g, "")}-${Date.now()}.png`;
+      const nomeImg = `foto_logo_cliente/${cnpj.replace(
+        /\D/g,
+        ""
+      )}-${Date.now()}.png`;
       const bucket = "neofrotabkt";
 
       const { data: uploadData, error: uploadError } = await supabase.storage
@@ -109,12 +112,12 @@ function CriarClienteConteudo() {
 
       await criarEmpresa({
         variables: {
-          input: {
-             nome,
-             r_social: razaoSocial,
-             cnpj,
-             foto_logo_cliente: fotoUrl,
-             operadora_id: parseInt(operadoraId, 10)
+          data: {
+            nome,
+            rSocial: razaoSocial,
+            cnpj,
+            fotoLogoCliente: fotoUrl,
+            operadoraId: parseInt(operadoraId, 10),
           },
         },
       });

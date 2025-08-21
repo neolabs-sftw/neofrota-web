@@ -58,23 +58,14 @@ function ModalCriarSolicitante({
   setCxCriarCentroCusto: any;
 }) {
   const Cor = useTema().Cor;
-  const { cliente_id } = useParams();
+  const { clienteId } = useParams();
 
   const CRIAR_CENTRO_CUSTO = gql`
-    mutation Criar_centro_custo($input: Centro_CustoInput!) {
-      criar_centro_custo(input: $input) {
+    mutation CreateCentroCusto($input: CentroCustoInput!) {
+      createCentroCusto(input: $input) {
         id
         nome
         codigo
-        descricao
-        empresa_cliente_id {
-          id
-          nome
-        }
-        operadora_id {
-          id
-          nome
-        }
       }
     }
   `;
@@ -87,19 +78,19 @@ function ModalCriarSolicitante({
 
   const decoded = token ? jwtDecode<JwtPayload>(token) : null;
 
-  const operadoraId = decoded ? decoded.operadora_id : null;
+  const operadoraId = decoded ? decoded.operadoraId : null;
 
-  const [criar_centro_custo] = useMutation(CRIAR_CENTRO_CUSTO);
+  const [criarCentroCusto] = useMutation(CRIAR_CENTRO_CUSTO);
 
-  const criar_centro_custoFunc = async () => {
-    await criar_centro_custo({
+  const criarCentroCustoFunc = async () => {
+    await criarCentroCusto({
       variables: {
         input: {
           nome: nome,
           codigo: codigo,
           descricao: descricao,
-          empresa_cliente_id: parseInt(cliente_id || "0"),
-          operadora_id: Number(operadoraId),
+          empresaClienteId: parseInt(clienteId as string),
+          operadoraId: Number(operadoraId),
         },
       },
     });
@@ -243,7 +234,7 @@ function ModalCriarSolicitante({
               borderRadius: 22,
             }}
             onClick={() => {
-              criar_centro_custoFunc();
+              criarCentroCustoFunc();
               setCxCriarCentroCusto(false);
               window.location.reload();
             }}

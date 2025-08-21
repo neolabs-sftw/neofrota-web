@@ -4,41 +4,36 @@ import { useTema } from "../hooks/temaContext";
 import { gql, useQuery } from "@apollo/client";
 
 const GET_UNIDADES_EMPRESA_CLIENTE = gql`
-  query Lista_unidades_empresa_cliente_id($listaUnidadesEmpresaClienteId: ID!) {
-    lista_unidades_empresa_cliente_id(id: $listaUnidadesEmpresaClienteId) {
-      id
-      nome
-      cnpj
-      end_rua
-      end_numero
-      end_bairro
-      end_cep
-      end_cidade
-      end_complemento
-      end_uf
-      status_unidade_cliente
-      matriz
-      empresa_cliente_id {
-        id
-        nome
-      }
-      operadora_id {
-        id
-        nome
-      }
+  query ListaUnidadesEmpresaClienteId($empresaClienteId: ID!) {
+  listaUnidadesEmpresaClienteId(id: $empresaClienteId) {
+    id
+    nome
+    cnpj
+    endRua
+    endNumero
+    endBairro
+    endCep
+    endCidade
+    endComplemento
+    endUf
+    statusUnidadeCliente
+    matriz
     }
   }
 `;
 
 const GET_EMPRESA_CLIENTE = gql`
-  query Empresa_cliente_id($empresaClienteIdId: ID!) {
-    empresa_cliente_id(id: $empresaClienteIdId) {
+  query EmpresaClienteId($empresaClienteId: ID!) {
+    empresaClienteId(id: $empresaClienteId) {
       id
       nome
-      r_social
+      rSocial
       cnpj
-      foto_logo_cliente
-      status_cliente
+      fotoLogoCliente
+      operadoraId {
+        id
+      }
+      statusCliente
     }
   }
 `;
@@ -51,28 +46,31 @@ function ListaUnidadesEmpresasClientes({
   const Cor = useTema().Cor;
 
   const [busca, setBusca] = useState("");
+
   const { data: unidades } = useQuery(GET_UNIDADES_EMPRESA_CLIENTE, {
     variables: {
-      listaUnidadesEmpresaClienteId: empresaClienteId,
+      empresaClienteId: empresaClienteId,
     },
   });
 
   const { data: empresa } = useQuery(GET_EMPRESA_CLIENTE, {
     variables: {
-      empresaClienteIdId: empresaClienteId,
+      empresaClienteId: empresaClienteId,
     },
   });
 
-  const empresaCliente = empresa?.empresa_cliente_id || {};
+  const empresaCliente = empresa?.empresaClienteId || {};
 
-  const lista_unidades_full = unidades?.lista_unidades_empresa_cliente_id || [];
+  const listaUnidadesCompleta = unidades?.listaUnidadesEmpresaClienteId || [];
 
   const lista_unidades = useMemo(() => {
-    if (!busca) return lista_unidades_full;
-    return lista_unidades_full.filter((cliente: any) =>
+    if (!busca) return listaUnidadesCompleta;
+    return listaUnidadesCompleta.filter((cliente: any) =>
       cliente.nome.toLowerCase().includes(busca.toLowerCase())
     );
-  }, [lista_unidades_full, busca]);
+  }, [listaUnidadesCompleta, busca]);
+
+  console.log(listaUnidadesCompleta);
 
   return (
     <div
@@ -234,9 +232,9 @@ function ListaUnidadesEmpresasClientes({
               <tr key={cliente.id}>
                 <td style={{ color: Cor.texto1 }}>{cliente.nome}</td>
                 <td style={{ color: Cor.texto1 }}>{cliente.cnpj}</td>
-                <td style={{ color: Cor.texto1 }}>{cliente.end_rua}</td>
-                <td style={{ color: Cor.texto1 }}>{cliente.end_bairro}</td>
-                <td style={{ color: Cor.texto1 }}>{cliente.end_numero}</td>
+                <td style={{ color: Cor.texto1 }}>{cliente.endRua}</td>
+                <td style={{ color: Cor.texto1 }}>{cliente.endBairro}</td>
+                <td style={{ color: Cor.texto1 }}>{cliente.endNumero}</td>
                 <td
                   style={{
                     color: Cor.texto1,
@@ -322,14 +320,14 @@ function ListaUnidadesEmpresasClientes({
                   <p
                     style={{
                       color:
-                        cliente.status_unidade_cliente === true
+                        cliente.statusUnidadeCliente === true
                           ? Cor.ativo
                           : Cor.inativo,
                       textAlign: "center",
                       fontSize: 12,
                       fontWeight: "bold",
                       backgroundColor:
-                        cliente.status_unidade_cliente === true
+                        cliente.statusUnidadeCliente === true
                           ? Cor.ativo + 30
                           : Cor.inativo + 30,
                       width: 80,
@@ -340,7 +338,7 @@ function ListaUnidadesEmpresasClientes({
                       justifyContent: "center",
                     }}
                   >
-                    {cliente.status_unidade_cliente ? "Ativo" : "Inativo"}
+                    {cliente.statusUnidadeCliente ? "Ativo" : "Inativo"}
                   </p>
                 </td>
                 <td>

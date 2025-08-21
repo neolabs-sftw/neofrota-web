@@ -22,7 +22,7 @@ body {
 
 @font-face {
   font-family: "Icone";
-  src: url("/src/assets/fonts/MaterialSymbolsRounded-Light.ttf")
+  src: url("/src/assets/fonts/MaterialSymbolsRounded-Light.woff2")
     format("truetype");
   font-weight: normal;
   font-style: normal;
@@ -30,7 +30,7 @@ body {
 
 @font-face {
   font-family: "Icone";
-  src: url("/src/assets/fonts/MaterialSymbolsRounded-Fill.ttf")
+  src: url("/src/assets/fonts/MaterialSymbolsRounded-Fill.woff2")
     format("truetype");
   font-weight: bold;
   font-style: normal;

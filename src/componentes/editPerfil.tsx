@@ -1,14 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTema } from "../hooks/temaContext";
 import { useNavigate } from "react-router-dom";
 import { useAdminLogado } from "../hooks/AdminLogado";
-
 
 function EditPerfil() {
   const adminLogado = useAdminLogado();
   const { Cor, tema, alternarTema } = useTema();
   const [aberto, setAberto] = useState<boolean>(false);
   const Navigator = useNavigate();
+
+  useEffect(() => {
+    document.title = `NeoFrota | ${adminLogado?.operadora.nome}`;
+  }, [adminLogado]);
   return (
     <>
       <div
@@ -52,7 +55,10 @@ function EditPerfil() {
             }}
           >
             <img
-              src={adminLogado?.foto_admin_operadora || "../src/assets/image/img-bg.png"}
+              src={
+                adminLogado?.fotoAdminOperadora ||
+                "../src/assets/image/img-bg.png"
+              }
               alt="Logo"
               style={{
                 width: "40px",
@@ -62,7 +68,13 @@ function EditPerfil() {
                 transition: "width 0.3s ease-in-out",
               }}
             />
-            <p style={{ color: Cor.secundaria, fontSize: "12px", fontWeight:"bold" }}>
+            <p
+              style={{
+                color: Cor.secundaria,
+                fontSize: "12px",
+                fontWeight: "bold",
+              }}
+            >
               {adminLogado?.nome || "Carregando..."}
             </p>
           </div>

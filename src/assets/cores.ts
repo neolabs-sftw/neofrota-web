@@ -1,4 +1,5 @@
 export const CorClara = {
+  tipo: "modoClaro",
   base: "#F9F9F9",
   base2: "#FFFFFF",
   primaria: "#F58D00",
@@ -7,9 +8,9 @@ export const CorClara = {
   texto1: "#2F2F2F",
   texto2: "#9E9E9E",
   fixo: "#00E094",
-  textoFixo: "#00412C",
+  textoFixo: "#006948ff",
   extra: "#007BFF",
-  textoExtra: "#00294A",
+  textoExtra: "#004985ff",
   atencao: "#D62323",
   ativo: "#009C15",
   inativo: "#FF0000",
@@ -18,6 +19,7 @@ export const CorClara = {
 };
 
 export const CorEscura = {
+  tipo: "modoEscuro",
   base: "#222222",
   base2: "#2E2E2E",
   primaria: "#F58D00",
@@ -32,6 +34,6 @@ export const CorEscura = {
   atencao: "#FF6B6B",
   ativo: "#00FF22",
   inativo: "#FF0000",
-  sombra: "0px 0px 0px rgba(0, 0, 0, 0.0)",
+  sombra: "2px 2px 4px rgba(0, 0, 0, 0.15)",
   logo: "src/assets/image/Logo-NeoFrotaD.png",
 };
