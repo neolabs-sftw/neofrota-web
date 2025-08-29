@@ -6,7 +6,7 @@ import { TemaProvider } from './hooks/temaContext.tsx'
 import { ApolloProvider, ApolloClient, InMemoryCache } from '@apollo/client';
 
 const client = new ApolloClient({
-  uri: 'http://localhost:4000/',
+  uri: 'https://neofrotaservico.onrender.com/',
   cache: new InMemoryCache()
 })
 
