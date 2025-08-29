@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import BaseTelas from "../../../componentes/baseTelas";
 import EditPerfil from "../../../componentes/editPerfil";
 import { useTema } from "../../../hooks/temaContext";
-import { gql, useMutation } from "@apollo/client";
+import { gql, useMutation, useQuery } from "@apollo/client";
 import { jwtDecode, type JwtPayload } from "jwt-decode";
 import { supabase } from "../../../hooks/supabaseClient";
 import { useNavigate } from "react-router-dom";
 import CircularProgress from "@mui/material/CircularProgress";
+import Select from "react-select";
 
 function CriarMotorista() {
   return BaseTelas({
@@ -56,21 +57,19 @@ function CriarMotoristaConteudo() {
     const file = e.target.files?.[0];
     if (file) {
       setImgPreview(URL.createObjectURL(file));
-      setFoto_motorista(file); // gera a URL temporária
+      setFoto_motorista(file);
     }
   };
 
   const criarMotoristaFunc = async () => {
-    // Passo 1: Inicia o processo e mostra o modal de carregamento.
     setStatusCx(true);
     setStatus("A validar os dados...");
 
-    // Passo 2: Validações essenciais que ocorrem sempre.
     if (!operadoraId) {
       setStatus(
         "Erro: Informações de autenticação não encontradas. Por favor, faça login novamente."
       );
-      setTimeout(() => setStatusCx(false), 4000); // Esconde o modal após 4s
+      setTimeout(() => setStatusCx(false), 4000);
       return;
     }
 
@@ -81,12 +80,9 @@ function CriarMotoristaConteudo() {
     }
 
     try {
-      // Passo 3: Prepara a variável da URL da foto, começando como nula.
       let fotoUrlFinal = null;
-
-      // Passo 4: Bloco condicional para o upload. Só executa se houver um arquivo.
       if (fotoMotorista) {
-        setStatus("A fazer o upload da imagem...");
+        setStatus("Fazendo upload da imagem...");
 
         const nomeImg = `foto_perfil_motorista/${cpf.replace(
           /\D/g,
@@ -99,31 +95,25 @@ function CriarMotoristaConteudo() {
           .upload(nomeImg, fotoMotorista);
 
         if (uploadError) {
-          // Se o upload falhar, lança o erro para o bloco catch.
           throw uploadError;
         }
 
-        // Se o upload for bem-sucedido, obtém a URL pública.
         const { data: urlData } = supabase.storage
           .from(bucket)
           .getPublicUrl(uploadData.path);
 
-        // Atualiza a nossa variável com a URL final.
         fotoUrlFinal = urlData.publicUrl;
       } else {
-        setStatus("A criar registo sem foto...");
+        setStatus("Registo sem foto...");
       }
-
-      // Passo 5: Executa a mutation do GraphQL.
-      // A variável 'fotoUrlFinal' terá a URL da imagem ou será 'null'.
-      setStatus("A enviar dados para o servidor...");
+      setStatus("Enviando dados para o servidor...");
 
       await criarMotorista({
         variables: {
           input: {
             nome,
             email,
-            fotoMotorista: fotoUrlFinal, // Usa a variável final aqui
+            fotoMotorista: fotoUrlFinal,
             cpf,
             cnh,
             vCnh,
@@ -133,20 +123,18 @@ function CriarMotoristaConteudo() {
         },
       });
 
-      // Passo 6: Lida com o sucesso da operação.
       setStatus("Motorista criado com sucesso!");
       setTimeout(() => {
-        setStatusCx(false); // Esconde o modal.
-        navigate("/agregados"); // Navega para a lista.
+        setStatusCx(false);
+        navigate("/agregados");
         window.location.reload();
-      }, 2000); // Espera 2 segundos para o utilizador ver a mensagem.
+      }, 2000);
     } catch (err) {
-      // Passo 7: Lida com qualquer erro que possa ter ocorrido (upload ou graphql).
       console.error("Erro ao criar motorista:", err);
       setStatus(`Ocorreu um erro: ${err}`);
       setTimeout(() => {
         setStatusCx(false);
-      }, 4000); // Deixa a mensagem de erro visível por 5 segundos.
+      }, 4000);
     }
   };
 
@@ -351,10 +339,7 @@ function CriarMotoristaConteudo() {
                     flexDirection: "row",
                     gap: 10,
                     alignItems: "center",
-                    justifyContent:
-                      tipoMotorista === "Funcionario"
-                        ? "space-between"
-                        : "flex-start",
+                    justifyContent: "flex-start",
                   }}
                 >
                   <p style={{ color: Cor.texto1, fontSize: 12 }}>
@@ -364,26 +349,20 @@ function CriarMotoristaConteudo() {
                     style={{
                       backgroundColor: Cor.base2,
                       padding: 10,
+                      appearance: "none",
+                      outline: "none",
                       borderRadius: 22,
+                      width: 220,
                       border: "1px solid" + Cor.texto2 + 25,
                       color: Cor.texto1,
                       fontSize: 12,
                     }}
                     onChange={(e) => setTipo_motorista(e.target.value)}
                   >
-                    <option value="">Selecione uma opção</option>
+                    <option value="">Escolha</option>
                     <option value="Agregado">Agredado</option>
                     <option value="Funcionario">Funcionário</option>
                   </select>
-                  {tipoMotorista === "Funcionario" ? (
-                    <TextoEntrada
-                      placeholder="Cód. Agregado"
-                      onChange={() => {}}
-                      value={""}
-                      type="text"
-                      largura="40%"
-                    />
-                  ) : null}
                 </div>
               </div>
               <div

@@ -2,11 +2,13 @@ import { gql, useQuery } from "@apollo/client";
 import BaseTelas from "../../../componentes/baseTelas";
 import EditPerfil from "../../../componentes/editPerfil";
 import { useTema } from "../../../hooks/temaContext";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Lottie from "lottie-react";
 import icativo from "../../../assets/animations/icativo.json";
 import icinativo from "../../../assets/animations/icinativo.json";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import BtnCriarNovoCarro from "./btnComponentes/criarCarro";
+import CardDetalhesVeiculo from "./btnComponentes/cardDetalhesVeículo";
 
 function VerMotorista() {
   return BaseTelas({
@@ -29,6 +31,8 @@ function VerMotoristaConteudo() {
       }
     }
   `;
+
+  const navigate = useNavigate();
 
   const Cor = useTema().Cor;
 
@@ -75,7 +79,7 @@ function VerMotoristaConteudo() {
               backgroundColor: Cor.primaria + 30,
               cursor: "pointer",
             }}
-            onClick={() => window.history.back()}
+            onClick={() => navigate("/agregados")}
           >
             <p
               style={{
@@ -233,7 +237,7 @@ function Cabecalho() {
         }}
       >
         <DetalhesMotorista motorista={motorista} />
-        <DetalhesVeiculo />
+        <CardDetalhesVeiculo motorista={motorista} />
       </div>
     </div>
   );
@@ -415,191 +419,6 @@ function DetalhesMotorista({ motorista }: { motorista: any }) {
           <option value="Agregado">Agregado</option>
           <option value="Funcionario">Funcionário</option>
         </select>
-      </div>
-    </div>
-  );
-}
-
-function DetalhesVeiculo() {
-  const Cor = useTema().Cor;
-  return (
-    <div
-      style={{
-        width: "50%",
-        display: "flex",
-        flexDirection: "column",
-        backgroundColor: Cor.secundaria + 20,
-        borderRadius: 22,
-        border: "1px solid " + Cor.secundaria + 30,
-        padding: 10,
-        boxShadow: Cor.sombra,
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <p style={{ color: Cor.secundaria, fontSize: 14 }}>Detalhes Veiculo</p>
-        <div
-          style={{ width: "70%", height: 1, backgroundColor: Cor.primaria }}
-        />
-      </div>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          gap: 10,
-          width: "100%",
-        }}
-      >
-        <img
-          src="https://iyqleanlhzcnndzuugkg.supabase.co/storage/v1/object/public/neofrotabkt/carros/chevrolet/onix/vermelho.png"
-          alt=""
-          style={{ width: "60%", borderRadius: 22, objectFit: "contain" }}
-        />
-        <div
-          style={{
-            width: "40%",
-            display: "flex",
-            flexDirection: "column",
-            gap: 10,
-          }}
-        >
-          <div
-            style={{
-              width: "100%",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "flex-start",
-              justifyContent: "space-between",
-            }}
-          >
-            <p style={{ color: Cor.secundaria, fontSize: 11 }}>Marca</p>
-            <p style={{ color: Cor.texto1, fontSize: 14 }}>Renault</p>
-            <div
-              style={{
-                width: "100%",
-                height: 1,
-                backgroundColor: Cor.texto1 + 50,
-              }}
-            />
-          </div>
-          <div
-            style={{
-              width: "100%",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "flex-start",
-              justifyContent: "space-between",
-            }}
-          >
-            <p style={{ color: Cor.secundaria, fontSize: 11 }}>Modelo</p>
-            <p style={{ color: Cor.texto1, fontSize: 14 }}>Kwid</p>
-            <div
-              style={{
-                width: "100%",
-                height: 1,
-                backgroundColor: Cor.texto1 + 50,
-              }}
-            />
-          </div>
-          <div
-            style={{
-              width: "100%",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "flex-start",
-              justifyContent: "space-between",
-            }}
-          >
-            <p style={{ color: Cor.secundaria, fontSize: 11 }}>Ano</p>
-            <p style={{ color: Cor.texto1, fontSize: 14 }}>2024</p>
-            <div
-              style={{
-                width: "100%",
-                height: 1,
-                backgroundColor: Cor.texto1 + 50,
-              }}
-            />
-          </div>
-          <div
-            style={{
-              width: "100%",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "flex-start",
-              justifyContent: "space-between",
-            }}
-          >
-            <p style={{ color: Cor.secundaria, fontSize: 11 }}>Placa</p>
-            <p style={{ color: Cor.texto1, fontSize: 14 }}>ABC 1B34</p>
-            <div
-              style={{
-                width: "100%",
-                height: 1,
-                backgroundColor: Cor.texto1 + 50,
-              }}
-            />
-          </div>
-        </div>
-      </div>
-      <div
-        style={{
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "flex-end",
-          justifyContent: "space-between",
-        }}
-      >
-        <div
-          style={{
-            width: "40%",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-start",
-            justifyContent: "center",
-          }}
-        >
-          <p style={{ color: Cor.secundaria, fontSize: 11 }}>Chassi</p>
-          <p style={{ color: Cor.texto1, fontSize: 14 }}>9BREB48A0LB169082</p>
-          <div
-            style={{
-              width: "100%",
-              height: 1,
-              backgroundColor: Cor.texto1 + 50,
-            }}
-          />
-        </div>
-        <div
-          style={{
-            width: "55%",
-            height: 40,
-            backgroundColor: Cor.ativo + 20,
-            borderRadius: 22,
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: 10,
-          }}
-        >
-          <Lottie
-            animationData={icativo}
-            loop={true}
-            style={{ width: 25, height: 25 }}
-            autoPlay
-          />
-          <p style={{ color: Cor.ativo, fontSize: 16, fontWeight: "bold" }}>
-            Licenciamento Válido
-          </p>
-        </div>
       </div>
     </div>
   );
