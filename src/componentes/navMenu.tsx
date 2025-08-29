@@ -45,7 +45,7 @@ function NavMenu({ sidebar, logado }: { sidebar: boolean; logado: any }) {
       itensSubMenu: [
         { tela: "Modelos Fixos", icone: "mediation", path: "/operacao" },
         { tela: "Novo Voucher", icone: "mediation", path: "/operacao" },
-        { tela: "Rotas", icone: "mediation", path: "/operacao" },
+        { tela: "Rotas", icone: "mediation", path: "/Rotas" },
       ],
     },
     {
