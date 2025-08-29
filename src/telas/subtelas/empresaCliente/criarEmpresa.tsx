@@ -3,7 +3,7 @@ import BaseTelas from "../../../componentes/baseTelas";
 import EditPerfil from "../../../componentes/editPerfil";
 import { useTema } from "../../../hooks/temaContext";
 import { gql, useMutation } from "@apollo/client";
-import { jwtDecode, type JwtPayload } from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 import { supabase } from "../../../hooks/supabaseClient";
 import { useNavigate } from "react-router-dom";
 
@@ -59,6 +59,10 @@ function CriarClienteConteudo() {
   const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
+  interface JwtPayload {
+    adminUsuarioId?: string;
+    operadoraId?: string;
+  }
   const decoded = token ? jwtDecode<JwtPayload>(token) : null;
 
   const operadoraId = decoded ? decoded.operadoraId : null;

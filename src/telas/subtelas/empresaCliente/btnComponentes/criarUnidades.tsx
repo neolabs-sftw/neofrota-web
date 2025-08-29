@@ -2,7 +2,7 @@ import { useParams } from "react-router-dom";
 import { useTema } from "../../../../hooks/temaContext";
 import { gql, useMutation } from "@apollo/client";
 import { useState } from "react";
-import { jwtDecode, type JwtPayload } from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 
 function CriarUnidades() {
   const Cor = useTema().Cor;
@@ -81,6 +81,11 @@ function ModalCriarUnidade({
   const empresaClienteId = clienteId ? parseInt(clienteId) : null;
 
   const token = localStorage.getItem("token");
+
+    interface JwtPayload {
+    adminUsuarioId?: string;
+    operadoraId?: string;
+  }
 
   const decoded = token ? jwtDecode<JwtPayload>(token) : null;
 

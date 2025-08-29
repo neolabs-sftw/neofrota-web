@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { useTema } from "../hooks/temaContext";
 import { gql, useQuery } from "@apollo/client";
-import { jwtDecode, type JwtPayload } from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 import icinativo from "../assets/animations/icinativo.json";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
-import { exportarPlanilha } from "../hooks/exportarPlanilha";
 import Lottie from "lottie-react";
 
 function ListaMotoristasAgregados() {
@@ -35,6 +33,11 @@ function ListaMotoristasAgregados() {
     }
   `;
 
+  interface JwtPayload {
+    adminUsuarioId?: string;
+    operadoraId?: string;
+  }
+  
   const token = localStorage.getItem("token");
   const decoded = token ? jwtDecode<JwtPayload>(token) : null;
   const operadoraId = decoded ? decoded.operadoraId : null;

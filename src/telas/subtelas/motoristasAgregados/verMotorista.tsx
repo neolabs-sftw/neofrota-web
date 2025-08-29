@@ -6,9 +6,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import Lottie from "lottie-react";
 import icativo from "../../../assets/animations/icativo.json";
 import icinativo from "../../../assets/animations/icinativo.json";
-import { useEffect, useState } from "react";
-import BtnCriarNovoCarro from "./btnComponentes/criarCarro";
 import CardDetalhesVeiculo from "./btnComponentes/cardDetalhesVeículo";
+import { useState } from "react";
 
 function VerMotorista() {
   return BaseTelas({

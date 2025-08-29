@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { useTema } from "../../../../hooks/temaContext";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { gql, useMutation, useQuery } from "@apollo/client";
 import { useParams } from "react-router-dom";
 import { useAdminLogado } from "../../../../hooks/AdminLogado";

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTema } from "../../../../hooks/temaContext";
 import { useParams } from "react-router-dom";
 import { gql, useMutation } from "@apollo/client";
-import { jwtDecode, type JwtPayload } from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 
 function CriarCentroCusto() {
   const Cor = useTema().Cor;
@@ -75,6 +75,11 @@ function ModalCriarSolicitante({
   const [descricao, setDescricao] = useState("");
 
   const token = localStorage.getItem("token");
+
+  interface JwtPayload {
+    adminUsuarioId?: string;
+    operadoraId?: string;
+  }
 
   const decoded = token ? jwtDecode<JwtPayload>(token) : null;
 

@@ -1,13 +1,12 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import BaseTelas from "../../../componentes/baseTelas";
 import EditPerfil from "../../../componentes/editPerfil";
 import { useTema } from "../../../hooks/temaContext";
-import { gql, useMutation, useQuery } from "@apollo/client";
-import { jwtDecode, type JwtPayload } from "jwt-decode";
+import { gql, useMutation } from "@apollo/client";
+import { jwtDecode } from "jwt-decode";
 import { supabase } from "../../../hooks/supabaseClient";
 import { useNavigate } from "react-router-dom";
 import CircularProgress from "@mui/material/CircularProgress";
-import Select from "react-select";
 
 function CriarMotorista() {
   return BaseTelas({
@@ -37,6 +36,12 @@ function CriarMotoristaConteudo() {
   const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
+
+    interface JwtPayload {
+    adminUsuarioId?: string;
+    operadoraId?: string;
+  }
+
   const decoded = token ? jwtDecode<JwtPayload>(token) : null;
   const operadoraId = decoded ? decoded.operadoraId : null;
 

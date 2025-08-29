@@ -6,7 +6,7 @@ import CardRankingMotoristas from "../componentes/cardRankingMotoristas";
 import EditPerfil from "../componentes/editPerfil";
 import { useTema } from "../hooks/temaContext";
 import { gql, useQuery } from "@apollo/client";
-import { jwtDecode, type JwtPayload } from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 
 const GET_USUARIO = gql`
   query Query($adminUsuarioId: ID!) {
@@ -41,6 +41,11 @@ const GET_USUARIO = gql`
 
 function Home() {
   const token = localStorage.getItem("token");
+
+    interface JwtPayload {
+    adminUsuarioId?: string;
+    operadoraId?: string;
+  }
   function getAdminId() {
     if (token) {
       const decoded = jwtDecode<JwtPayload>(token);

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTema } from "../../../../hooks/temaContext";
 import { gql, useMutation } from "@apollo/client";
-import { jwtDecode, type JwtPayload } from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 
 function criarSolicitante({ empresaClienteId }: { empresaClienteId: any }) {
   const Cor = useTema().Cor;
@@ -62,6 +62,11 @@ function ModalCriarSolicitante({
   const Cor = useTema().Cor;
 
   const token = localStorage.getItem("token");
+
+  interface JwtPayload {
+    adminUsuarioId?: string;
+    operadoraId?: string;
+  }
 
   const decoded = token ? jwtDecode<JwtPayload>(token) : null;
 

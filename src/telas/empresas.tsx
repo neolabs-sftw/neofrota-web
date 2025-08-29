@@ -5,12 +5,11 @@ import ListaEmpresasCadastradas from "../componentes/listaEmpresasCadastradas";
 import CardInfosMenor from "../componentes/cardInfosMenor";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import {gql, useQuery} from "@apollo/client";
-import { jwtDecode, type JwtPayload } from "jwt-decode";
-
+import { gql, useQuery } from "@apollo/client";
+import { jwtDecode } from "jwt-decode";
 
 const GET_USUARIO = gql`
-query Query($adminUsuarioId: ID!) {
+  query Query($adminUsuarioId: ID!) {
     adminUsuario(id: $adminUsuarioId) {
       id
       nome
@@ -41,26 +40,29 @@ query Query($adminUsuarioId: ID!) {
 `;
 
 function Empresas() {
+  const token = localStorage.getItem("token");
+  interface JwtPayload {
+    adminUsuarioId?: string;
+    operadoraId?: string;
+  }
+  function getAdminId() {
+    if (token) {
+      const decoded = jwtDecode<JwtPayload>(token);
+      return decoded.adminUsuarioId;
+    } else {
+      console.log("Nenhum token encontrado");
+    }
+  }
 
-   const token = localStorage.getItem("token");
-     function getAdminId() {
-        if (token) {
-          const decoded = jwtDecode<JwtPayload>(token);
-          return decoded.adminUsuarioId;
-        } else {
-          console.log("Nenhum token encontrado");
-        }
-      } 
-  
-    const { loading, data } = useQuery(GET_USUARIO, {
-      variables: { adminUsuarioId: getAdminId() || null },
-    });
-  
-    const adminLogado = data?.adminUsuarioId;
-  
-    useEffect(() => {
-      document.title = `NeoFrota | ${adminLogado?.operadora.nome}`;
-    }, [loading, adminLogado]);
+  const { loading, data } = useQuery(GET_USUARIO, {
+    variables: { adminUsuarioId: getAdminId() || null },
+  });
+
+  const adminLogado = data?.adminUsuarioId;
+
+  useEffect(() => {
+    document.title = `NeoFrota | ${adminLogado?.operadora.nome}`;
+  }, [loading, adminLogado]);
 
   return BaseTelas({
     conteudo: (

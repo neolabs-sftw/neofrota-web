@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { useTema } from "../hooks/temaContext";
 import ModalPreviewVoucher from "./modalPreviewVoucher";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 interface BtnProximaViagemProps {
   $bg: string;

@@ -1,24 +1,24 @@
 import { useTema } from "../hooks/temaContext";
 import { useNavigate } from "react-router-dom";
 import { gql, useQuery } from "@apollo/client";
-import { jwtDecode, type JwtPayload } from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 import { useEffect, useMemo, useState } from "react";
 import { exportarPlanilha } from "../hooks/exportarPlanilha";
 
 const GET_EMPRESAS_CLIENTES = gql`
-query EmpresaClienteOper($operadoraId: String) {
-  empresaClienteOper(operadoraId: $operadoraId) {
-    id
-    nome
-    rSocial
-    cnpj
-    fotoLogoCliente
-    operadoraId {
+  query EmpresaClienteOper($operadoraId: String) {
+    empresaClienteOper(operadoraId: $operadoraId) {
       id
+      nome
+      rSocial
+      cnpj
+      fotoLogoCliente
+      operadoraId {
+        id
+      }
+      statusCliente
     }
-    statusCliente
   }
-}
 `;
 
 function ListaEmpresasCadastradas() {
@@ -26,6 +26,11 @@ function ListaEmpresasCadastradas() {
   const navigate = useNavigate();
 
   const [busca, setBusca] = useState("");
+
+  interface JwtPayload {
+    adminUsuarioId?: string;
+    operadoraId?: string;
+  }
 
   const decoded = useMemo(() => {
     const token = localStorage.getItem("token");
