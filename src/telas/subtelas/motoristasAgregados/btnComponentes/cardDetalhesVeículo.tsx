@@ -6,57 +6,62 @@ import icinativo from "../../../../assets/animations/icinativo.json";
 import { useTema } from "../../../../hooks/temaContext";
 import BtnCriarNovoCarro from "./criarCarro";
 
+const GET_CARRO_ATRELADO = gql`
+  query CarroMotoristaId($idMotorista: ID!) {
+    carroMotoristaId(idMotorista: $idMotorista) {
+      id
+      placa
+      marca
+      modelo
+      cor
+      crlv
+      vCrlv
+      chassi
+      ano
+    }
+  }
+`;
+
+const GET_LISTA_VEICULOS_PROPRIEDADE = gql`
+  query CarrosAgregadoId($id: ID!) {
+    carrosAgregadoId(id: $id) {
+      id
+      placa
+      marca
+      modelo
+      cor
+      crlv
+      vCrlv
+      chassi
+      ano
+    }
+  }
+`;
+
+const GET_PROPRIETARIO = gql`
+  query RelacaoAgrdFuncId($relacaoAgrdFuncId: ID!) {
+    relacaoAgrdFuncId(id: $relacaoAgrdFuncId) {
+      id
+      motoristaComoAgregado {
+        id
+        nome
+      }
+      motoristaComoFuncionario {
+        id
+        nome
+      }
+    }
+  }
+`;
+
 function CardDetalhesVeiculo({ motorista }: { motorista: any }) {
   const [carroSelecionado, setCarroSelecionado] = useState<any>("");
   const [carros, setCarros] = useState<any[]>([]);
-  const GET_CARRO_ATRELADO = gql`
-    query CarroMotoristaId($idMotorista: ID!) {
-      carroMotoristaId(idMotorista: $idMotorista) {
-        id
-        placa
-        marca
-        modelo
-        cor
-        crlv
-        vCrlv
-        chassi
-        ano
-      }
-    }
-  `;
 
   const { data: carroAtrelado } = useQuery(GET_CARRO_ATRELADO, {
     variables: { idMotorista: motorista?.id },
     skip: !motorista?.id,
   });
-
-  const GET_LISTA_VEICULOS_PROPRIEDADE = gql`
-    query CarrosAgregadoId($id: ID!) {
-      carrosAgregadoId(id: $id) {
-        id
-        placa
-        marca
-        modelo
-        cor
-        crlv
-        vCrlv
-        chassi
-        ano
-      }
-    }
-  `;
-
-  const GET_PROPRIETARIO = gql`
-    query RelacaoAgrdFuncId($relacaoAgrdFuncId: ID!) {
-      relacaoAgrdFuncId(id: $relacaoAgrdFuncId) {
-        id
-        agregadoId {
-          id
-          nome
-        }
-      }
-    }
-  `;
 
   const { data: dataCarrosAgregado } = useQuery(
     GET_LISTA_VEICULOS_PROPRIEDADE,
@@ -71,11 +76,12 @@ function CardDetalhesVeiculo({ motorista }: { motorista: any }) {
 
   const { data: dataProprietario } = useQuery(GET_PROPRIETARIO, {
     variables: { relacaoAgrdFuncId: motorista?.id },
-    // Pula se nao tiver motorista ou se for funcionario
     skip: !motorista?.id,
   });
 
-  const proprietarioId = dataProprietario?.relacaoAgrdFuncId?.agregadoId?.id;
+  const proprietarioId = dataProprietario?.relacaoAgrdFuncId?.motoristaComoAgregado?.id;
+
+  console.log(proprietarioId);
 
   const { data: dataCarrosFuncionario } = useQuery(
     GET_LISTA_VEICULOS_PROPRIEDADE,
@@ -110,21 +116,21 @@ function CardDetalhesVeiculo({ motorista }: { motorista: any }) {
     }
   }, [carroAtrelado]);
 
-  const normalize = (text : string) => {
-  if (!text) return "";
-  return text
-    .normalize("NFD") // separa acento
-    .replace(/[\u0300-\u036f]/g, "") // remove acento
-    .toLowerCase()
-    .replace(/\s+/g, "_"); // troca espaços por _
-};
+  const normalize = (text: string) => {
+    if (!text) return "";
+    return text
+      .normalize("NFD") // separa acento
+      .replace(/[\u0300-\u036f]/g, "") // remove acento
+      .toLowerCase()
+      .replace(/\s+/g, "_"); // troca espaços por _
+  };
   // Monta a URL antes do return
   const imgCarro = `https://iyqleanlhzcnndzuugkg.supabase.co/storage/v1/object/public/neofrotabkt/carros/${normalize(
     carroSelecionado?.marca
   )}/${normalize(carroSelecionado?.modelo)}/${normalize(
     carroSelecionado?.cor
   )}.png`;
- 
+
   if (carroSelecionado === "") {
     return (
       <div
@@ -200,7 +206,7 @@ function CardDetalhesVeiculo({ motorista }: { motorista: any }) {
         }}
       >
         <img
-          src= { imgCarro }
+          src={imgCarro}
           alt=""
           style={{ width: "60%", borderRadius: 22, objectFit: "contain" }}
         />

@@ -53,6 +53,20 @@ const CREATE_RELACAO = gql`
   }
 `;
 
+const GET_LISTA_FUNCIONARIOS = gql`
+  query ListaFuncionariosAgregadoId($listaFuncionariosAgregadoId: ID!) {
+    listaFuncionariosAgregadoId(id: $listaFuncionariosAgregadoId) {
+      id
+      motoristaComoFuncionario {
+        id
+        nome
+        statusCnh
+        email
+      }
+    }
+  }
+`;
+
 function VerMotoristaConteudo() {
   const navigate = useNavigate();
 
@@ -435,32 +449,43 @@ function ListaMotoristasFuncionarios({ motorista }: { motorista: any }) {
   const agregadoID = motorista?.id;
   const [funcionarioID, setFuncionarioID] = useState("");
 
+  const navigate = useNavigate();
+
+  const { data } = useQuery(GET_LISTA_FUNCIONARIOS, {
+    variables: { listaFuncionariosAgregadoId: motorista?.id },
+    skip: !motorista?.id,
+  });
+
+  const funcionarios = data?.listaFuncionariosAgregadoId;
+
+  console.log(funcionarios);
+
   const [createRelacaoAgrdFunc] = useMutation(CREATE_RELACAO);
 
- async function adicionarFuncionario() {
-  if (!funcionarioID) {
-    console.log("funcionarioID não informado");
-    return;
-  }
+  async function adicionarFuncionario() {
+    if (!funcionarioID) {
+      console.log("funcionarioID não informado");
+      return;
+    }
 
-  try {
-    const { data } = await createRelacaoAgrdFunc({
-      variables: {
-        input: {
-          agregadoId: parseInt(agregadoID),
-          funcionarioId: parseInt(funcionarioID),
-          operadoraId: parseInt(operadoraID),
+    try {
+      const { data } = await createRelacaoAgrdFunc({
+        variables: {
+          input: {
+            agregadoId: parseInt(agregadoID),
+            funcionarioId: parseInt(funcionarioID),
+            operadoraId: parseInt(operadoraID),
+          },
         },
-      },
-    });
+      });
 
-    console.log("Relação criada:", data);
-    setFuncionarioID("");
-    window.location.reload();
-  } catch (err) {
-    console.error("Erro ao criar relação:", err);
+      console.log("Relação criada:", data);
+      setFuncionarioID("");
+      window.location.reload();
+    } catch (err) {
+      console.error("Erro ao criar relação:", err);
+    }
   }
-}
 
   return (
     <div
@@ -610,25 +635,33 @@ function ListaMotoristasFuncionarios({ motorista }: { motorista: any }) {
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>Jão</td>
-            <td>j@m.c</td>
-            <td style={{ width: 150, textAlign: "center" }}>12/12/2030</td>
-            <td style={{ width: 150, textAlign: "center" }}>QXM 0A93</td>
-            <td style={{ width: 150, textAlign: "center" }}>Cherovlet Onix</td>
-            <td style={{ textAlign: "center" }}>
-              <p
-                style={{
-                  fontFamily: "Icone",
-                  fontSize: "24px",
-                  color: Cor.texto2,
-                  fontWeight: "bold",
-                }}
-              >
-                visibility
-              </p>
-            </td>
-          </tr>
+          {funcionarios == undefined ? null : funcionarios.map((funcionario: any) => {
+            return (
+              <tr key={funcionario.motoristaComoFuncionario.id}>
+                <td>{funcionario.motoristaComoFuncionario.nome}</td>
+                <td>{funcionario.motoristaComoFuncionario.email}</td>
+                <td style={{ width: 150, textAlign: "center" }}>
+                  <p>ssad</p>
+                </td>
+                <td style={{ width: 150, textAlign: "center" }}>Placa</td>
+                <td style={{ width: 150, textAlign: "center" }}>Modelo Carro</td>
+                <td style={{ width: 80, textAlign: "center" }}>
+                  <p
+                    style={{
+                      fontFamily: "Icone",
+                      fontSize: "24px",
+                      color: Cor.texto2,
+                      fontWeight: "bold",
+                      cursor: "pointer",
+                    }}
+                     onClick={() => navigate(`/motorista/${funcionario.motoristaComoFuncionario.id}`)}
+                  >
+                    visibility
+                  </p>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
       <div
