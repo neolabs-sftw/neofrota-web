@@ -1,4 +1,4 @@
-import { gql, useQuery } from "@apollo/client";
+import { gql, useMutation, useQuery } from "@apollo/client";
 import BaseTelas from "../../../componentes/baseTelas";
 import EditPerfil from "../../../componentes/editPerfil";
 import { useTema } from "../../../hooks/temaContext";
@@ -22,15 +22,38 @@ function VerMotorista() {
 
 export default VerMotorista;
 
-function VerMotoristaConteudo() {
-  const GET_MOTORISTA_ID = gql`
-    query Motorista($motoristaId: ID!) {
-      motorista(id: $motoristaId) {
-        tipoMotorista
+const GET_MOTORISTA_ID = gql`
+  query Motorista($motoristaId: ID!) {
+    motorista(id: $motoristaId) {
+      id
+      nome
+      email
+      senha
+      fotoMotorista
+      cpf
+      cnh
+      vCnh
+      statusMotorista
+      tipoMotorista
+      dataCriacao
+      statusCnh
+      operadoraId {
+        id
+        nome
       }
     }
-  `;
+  }
+`;
 
+const CREATE_RELACAO = gql`
+  mutation CreateRelacaoAgrdFunc($input: RelacaoAgrdFuncInput!) {
+    createRelacaoAgrdFunc(input: $input) {
+      id
+    }
+  }
+`;
+
+function VerMotoristaConteudo() {
   const navigate = useNavigate();
 
   const Cor = useTema().Cor;
@@ -105,7 +128,7 @@ function VerMotoristaConteudo() {
         </div>
         <Cabecalho />
         {motorista?.tipoMotorista === "Agregado" ? (
-          <ListaMotoristasFuncionarios />
+          <ListaMotoristasFuncionarios motorista={motorista} />
         ) : null}
         <ExcluirMotorista />
       </div>
@@ -114,25 +137,6 @@ function VerMotoristaConteudo() {
 }
 
 function Cabecalho() {
-  const GET_MOTORISTA_ID = gql`
-    query Motorista($motoristaId: ID!) {
-      motorista(id: $motoristaId) {
-        id
-        nome
-        email
-        senha
-        fotoMotorista
-        cpf
-        cnh
-        vCnh
-        statusMotorista
-        tipoMotorista
-        dataCriacao
-        statusCnh
-      }
-    }
-  `;
-
   const Cor = useTema().Cor;
   const { motoristaId } = useParams();
 
@@ -423,11 +427,40 @@ function DetalhesMotorista({ motorista }: { motorista: any }) {
   );
 }
 
-function ListaMotoristasFuncionarios() {
+function ListaMotoristasFuncionarios({ motorista }: { motorista: any }) {
   const Cor = useTema().Cor;
   const [busca, setBusca] = useState("");
 
+  const operadoraID = motorista?.operadoraId.id;
+  const agregadoID = motorista?.id;
   const [funcionarioID, setFuncionarioID] = useState("");
+
+  const [createRelacaoAgrdFunc] = useMutation(CREATE_RELACAO);
+
+ async function adicionarFuncionario() {
+  if (!funcionarioID) {
+    console.log("funcionarioID não informado");
+    return;
+  }
+
+  try {
+    const { data } = await createRelacaoAgrdFunc({
+      variables: {
+        input: {
+          agregadoId: parseInt(agregadoID),
+          funcionarioId: parseInt(funcionarioID),
+          operadoraId: parseInt(operadoraID),
+        },
+      },
+    });
+
+    console.log("Relação criada:", data);
+    setFuncionarioID("");
+    window.location.reload();
+  } catch (err) {
+    console.error("Erro ao criar relação:", err);
+  }
+}
 
   return (
     <div
@@ -659,13 +692,14 @@ function ListaMotoristasFuncionarios() {
             borderRadius: 22,
             cursor: "pointer",
           }}
+          onClick={() => adicionarFuncionario()}
         >
           <p
             style={{
               fontFamily: "Icone",
               fontWeight: "bold",
               fontSize: "24px",
-              color: Cor.texto1,
+              color: Cor.base,
             }}
           >
             add
@@ -673,7 +707,7 @@ function ListaMotoristasFuncionarios() {
           <p
             style={{
               fontWeight: "500",
-              color: Cor.texto1,
+              color: Cor.base,
             }}
           >
             Adicionar Funcionário
