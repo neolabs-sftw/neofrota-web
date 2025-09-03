@@ -4,6 +4,34 @@ import { gql, useMutation } from "@apollo/client";
 import { useState } from "react";
 import { jwtDecode } from "jwt-decode";
 
+const GET_UNIDADES_EMPRESA_CLIENTE = gql`
+  query ListaUnidadesEmpresaClienteId($empresaClienteId: ID!) {
+  listaUnidadesEmpresaClienteId(id: $empresaClienteId) {
+    id
+    nome
+    cnpj
+    endRua
+    endNumero
+    endBairro
+    endCep
+    endCidade
+    endComplemento
+    endUf
+    statusUnidadeCliente
+    matriz
+    }
+  }
+`;
+
+
+  const CRIAR_UNIDADE_CLIENTE = gql`
+    mutation CreateUnidadeEmpresaCliente($input: UnidadeEmpresaClienteInput!) {
+      createUnidadeEmpresaCliente(input: $input) {
+        id
+      }
+    }
+  `;
+
 function CriarUnidades() {
   const Cor = useTema().Cor;
 
@@ -68,21 +96,13 @@ function ModalCriarUnidade({
   const [endComplemento, setEndComplemento] = useState<string>("");
   const [endUf, setEndUf] = useState<string>("");
 
-  const CRIAR_UNIDADE_CLIENTE = gql`
-    mutation CreateUnidadeEmpresaCliente($input: UnidadeEmpresaClienteInput!) {
-      createUnidadeEmpresaCliente(input: $input) {
-        id
-      }
-    }
-  `;
-
   const { clienteId } = useParams();
 
   const empresaClienteId = clienteId ? parseInt(clienteId) : null;
 
   const token = localStorage.getItem("token");
 
-    interface JwtPayload {
+  interface JwtPayload {
     adminUsuarioId?: string;
     operadoraId?: string;
   }
@@ -92,12 +112,17 @@ function ModalCriarUnidade({
   const operadoraIdBigInt = decoded ? decoded.operadoraId : null;
   const operadoraId = operadoraIdBigInt ? parseInt(operadoraIdBigInt) : null;
 
-  const [criarUnidadeMutation] = useMutation(CRIAR_UNIDADE_CLIENTE);
+  const [criarUnidadeMutation] = useMutation(CRIAR_UNIDADE_CLIENTE,{
+    refetchQueries: [
+      {
+        query: GET_UNIDADES_EMPRESA_CLIENTE,
+        variables: { empresaClienteId: clienteId },
+      },
+    ],
+  });
 
-  const [carregando, setCarregando] = useState(false);
 
   const criarUnidadeFunc = async () => {
-    setCarregando(true);
 
     if (!nome || !cnpj || !endRua) {
       alert("Preencha os campos obrigatórios");
@@ -122,12 +147,11 @@ function ModalCriarUnidade({
         },
       });
       console.log("Unidade criada com sucesso!");
-      window.location.reload(); // Recarrega a página
+      // window.location.reload(); // Recarrega a página
     } catch (error) {
       console.error("Erro ao criar unidade:", error);
-    } finally {
-      setCarregando(false);
-    }
+      alert("Erro ao criar unidade");
+    } 
   };
 
   return (
@@ -176,7 +200,7 @@ function ModalCriarUnidade({
           >
             <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
               <p
-                style={{ fontSize: 14, color: Cor.texto1, fontWeight: "bold" }}
+                style={{ fontSize: 14, color: Cor.primariaTxt, fontWeight: "bold" }}
               >
                 Criar Unidade
               </p>
@@ -339,11 +363,10 @@ function ModalCriarUnidade({
               setCxAlertaCriarUnidade(false);
             }}
           >
-            <p style={{ fontSize: 14, color: Cor.texto1, fontWeight: "bold" }}>
+            <p style={{ fontSize: 14, color: Cor.primariaTxt, fontWeight: "bold" }}>
               Salvar
             </p>
           </div>
-          <p>{carregando ? "Carregando..." : "Aguardando"}</p>
         </div>
       </div>
     </div>

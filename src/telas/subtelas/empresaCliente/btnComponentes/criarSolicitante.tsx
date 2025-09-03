@@ -3,6 +3,48 @@ import { useTema } from "../../../../hooks/temaContext";
 import { gql, useMutation } from "@apollo/client";
 import { jwtDecode } from "jwt-decode";
 
+const CRIAR_SOLICITANTE = gql`
+    mutation CreateSolicitante($input: SolicitanteInput!) {
+      createSolicitante(input: $input) {
+        id
+        nome
+        email
+        senha
+        funcao
+        telefone
+        operadoraId {
+          id
+        }
+        statusSolicitante
+        empresaClienteId {
+          id
+        }
+        fotoUrlSolicitante
+      }
+    }
+  `;
+
+  const GET_SOLICITANTES_EMPRESA_CLIENTE = gql`
+  query SolicitantesEmpresaClienteId($solicitantesEmpresaClienteId: ID!) {
+  solicitantesEmpresaClienteId(id: $solicitantesEmpresaClienteId) {
+    id
+    nome
+    email
+    senha
+    funcao
+    telefone
+    operadoraId {
+      id
+    }
+    statusSolicitante
+    empresaClienteId {
+      id
+    }
+    fotoUrlSolicitante
+  }
+}
+`;
+
 function criarSolicitante({ empresaClienteId }: { empresaClienteId: any }) {
   const Cor = useTema().Cor;
   const [cxCriarSolicitante, setCxCriarSolicitante] = useState(false);
@@ -72,33 +114,21 @@ function ModalCriarSolicitante({
 
   const operadoraId = decoded ? decoded.operadoraId : null;
 
-  const CRIAR_SOLICITANTE = gql`
-    mutation CreateSolicitante($input: SolicitanteInput!) {
-      createSolicitante(input: $input) {
-        id
-        nome
-        email
-        senha
-        funcao
-        telefone
-        operadoraId {
-          id
-        }
-        statusSolicitante
-        empresaClienteId {
-          id
-        }
-        fotoUrlSolicitante
-      }
-    }
-  `;
-
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [telefone, setTelefone] = useState("");
   const [funcao, setFuncao] = useState("");
 
-  const [criarSolicitanteMutation] = useMutation(CRIAR_SOLICITANTE);
+  const [criarSolicitanteMutation] = useMutation(CRIAR_SOLICITANTE,{
+    refetchQueries: [
+      {
+        query: GET_SOLICITANTES_EMPRESA_CLIENTE,
+        variables: {
+          solicitantesEmpresaClienteId: empresaClienteId,
+        },
+      },
+    ]
+  });
 
   const verCadastro = () => {
     const input = {
@@ -317,7 +347,6 @@ function ModalCriarSolicitante({
               setEmail("");
               setTelefone("");
               setFuncao("");
-              window.location.reload();
             }}
           >
             <p style={{ fontSize: 14, color: Cor.texto1, fontWeight: "bold" }}>

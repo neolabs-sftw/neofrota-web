@@ -4,6 +4,33 @@ import { useParams } from "react-router-dom";
 import { gql, useMutation } from "@apollo/client";
 import { jwtDecode } from "jwt-decode";
 
+const CRIAR_CENTRO_CUSTO = gql`
+  mutation CreateCentroCusto($input: CentroCustoInput!) {
+    createCentroCusto(input: $input) {
+      id
+      nome
+      codigo
+    }
+  }
+`;
+
+const GET_CENTROS_CUSTO_CLIENTE_ID = gql`
+  query CentroCustoEmpresaClienteId($centroCustoEmpresaClienteId: ID!) {
+    centroCustoEmpresaClienteId(id: $centroCustoEmpresaClienteId) {
+      id
+      nome
+      codigo
+      descricao
+      empresaClienteId {
+        id
+      }
+      operadoraId {
+        id
+      }
+    }
+  }
+`;
+
 function CriarCentroCusto() {
   const Cor = useTema().Cor;
   const [cxCriarCentroCusto, setCxCriarCentroCusto] = useState(false);
@@ -60,16 +87,6 @@ function ModalCriarSolicitante({
   const Cor = useTema().Cor;
   const { clienteId } = useParams();
 
-  const CRIAR_CENTRO_CUSTO = gql`
-    mutation CreateCentroCusto($input: CentroCustoInput!) {
-      createCentroCusto(input: $input) {
-        id
-        nome
-        codigo
-      }
-    }
-  `;
-
   const [nome, setNome] = useState("");
   const [codigo, setCodigo] = useState("");
   const [descricao, setDescricao] = useState("");
@@ -85,7 +102,16 @@ function ModalCriarSolicitante({
 
   const operadoraId = decoded ? decoded.operadoraId : null;
 
-  const [criarCentroCusto] = useMutation(CRIAR_CENTRO_CUSTO);
+  const [criarCentroCusto] = useMutation(CRIAR_CENTRO_CUSTO, {
+    refetchQueries: [
+      {
+        query: GET_CENTROS_CUSTO_CLIENTE_ID,
+        variables: {
+          centroCustoEmpresaClienteId: clienteId,
+        },
+      },
+    ],
+  });
 
   const criarCentroCustoFunc = async () => {
     await criarCentroCusto({
@@ -241,7 +267,9 @@ function ModalCriarSolicitante({
             onClick={() => {
               criarCentroCustoFunc();
               setCxCriarCentroCusto(false);
-              window.location.reload();
+              setNome("")
+              setCodigo("")
+              setDescricao("")
             }}
           >
             <p style={{ fontSize: 14, color: Cor.texto1, fontWeight: "bold" }}>
