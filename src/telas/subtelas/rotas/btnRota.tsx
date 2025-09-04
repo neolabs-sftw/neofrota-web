@@ -479,6 +479,7 @@ function BtnRota({ rota }: { rota: any }) {
             }}
             onClick={() => {
               setModalRota(false);
+              // Aqui eu saldo todas as categorias em "LinhaValores" de uma vez só
             }}
           >
             <p style={{ fontSize: 14, color: Cor.primariaTxt, fontWeight: "bold" }}>
