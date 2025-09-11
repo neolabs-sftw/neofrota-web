@@ -622,7 +622,7 @@ function LinhaValores({
 
   const Cor = useTema().Cor;
 
-  console.log(pedagio)
+  console.log(pedagio )
 
   return (
     <div
