@@ -40,6 +40,29 @@ const GET_ROTAS = gql`
       }
       rotaValor {
         id
+        rotaId {
+          id
+          origem
+          destino
+        }
+        categoria
+        empresaClienteId {
+          id
+        }
+        operadoraId {
+          id
+        }
+        valorViagem
+        valorViagemRepasse
+        valorHoraParada
+        valorHoraParadaRepasse
+        valorDeslocamento
+        valorDeslocamentoRepasse
+        valorPedagio {
+          id
+          nome
+          valor
+        }
       }
     }
   }
@@ -175,7 +198,7 @@ const DividerH = styled.div<DividerHProps>`
 function ConteudoRotas() {
   const adminLogado = useAdminLogado();
 
-  const Cor = useTema().Cor
+  const Cor = useTema().Cor;
 
   const [modalSelect, setModalSelect] = useState(false);
 
@@ -202,7 +225,6 @@ function ConteudoRotas() {
   const empresas = empresaCliente?.empresaClienteOper;
 
   const rotas = rotasCliente?.rotaEmpresaClienteId;
-
   return (
     <div
       style={{
@@ -229,7 +251,15 @@ function ConteudoRotas() {
             justifyContent: "center",
           }}
         >
-          <p style={{ fontSize: 24, fontWeight: "bold", color: Cor.primariaTxt + 99}}>Selecione uma Empresa</p>
+          <p
+            style={{
+              fontSize: 24,
+              fontWeight: "bold",
+              color: Cor.primariaTxt + 99,
+            }}
+          >
+            Selecione uma Empresa
+          </p>
         </div>
       ) : (
         <BarraUtilirios empresaSelecionada={empresaSelecionada} />

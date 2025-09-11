@@ -6,31 +6,30 @@ import { jwtDecode } from "jwt-decode";
 
 const GET_UNIDADES_EMPRESA_CLIENTE = gql`
   query ListaUnidadesEmpresaClienteId($empresaClienteId: ID!) {
-  listaUnidadesEmpresaClienteId(id: $empresaClienteId) {
-    id
-    nome
-    cnpj
-    endRua
-    endNumero
-    endBairro
-    endCep
-    endCidade
-    endComplemento
-    endUf
-    statusUnidadeCliente
-    matriz
+    listaUnidadesEmpresaClienteId(id: $empresaClienteId) {
+      id
+      nome
+      cnpj
+      endRua
+      endNumero
+      endBairro
+      endCep
+      endCidade
+      endComplemento
+      endUf
+      statusUnidadeCliente
+      matriz
     }
   }
 `;
 
-
-  const CRIAR_UNIDADE_CLIENTE = gql`
-    mutation CreateUnidadeEmpresaCliente($input: UnidadeEmpresaClienteInput!) {
-      createUnidadeEmpresaCliente(input: $input) {
-        id
-      }
+const CRIAR_UNIDADE_CLIENTE = gql`
+  mutation CreateUnidadeEmpresaCliente($input: UnidadeEmpresaClienteInput!) {
+    createUnidadeEmpresaCliente(input: $input) {
+      id
     }
-  `;
+  }
+`;
 
 function CriarUnidades() {
   const Cor = useTema().Cor;
@@ -112,7 +111,7 @@ function ModalCriarUnidade({
   const operadoraIdBigInt = decoded ? decoded.operadoraId : null;
   const operadoraId = operadoraIdBigInt ? parseInt(operadoraIdBigInt) : null;
 
-  const [criarUnidadeMutation] = useMutation(CRIAR_UNIDADE_CLIENTE,{
+  const [criarUnidadeMutation] = useMutation(CRIAR_UNIDADE_CLIENTE, {
     refetchQueries: [
       {
         query: GET_UNIDADES_EMPRESA_CLIENTE,
@@ -121,9 +120,7 @@ function ModalCriarUnidade({
     ],
   });
 
-
   const criarUnidadeFunc = async () => {
-
     if (!nome || !cnpj || !endRua) {
       alert("Preencha os campos obrigatórios");
       return;
@@ -151,7 +148,7 @@ function ModalCriarUnidade({
     } catch (error) {
       console.error("Erro ao criar unidade:", error);
       alert("Erro ao criar unidade");
-    } 
+    }
   };
 
   return (
@@ -200,7 +197,11 @@ function ModalCriarUnidade({
           >
             <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
               <p
-                style={{ fontSize: 14, color: Cor.primariaTxt, fontWeight: "bold" }}
+                style={{
+                  fontSize: 14,
+                  color: Cor.primariaTxt,
+                  fontWeight: "bold",
+                }}
               >
                 Criar Unidade
               </p>
@@ -361,9 +362,24 @@ function ModalCriarUnidade({
             onClick={() => {
               criarUnidadeFunc();
               setCxAlertaCriarUnidade(false);
+              setNome("");
+              setCnpj("");
+              setEndRua("");
+              setEndNumero("");
+              setEndBairro("");
+              setEndCidade("");
+              setEndCep("");
+              setEndComplemento("");
+              setEndUf("");
             }}
           >
-            <p style={{ fontSize: 14, color: Cor.primariaTxt, fontWeight: "bold" }}>
+            <p
+              style={{
+                fontSize: 14,
+                color: Cor.primariaTxt,
+                fontWeight: "bold",
+              }}
+            >
               Salvar
             </p>
           </div>
