@@ -57,7 +57,7 @@ function EditPerfil() {
             <img
               src={
                 adminLogado?.fotoAdminOperadora ||
-                "../src/assets/image/img-bg.png"
+                "https://iyqleanlhzcnndzuugkg.supabase.co/storage/v1/object/public/neofrotabkt/img_perfis/default.png"
               }
               alt="Logo"
               style={{
