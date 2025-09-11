@@ -15,7 +15,7 @@ export const CorClara = {
   ativo: "#009C15",
   inativo: "#FF0000",
   sombra: "2px 2px 4px rgba(0, 0, 0, 0.05)",
-  logo: "src/assets/image/Logo-NeoFrotaL.png",
+  logo: "https://iyqleanlhzcnndzuugkg.supabase.co/storage/v1/object/public/neofrotabkt/Logo-NeoFrotaL.png",
 };
 
 export const CorEscura = {
@@ -35,5 +35,5 @@ export const CorEscura = {
   ativo: "#00FF22",
   inativo: "#FF0000",
   sombra: "2px 2px 4px rgba(0, 0, 0, 0.15)",
-  logo: "src/assets/image/Logo-NeoFrotaD.png",
+  logo: "https://iyqleanlhzcnndzuugkg.supabase.co/storage/v1/object/public/neofrotabkt/Logo-NeoFrotaD.png",
 };

@@ -92,7 +92,7 @@ function Login() {
         }}
       >
         <img
-          src="src/assets/image/bg.jpg"
+          src="https://iyqleanlhzcnndzuugkg.supabase.co/storage/v1/object/public/neofrotabkt/bg.jpg"
           alt="S"
           style={{
             width: "95vw",
@@ -205,7 +205,7 @@ function Login() {
         />
 
         <h3
-          style={{ color: Cor.texto1, marginBottom: "15px", marginTop: "15px" }}
+          style={{ color: Cor.primariaTxt, marginBottom: "15px", marginTop: "15px" }}
         >
           Login
         </h3>
@@ -296,7 +296,7 @@ function Login() {
           }}
           onClick={fazerLogin}
         >
-          <p style={{ color: Cor.texto1, fontWeight: "500" }}>
+          <p style={{ color: Cor.primariaTxt, fontWeight: "500" }}>
             {loading ? (
               <CircularProgress size={25} thickness={3} color="inherit" />
             ) : (
