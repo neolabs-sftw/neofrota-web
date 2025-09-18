@@ -55,7 +55,7 @@ const ModalCriarRota = styled.div<ModalStyledProps>`
 
 const CRIAR_ROTA = gql`
   mutation Mutation($data: RotaInput!) {
-    createRota(data: $data) {
+    createRota(input: $data) {
       origem
       destino
       operadoraId {

@@ -81,8 +81,6 @@ function CardDetalhesVeiculo({ motorista }: { motorista: any }) {
 
   const proprietarioId = dataProprietario?.relacaoAgrdFuncId?.motoristaComoAgregado?.id;
 
-  console.log(proprietarioId);
-
   const { data: dataCarrosFuncionario } = useQuery(
     GET_LISTA_VEICULOS_PROPRIEDADE,
     {

@@ -5,14 +5,30 @@ import { gql, useQuery } from "@apollo/client";
 import { useAdminLogado } from "../../../hooks/AdminLogado";
 
 const GET_PEDAGIOS = gql`
-  query PedagioOperadoraId($pedagioOperadoraIdId: ID!) {
-    pedagioOperadoraId(id: $pedagioOperadoraIdId) {
+  query PedagioOperadoraId($pedagioOperadoraId: ID!) {
+    pedagioOperadoraId(id: $pedagioOperadoraId) {
       id
       nome
       valor
       operadoraId {
         id
       }
+    }
+  }
+`;
+
+const UPDATE_ROTA = gql`
+  mutation UpdateRota($rotaId: ID!, $pedagioId: ID!) {
+    updateRota(rotaId: $rotaId, pedagioId: $pedagioId) {
+      id
+    }
+  }
+`;
+
+const UPDATE_ROTA_VALOR = gql`
+  mutation UpdateRotaValor($data: UpdateRotaValorInput!) {
+    updateRotaValor(data: $data) {
+      id
     }
   }
 `;
@@ -25,7 +41,7 @@ interface BtnRotaProps {
 }
 
 const BtnRotaStyled = styled.div<BtnRotaProps>`
-  width: calc(33.3% - 6.5px);
+  width: calc(50% - 5px);
   background-color: ${({ $bg }) => $bg};
   border-radius: 22px;
   display: flex;
@@ -133,25 +149,30 @@ function BtnRota({ rota }: { rota: any }) {
 
   const Cor = useTema().Cor;
 
+  const [rotaOrigem, setRotaOrigem] = useState(rota?.origem);
+  const [rotaDestino, setRotaDestino] = useState(rota?.destino);
+
   const modalRef = useRef<HTMLDivElement>(null);
 
   const rotaValor = rota?.rotaValor;
 
-  const rotaValorSedan = rotaValor?.find(
-    (rV: any) => rV?.categoria === "Sedan"
+  const [rotaValorSedan, setRotaValorSedan] = useState(
+    rotaValor?.find((rV: any) => rV?.categoria === "Sedan")
   );
-  const rotaValorMiniVan = rotaValor?.find(
-    (rV: any) => rV?.categoria === "MiniVan"
+  const [rotaValorMiniVan, setRotaValorMiniVan] = useState(
+    rotaValor?.find((rV: any) => rV?.categoria === "MiniVan")
   );
-  const rotaValorVan = rotaValor?.find((rV: any) => rV?.categoria === "Van");
-  const rotaValorMicro = rotaValor?.find(
-    (rV: any) => rV?.categoria === "Micro"
+  const [rotaValorVan, setRotaValorVan] = useState(
+    rotaValor?.find((rV: any) => rV?.categoria === "Van")
   );
-  const rotaValorOnibus = rotaValor?.find(
-    (rV: any) => rV?.categoria === "Onibus"
+  const [rotaValorMicro, setRotaValorMicro] = useState(
+    rotaValor?.find((rV: any) => rV?.categoria === "Micro")
   );
-  const rotaValorMaterial = rotaValor?.find(
-    (rV: any) => rV?.categoria === "Material"
+  const [rotaValorOnibus, setRotaValorOnibus] = useState(
+    rotaValor?.find((rV: any) => rV?.categoria === "Onibus")
+  );
+  const [rotaValorMaterial, setRotaValorMaterial] = useState(
+    rotaValor?.find((rV: any) => rV?.categoria === "Material")
   );
 
   useEffect(() => {
@@ -395,15 +416,27 @@ function BtnRota({ rota }: { rota: any }) {
                   alignItems: "center",
                 }}
               >
-                <p
+                <input
+                  type="text"
                   style={{
-                    fontSize: 22,
+                    appearance: "none",
+                    outline: "none",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    textAlign: "center",
+                    width: "100%",
+                    height: "100%",
+                    backgroundColor: Cor.base,
+                    border: "1px solid " + Cor.texto2 + 50,
+                    borderRadius: 8,
+                    fontSize: 18,
                     color: Cor.secundaria,
-                    fontWeight: "bold",
+                    fontWeight: "400",
                   }}
-                >
-                  {rota?.origem}
-                </p>
+                  value={rotaOrigem}
+                  onChange={(e) => setRotaOrigem(e.target.value)}
+                />
               </div>
             </div>
             <p
@@ -446,15 +479,27 @@ function BtnRota({ rota }: { rota: any }) {
                   alignItems: "center",
                 }}
               >
-                <p
+                <input
+                  type="text"
                   style={{
-                    fontSize: 22,
+                    appearance: "none",
+                    outline: "none",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    textAlign: "center",
+                    width: "100%",
+                    height: "100%",
+                    backgroundColor: Cor.base,
+                    border: "1px solid " + Cor.texto2 + 50,
+                    borderRadius: 8,
+                    fontSize: 18,
                     color: Cor.secundaria,
-                    fontWeight: "bold",
+                    fontWeight: "400",
                   }}
-                >
-                  {rota?.destino}
-                </p>
+                  value={rotaDestino}
+                  onChange={(e) => setRotaDestino(e.target.value)}
+                />
               </div>
             </div>
           </div>
@@ -539,12 +584,36 @@ function BtnRota({ rota }: { rota: any }) {
               </p>
             </div>
           </div>
-          <LinhaValores tipoCarro="Hatch/Sedan" rotaValor={rotaValorSedan} />
-          <LinhaValores tipoCarro="Minivan/7" rotaValor={rotaValorMiniVan} />
-          <LinhaValores tipoCarro="Van" rotaValor={rotaValorVan} />
-          <LinhaValores tipoCarro="Micro" rotaValor={rotaValorMicro} />
-          <LinhaValores tipoCarro="Ônibus" rotaValor={rotaValorOnibus} />
-          <LinhaValores tipoCarro="Material" rotaValor={rotaValorMaterial} />
+          <LinhaValores
+            tipoCarro="Hatch/Sedan"
+            rotaValor={rotaValorSedan}
+            setRotaValor={setRotaValorSedan}
+          />
+          {/* <LinhaValores
+            tipoCarro="Minivan/7"
+             rotaValor={rotaValorMiniVan}
+             setRotaValor={setRotaValorMiniVan}
+           />
+          <LinhaValores
+            tipoCarro="Van"
+            rotaValor={rotaValorVan}
+            setRotaValor={setRotaValorVan}
+          />
+          <LinhaValores
+            tipoCarro="Micro"
+            rotaValor={rotaValorMicro}
+            setRotaValor={setRotaValorMicro}
+          />
+          <LinhaValores
+            tipoCarro="Ônibus"
+            rotaValor={rotaValorOnibus}
+            setRotaValor={setRotaValorOnibus}
+          />
+          <LinhaValores
+            tipoCarro="Material"
+            rotaValor={rotaValorMaterial}
+            setRotaValor={setRotaValorMaterial}
+          />*/}
           <DividerH $color={Cor.secundaria + 50} />
           <div
             style={{
@@ -564,8 +633,8 @@ function BtnRota({ rota }: { rota: any }) {
                 borderRadius: 22,
               }}
               onClick={() => {
-                setModalRota(false);
-                // Aqui eu saldo todas as categorias em "LinhaValores" de uma vez só
+                // setModalRota(false);
+                // Aqui eu salvo todas as categorias em "LinhaValores" de uma vez só
               }}
             >
               <p
@@ -588,15 +657,17 @@ function BtnRota({ rota }: { rota: any }) {
 function LinhaValores({
   tipoCarro,
   rotaValor,
+  setRotaValor,
 }: {
   tipoCarro: string;
   rotaValor: any;
+  setRotaValor: any;
 }) {
   const logado = useAdminLogado();
 
   const { data: pegadios } = useQuery(GET_PEDAGIOS, {
     variables: {
-      pedagioOperadoraIdId: logado?.operadora?.id,
+      pedagioOperadoraId: logado?.operadora?.id,
     },
   });
 
@@ -609,7 +680,7 @@ function LinhaValores({
   const [valorHoraParada, setValorHoraParada] = useState(
     rotaValor?.valorHoraParada || ""
   );
-  const [pedagio, setPedagio] = useState(rotaValor?.pedagio || "");
+  const [pedagio, setPedagio] = useState(rotaValor?.valorPedagio || "");  
   const [valorViagemRepasse, setValorViagemRepasse] = useState(
     rotaValor?.valorViagemRepasse || ""
   );
@@ -622,7 +693,8 @@ function LinhaValores({
 
   const Cor = useTema().Cor;
 
-  console.log(pedagio )
+  console.log(rotaValor);
+  console.log(pedagio);
 
   return (
     <div
@@ -689,15 +761,27 @@ function LinhaValores({
               color: Cor.texto1,
               backgroundColor: "transparent",
             }}
-            value={pedagio.id}
+            value={pedagio}
             onChange={(e) => {
               setPedagio(e.target.value);
+              console.log(pedagio.nome)
             }}
           >
+            <option
+              value={0}
+              style={{
+                color: Cor.texto1,
+                appearance: "none",
+                backgroundColor: Cor.secundaria + 50,
+                padding: 8,
+              }}
+            >
+              Sem Pedágio
+            </option>
             {listaPedagios?.map((pedagio: any) => {
               return (
                 <option
-                  value={pedagio.id}
+                  value={pedagio}
                   key={pedagio.id}
                   style={{
                     color: Cor.texto1,

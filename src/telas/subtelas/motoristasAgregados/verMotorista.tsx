@@ -458,8 +458,6 @@ function ListaMotoristasFuncionarios({ motorista }: { motorista: any }) {
 
   const funcionarios = data?.listaFuncionariosAgregadoId;
 
-  console.log(funcionarios);
-
   const [createRelacaoAgrdFunc] = useMutation(CREATE_RELACAO);
 
   async function adicionarFuncionario() {
