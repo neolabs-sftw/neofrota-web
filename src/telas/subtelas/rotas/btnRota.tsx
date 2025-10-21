@@ -17,21 +17,21 @@ const GET_PEDAGIOS = gql`
   }
 `;
 
-const UPDATE_ROTA = gql`
-  mutation UpdateRota($rotaId: ID!, $pedagioId: ID!) {
-    updateRota(rotaId: $rotaId, pedagioId: $pedagioId) {
-      id
-    }
-  }
-`;
+// const UPDATE_ROTA = gql`
+//   mutation UpdateRota($rotaId: ID!, $pedagioId: ID!) {
+//     updateRota(rotaId: $rotaId, pedagioId: $pedagioId) {
+//       id
+//     }
+//   }
+// `;
 
-const UPDATE_ROTA_VALOR = gql`
-  mutation UpdateRotaValor($data: UpdateRotaValorInput!) {
-    updateRotaValor(data: $data) {
-      id
-    }
-  }
-`;
+// const UPDATE_ROTA_VALOR = gql`
+//   mutation UpdateRotaValor($data: UpdateRotaValorInput!) {
+//     updateRotaValor(data: $data) {
+//       id
+//     }
+//   }
+// `;
 
 interface BtnRotaProps {
   $bg: string;
@@ -591,7 +591,7 @@ function BtnRota({ rota }: { rota: any }) {
             rotaValor={rotaValorSedan}
             setRotaValor={setRotaValorSedan}
           />
-          {/* <LinhaValores
+          <LinhaValores
             tipoCarro="Minivan/7"
              rotaValor={rotaValorMiniVan}
              setRotaValor={setRotaValorMiniVan}
@@ -615,7 +615,7 @@ function BtnRota({ rota }: { rota: any }) {
             tipoCarro="Material"
             rotaValor={rotaValorMaterial}
             setRotaValor={setRotaValorMaterial}
-          />*/}
+          />
           <DividerH $color={Cor.secundaria + 50} />
           <div
             style={{
@@ -659,7 +659,7 @@ function BtnRota({ rota }: { rota: any }) {
 function LinhaValores({
   tipoCarro,
   rotaValor,
-  setRotaValor,
+  // setRotaValor,
 }: {
   tipoCarro: string;
   rotaValor: any;
@@ -682,7 +682,7 @@ function LinhaValores({
   const [valorHoraParada, setValorHoraParada] = useState(
     rotaValor?.valorHoraParada || ""
   );
-  const [pedagio, setPedagio] = useState(rotaValor?.valorPedagio || "0");
+  // const [pedagio, setPedagio] = useState(rotaValor?.valorPedagio || "0");
 
   const pegadioSelecionado = listaPedagios?.find(
     (pedagio: any) => pedagio.id === rotaValor?.pedagioId
@@ -769,10 +769,10 @@ function LinhaValores({
               backgroundColor: "transparent",
             }}
             value={pegadioSelecionado?.id || "0"}
-            onChange={(e) => {
-              setPedagio(e.target.value);
-              console.log(pegadioSelecionado?.nome);
-            }}
+            // onChange={(e) => {
+            //   setPedagio(e.target.value);
+            //   console.log(pegadioSelecionado?.nome);
+            // }}
           >
             <option
               value="0"

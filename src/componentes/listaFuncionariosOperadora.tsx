@@ -1,18 +1,18 @@
 import { useState } from "react";
 import { useTema } from "../hooks/temaContext";
 import styled from "styled-components";
-import { gql } from "@apollo/client";
+// import { gql } from "@apollo/client";
 
-const GET_ADMIN_USER_BY_OPERADORA = gql`
-  query AdminUserOperadora($operadoraId: String) {
-    adminUserOperadora(operadoraId: $operadoraId) {
-      id
-      nome
-      email
-      status
-    }
-  }
-`;
+// const GET_ADMIN_USER_BY_OPERADORA = gql`
+//   query AdminUserOperadora($operadoraId: String) {
+//     adminUserOperadora(operadoraId: $operadoraId) {
+//       id
+//       nome
+//       email
+//       status
+//     }
+//   }
+// `;
 
 interface TabelaFuncionariosProps {
   $texto1: string;
