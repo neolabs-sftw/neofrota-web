@@ -6,8 +6,8 @@ import { TemaProvider } from './hooks/temaContext.tsx'
 import { ApolloProvider, ApolloClient, InMemoryCache } from '@apollo/client';
 
 const client = new ApolloClient({
-  // uri: 'https://neofrotaservico.onrender.com/graphql',
-  uri: 'http://localhost:4000/graphql',
+  uri: 'https://neofrotaservico.onrender.com/graphql',
+  // uri: 'http://localhost:4000/graphql',
   cache: new InMemoryCache()
 })
 
