@@ -29,20 +29,21 @@ function EditPerfil() {
       >
         <div
           style={{
-            backgroundColor: Cor.base2 + 50,
+            backgroundColor: Cor.base2 + "AA",
             width: "200px",
             height: "50px",
             borderRadius: "100px",
-            border: "1px solid" + Cor.texto1 + 50,
+            border: "1.5px solid" + Cor.texto2 + 20,
             overflow: "hidden",
             display: "flex",
             flexDirection: "row",
             padding: "5px",
             justifyContent: "space-between",
             alignItems: "center",
-            backdropFilter: "blur(10px)",
+            backdropFilter: "blur(8px)",
             gap: "10px",
             zIndex: 10,
+            boxShadow: Cor.sombra
           }}
         >
           <div
@@ -94,11 +95,11 @@ function EditPerfil() {
         </div>
         <div
           style={{
-            backgroundColor: Cor.base2 + 50,
+            backgroundColor: Cor.base2 + "AA",
             width: "50px",
             height: aberto ? "150px" : "0px",
             borderRadius: aberto ? "0 100px 100px 100px" : 0,
-            border: "1px solid" + Cor.texto1 + 50,
+            border: "1.5px solid" + Cor.texto2 + 20,
             opacity: aberto ? 1 : 0,
             overflow: "hidden",
             display: "flex",
@@ -110,6 +111,7 @@ function EditPerfil() {
             transition: "0.3s ease-in-out",
             gap: "10px",
             padding: "5px",
+            boxShadow: Cor.sombra
           }}
         >
           <div
@@ -117,7 +119,7 @@ function EditPerfil() {
               width: 40,
               height: 40,
               backgroundColor: Cor.base2,
-              border: "1px solid" + Cor.texto1 + 50,
+              border: "1px solid" + Cor.texto2 + 50,
               borderRadius: "100px",
               display: "flex",
               alignItems: "center",
@@ -145,7 +147,7 @@ function EditPerfil() {
               width: 40,
               height: 40,
               backgroundColor: Cor.base2,
-              border: "1px solid" + Cor.texto1 + 50,
+              border: "1px solid" + Cor.texto2 + 50,
               borderRadius: "100px",
               display: "flex",
               alignItems: "center",

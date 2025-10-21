@@ -25,47 +25,45 @@ const GET_EMPRESAS_CLIENTES = gql`
 `;
 
 const GET_ROTAS = gql`
-  query RotaEmpresaClienteId($rotaEmpresaClienteId: ID!) {
-    rotaEmpresaClienteId(id: $rotaEmpresaClienteId) {
+ query RotaEmpresaClienteId($rotaEmpresaClienteId: ID!) {
+  rotaEmpresaClienteId(id: $rotaEmpresaClienteId) {
+    id
+    origem
+    destino
+    operadoraId {
+      id nome
+    }
+    empresaClienteId {
+      id nome
+    }
+    rotaValor {
       id
-      origem
-      destino
-      operadoraId {
+      rotaId{
+        id
+        origem
+        destino
+      }
+      categoria
+      empresaClienteId{
+        id
+      }
+      operadoraId{
+        id
+      }
+      valorViagem
+      valorViagemRepasse
+      valorHoraParada
+      valorHoraParadaRepasse
+      valorDeslocamento
+      valorDeslocamentoRepasse
+      valorPedagio {
         id
         nome
-      }
-      empresaClienteId {
-        id
-        nome
-      }
-      rotaValor {
-        id
-        rotaId {
-          id
-          origem
-          destino
-        }
-        categoria
-        empresaClienteId {
-          id
-        }
-        operadoraId {
-          id
-        }
-        valorViagem
-        valorViagemRepasse
-        valorHoraParada
-        valorHoraParadaRepasse
-        valorDeslocamento
-        valorDeslocamentoRepasse
-        valorPedagio {
-          id
-          nome
-          valor
-        }
+        valor
       }
     }
   }
+}
 `;
 
 function Rotas() {

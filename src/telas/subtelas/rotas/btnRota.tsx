@@ -199,9 +199,11 @@ function BtnRota({ rota }: { rota: any }) {
             gap: 5,
           }}
         >
-          <p style={{ fontSize: 14, color: Cor.secundaria }}>Rota</p>
+          <p style={{ fontSize: 14, color: Cor.secundaria }}>
+            Rota ID: {rota?.id}
+          </p>
           <div
-            style={{ width: "80%", height: 1, backgroundColor: Cor.secundaria }}
+            style={{ width: "70%", height: 1, backgroundColor: Cor.secundaria }}
           />
           <div className="abrirModal" onClick={() => setModalRota(!modalRota)}>
             <p
@@ -680,7 +682,12 @@ function LinhaValores({
   const [valorHoraParada, setValorHoraParada] = useState(
     rotaValor?.valorHoraParada || ""
   );
-  const [pedagio, setPedagio] = useState(rotaValor?.valorPedagio || "");  
+  const [pedagio, setPedagio] = useState(rotaValor?.valorPedagio || "0");
+
+  const pegadioSelecionado = listaPedagios?.find(
+    (pedagio: any) => pedagio.id === rotaValor?.pedagioId
+  );
+
   const [valorViagemRepasse, setValorViagemRepasse] = useState(
     rotaValor?.valorViagemRepasse || ""
   );
@@ -693,8 +700,8 @@ function LinhaValores({
 
   const Cor = useTema().Cor;
 
-  console.log(rotaValor);
-  console.log(pedagio);
+  // console.log(rotaValor);
+  // console.log(pedagio);
 
   return (
     <div
@@ -761,14 +768,14 @@ function LinhaValores({
               color: Cor.texto1,
               backgroundColor: "transparent",
             }}
-            value={pedagio}
+            value={pegadioSelecionado?.id || "0"}
             onChange={(e) => {
               setPedagio(e.target.value);
-              console.log(pedagio.nome)
+              console.log(pegadioSelecionado?.nome);
             }}
           >
             <option
-              value={0}
+              value="0"
               style={{
                 color: Cor.texto1,
                 appearance: "none",
@@ -778,22 +785,11 @@ function LinhaValores({
             >
               Sem Pedágio
             </option>
-            {listaPedagios?.map((pedagio: any) => {
-              return (
-                <option
-                  value={pedagio}
-                  key={pedagio.id}
-                  style={{
-                    color: Cor.texto1,
-                    appearance: "none",
-                    backgroundColor: Cor.secundaria + 50,
-                    padding: 8,
-                  }}
-                >
-                  {pedagio.nome}
-                </option>
-              );
-            })}
+            {listaPedagios?.map((p: any) => (
+              <option key={p.id} value={p.id}>
+                {p.nome}
+              </option>
+            ))}
           </select>
           <p
             style={{

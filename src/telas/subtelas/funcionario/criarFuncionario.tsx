@@ -2,75 +2,108 @@ import { useState } from "react";
 import BaseTelas from "../../../componentes/baseTelas";
 import EditPerfil from "../../../componentes/editPerfil";
 import { useTema } from "../../../hooks/temaContext";
+import CircularProgress from "@mui/material/CircularProgress";
 import { gql, useMutation } from "@apollo/client";
-import { jwtDecode } from "jwt-decode";
+import { useAdminLogado } from "../../../hooks/AdminLogado";
 import { supabase } from "../../../hooks/supabaseClient";
 import { useNavigate } from "react-router-dom";
-import CircularProgress from "@mui/material/CircularProgress";
+import CxCarregamento from "../../../componentes/cxCarregamento";
+import Lottie from "lottie-react";
+import check from "../../../assets/animations/Check.json";
 
-function CriarMotorista() {
+const CRIAR_FUNCIONARIO_MUTATION = gql`
+  mutation CreateAdminUsuario($data: AdminUsuarioInput!) {
+    createAdminUsuario(data: $data) {
+      id
+    }
+  }
+`;
+
+function CriarFuncionario() {
   return BaseTelas({
     conteudo: (
       <>
         <EditPerfil />
-        <CriarMotoristaConteudo />
+        <CriarFuncionarioConteudo />
       </>
     ),
   });
 }
 
-export default CriarMotorista;
+export default CriarFuncionario;
 
-const CRIAR_MOTORISTA = gql`
-  mutation CreateMotorista($input: MotoristaInput!) {
-    createMotorista(input: $input) {
-      id
-      nome
-    }
-  }
-`;
-
-function CriarMotoristaConteudo() {
+function CriarFuncionarioConteudo() {
   const Cor = useTema().Cor;
+  const checkIcon = (
+    <Lottie
+      animationData={check}
+      loop={true}
+      style={{ width: 130, height: 130 }}
+    />
+  );
+  const erroIcon = (
+    <p
+      style={{
+        color: Cor.atencao,
+        fontSize: 120,
+        fontFamily: "Icone",
+        fontWeight: "bold",
+      }}
+    >
+      report
+    </p>
+  );
+  const [statusCx, setStatusCx] = useState<boolean>(false);
+  const [status, setStatus] = useState<string>("");
+  const [statusMsg, setStatusMsg] = useState<string>("");
+  const [statusIcon, setStatusIcon] = useState<any>(erroIcon);
+  const [nome, setNome] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [fotoFuncionario, setFotoFuncionario] = useState<File>();
+  const [funcao, setFuncao] = useState<string>("");
+
+  const useAdmin = useAdminLogado();
 
   const navigate = useNavigate();
 
-  const token = localStorage.getItem("token");
+  const operadoraId = useAdmin?.operadora?.id;
 
-    interface JwtPayload {
-    adminUsuarioId?: string;
-    operadoraId?: string;
-  }
+  const [imgPreview, setImgPreview] = useState<string>("");
 
-  const decoded = token ? jwtDecode<JwtPayload>(token) : null;
-  const operadoraId = decoded ? decoded.operadoraId : null;
-
-  const [nome, setNome] = useState("");
-  const [email, setEmail] = useState("");
-  const [fotoMotorista, setFoto_motorista] = useState<File>();
-  const [cpf, setCpf] = useState("");
-  const [cnh, setCnh] = useState("");
-  const [vCnh, setV_cnh] = useState("");
-  const [tipoMotorista, setTipo_motorista] = useState("");
-  const [imgPreview, setImgPreview] = useState("");
-  const [status, setStatus] = useState<string>("");
-  const [statusCx, setStatusCx] = useState<boolean>(false);
-
-  const [criarMotorista, { loading, error }] = useMutation(CRIAR_MOTORISTA);
+  //   const [error, serError] = useState<boolean>(false);
 
   const carregarImagem = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setImgPreview(URL.createObjectURL(file));
-      setFoto_motorista(file);
+      setFotoFuncionario(file);
     }
   };
 
-  const criarMotoristaFunc = async () => {
+  const [criarFuncionario, { loading, error }] = useMutation(
+    CRIAR_FUNCIONARIO_MUTATION
+  );
+
+  const criarfuncionariofunc = async () => {
     setStatusCx(true);
     setStatus("Validando dados...");
+    setStatusIcon(
+      <CircularProgress sx={{ color: Cor.primaria }} thickness={5} size={120} />
+    );
+
+    if (!nome || !email || !funcao) {
+      setStatus("Você precisa preencher todos os campos para seguir.");
+      setStatusMsg("Erro!");
+      setStatusIcon(erroIcon);
+      setTimeout(() => {
+        setStatusCx(false);
+      }, 4000);
+      return;
+    }
 
     if (!operadoraId) {
+      setStatusMsg("Erro Crítico!");
+      setStatusIcon(erroIcon);
       setStatus(
         "Erro: Informações de autenticação não encontradas. Por favor, faça login novamente."
       );
@@ -78,26 +111,17 @@ function CriarMotoristaConteudo() {
       return;
     }
 
-    if (!nome || !email || !cpf || !cnh || !vCnh || !tipoMotorista) {
-      setStatus("Erro: Por favor, preencha todos os campos obrigatórios.");
-      setTimeout(() => setStatusCx(false), 4000);
-      return;
-    }
-
     try {
       let fotoUrlFinal = null;
-      if (fotoMotorista) {
+      if (fotoFuncionario) {
         setStatus("Fazendo upload da imagem...");
 
-        const nomeImg = `foto_perfil_motorista/${cpf.replace(
-          /\D/g,
-          ""
-        )}-${Date.now()}.png`;
+        const nomeImg = `img_perfis/${nome}-${Date.now()}.png`;
         const bucket = "neofrotabkt";
 
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from(bucket)
-          .upload(nomeImg, fotoMotorista);
+          .upload(nomeImg, fotoFuncionario);
 
         if (uploadError) {
           throw uploadError;
@@ -113,30 +137,31 @@ function CriarMotoristaConteudo() {
       }
       setStatus("Enviando dados para o servidor...");
 
-      await criarMotorista({
+      await criarFuncionario({
         variables: {
-          input: {
+          data: {
             nome,
             email,
-            fotoMotorista: fotoUrlFinal,
-            cpf,
-            cnh,
-            vCnh,
-            tipoMotorista,
-            operadoraId: parseInt(operadoraId, 10),
+            senha: "0000",
+            fotoAdminOperadora: fotoUrlFinal,
+            funcao,
+            operadoraId: String(operadoraId),
           },
         },
       });
-
-      setStatus("Motorista criado com sucesso!");
+      setStatusIcon(checkIcon);
+      setStatus("Funcionario criado com sucesso!");
       setTimeout(() => {
         setStatusCx(false);
-        navigate("/agregados");
-        window.location.reload();
-      }, 2000);
+      }, 3000);
+      setTimeout(() => {
+        navigate("/funcionarios");
+      }, 3050);
     } catch (err) {
-      console.error("Erro ao criar motorista:", err);
-      setStatus(`Ocorreu um erro: ${err}`);
+      console.error("Erro ao criar funcionario:", err);
+      setStatusMsg("Erro!");
+      setStatusIcon(erroIcon);
+      setStatus("Erro ao criar funcionario");
       setTimeout(() => {
         setStatusCx(false);
       }, 4000);
@@ -145,6 +170,14 @@ function CriarMotoristaConteudo() {
 
   return (
     <>
+      {statusCx === true ? (
+        <CxCarregamento
+          status={status}
+          error={error?.message}
+          icone={statusIcon}
+          msg={statusMsg}
+        />
+      ) : null}
       <div
         style={{
           width: "100%",
@@ -156,49 +189,6 @@ function CriarMotoristaConteudo() {
           gap: 20,
         }}
       >
-        {statusCx && (
-          <div
-            style={{
-              width: "100vw",
-              height: "100vh",
-              backgroundColor: Cor.base2 + 50,
-              backdropFilter: "blur(5px)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              position: "absolute",
-              zIndex: 10,
-              top: 0,
-              left: 0,
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 20,
-                width: "20%",
-                height: "40%",
-                padding: 22,
-                backgroundColor: Cor.base,
-                borderRadius: 22,
-                boxShadow: Cor.sombra,
-                border: "1px solid" + Cor.texto1 + 50,
-              }}
-            >
-              <CircularProgress sx={{ color: Cor.primaria }} thickness={5} />
-              <p style={{ color: Cor.texto1 }}>Salvando...</p>
-              {status && <p style={{ color: Cor.texto1 }}>{status}</p>}
-              {error && (
-                <p style={{ color: "red" }}>
-                  Erro na mutation: {error.message}
-                </p>
-              )}
-            </div>
-          </div>
-        )}
         <div
           style={{
             width: "100%",
@@ -210,7 +200,7 @@ function CriarMotoristaConteudo() {
           }}
         >
           <h3 style={{ color: Cor.secundaria, fontSize: "20px" }}>
-            Novo Motorista
+            Novo Funcionário
           </h3>
           <div
             style={{
@@ -281,7 +271,7 @@ function CriarMotoristaConteudo() {
                 }}
               >
                 <TextoEntrada
-                  placeholder="Nome do Motorista"
+                  placeholder="Nome do Funcionário"
                   onChange={(e: { target: { value: any } }) =>
                     setNome(e.target.value)
                   }
@@ -298,46 +288,6 @@ function CriarMotoristaConteudo() {
                   type="text"
                   largura="100%"
                 />
-                <TextoEntrada
-                  placeholder="CPF"
-                  onChange={(e: { target: { value: any } }) => {
-                    setCpf(formatCPF(e.target.value));
-                  }}
-                  value={cpf}
-                  type="text"
-                  largura="100%"
-                />
-                <div style={{ display: "flex", flexDirection: "row", gap: 10 }}>
-                  <TextoEntrada
-                    placeholder="CNH"
-                    onChange={(e: { target: { value: any } }) =>
-                      setCnh(e.target.value)
-                    }
-                    value={cnh}
-                    type="text"
-                    largura="60%"
-                  />
-                  <div
-                    style={{
-                      width: "40%",
-                      display: "flex",
-                      flexDirection: "row",
-                      alignItems: "center",
-                      gap: 5,
-                    }}
-                  >
-                    <p style={{ color: Cor.texto1, fontSize: 12 }}>Válidade</p>
-                    <TextoEntrada
-                      placeholder="Validade CNH"
-                      onChange={(e: { target: { value: any } }) =>
-                        setV_cnh(e.target.value)
-                      }
-                      value={vCnh}
-                      type="date"
-                      largura="100%"
-                    />
-                  </div>
-                </div>
                 <div
                   style={{
                     display: "flex",
@@ -348,7 +298,7 @@ function CriarMotoristaConteudo() {
                   }}
                 >
                   <p style={{ color: Cor.texto1, fontSize: 12 }}>
-                    Tipo de Motorista
+                    Tipo do Funcionário
                   </p>
                   <select
                     style={{
@@ -362,11 +312,13 @@ function CriarMotoristaConteudo() {
                       color: Cor.texto1,
                       fontSize: 12,
                     }}
-                    onChange={(e) => setTipo_motorista(e.target.value)}
+                    onChange={(e) => setFuncao(e.target.value)}
                   >
                     <option value="">Escolha</option>
-                    <option value="Agregado">Agredado</option>
-                    <option value="Funcionario">Funcionário</option>
+                    <option value="Master">Master</option>
+                    <option value="Admin">Administrador(a)</option>
+                    <option value="Finc">Financeiro(a)</option>
+                    <option value="Oper">Operador(a)</option>
                   </select>
                 </div>
               </div>
@@ -395,7 +347,7 @@ function CriarMotoristaConteudo() {
                 }}
               >
                 <p style={{ color: Cor.texto1, fontSize: 12 }}>
-                  Adicione a logo da empresa.
+                  Adicione a foto do funcionário.
                 </p>
                 <div
                   style={{ display: "flex", flexDirection: "column", gap: 20 }}
@@ -437,7 +389,7 @@ function CriarMotoristaConteudo() {
                 cursor: "pointer",
               }}
               onClick={() => {
-                criarMotoristaFunc();
+                criarfuncionariofunc();
               }}
             >
               {loading ? "Salvando..." : "Salvar"}
@@ -489,13 +441,4 @@ function TextoEntrada({
       />
     </div>
   );
-}
-
-function formatCPF(value: any) {
-  return value
-    .replace(/\D/g, "") // Remove tudo que não é número
-    .replace(/^(\d{3})(\d)/, "$1.$2")
-    .replace(/^(\d{3})\.(\d{3})(\d)/, "$1.$2.$3")
-    .replace(/(\d{3})(\d)/, "$1-$2")
-    .slice(0, 14); // Limita o tamanho
 }
