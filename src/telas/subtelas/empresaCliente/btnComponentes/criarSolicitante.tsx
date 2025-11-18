@@ -53,7 +53,7 @@ function criarSolicitante({ empresaClienteId }: { empresaClienteId: any }) {
     <>
       <div
         style={{
-          width: "30%",
+          width: "25%",
           height: 100,
           backgroundColor: Cor.base2,
           borderRadius: 22,
@@ -61,7 +61,7 @@ function criarSolicitante({ empresaClienteId }: { empresaClienteId: any }) {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          border: "2px solid" + Cor.primaria + 50,
+          border: "1px solid" + Cor.primaria + 50,
           boxShadow: Cor.sombra,
           cursor: "pointer",
         }}

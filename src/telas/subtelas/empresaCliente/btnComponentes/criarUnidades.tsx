@@ -40,7 +40,7 @@ function CriarUnidades() {
     <>
       <div
         style={{
-          width: "25%",
+          width: "20%",
           height: 100,
           backgroundColor: Cor.base2,
           borderRadius: 22,
@@ -48,7 +48,7 @@ function CriarUnidades() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          border: "2px solid" + Cor.primaria + 50,
+          border: "1px solid" + Cor.primaria + 50,
           cursor: "pointer",
           boxShadow: Cor.sombra,
         }}

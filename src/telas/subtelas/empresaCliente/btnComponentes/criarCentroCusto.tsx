@@ -9,7 +9,6 @@ const CRIAR_CENTRO_CUSTO = gql`
     createCentroCusto(input: $input) {
       id
       nome
-      codigo
     }
   }
 `;
@@ -20,7 +19,6 @@ const GET_CENTROS_CUSTO_CLIENTE_ID = gql`
       id
       nome
       codigo
-      descricao
       empresaClienteId {
         id
       }
@@ -39,7 +37,7 @@ function CriarCentroCusto() {
     <>
       <div
         style={{
-          width: "30%",
+          width: "25%",
           height: 100,
           backgroundColor: Cor.base2,
           borderRadius: 22,
@@ -47,7 +45,7 @@ function CriarCentroCusto() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          border: "2px solid" + Cor.primaria + 50,
+          border: "1px solid" + Cor.primaria + 50,
           boxShadow: Cor.sombra,
           cursor: "pointer",
         }}
@@ -64,7 +62,7 @@ function CriarCentroCusto() {
           arrows_input
         </p>
         <p style={{ textAlign: "center", fontSize: 12, color: Cor.texto1 }}>
-          Centro de Custo
+          Centro de <br/> Custo
         </p>
       </div>
       <ModalCriarSolicitante
@@ -89,7 +87,6 @@ function ModalCriarSolicitante({
 
   const [nome, setNome] = useState("");
   const [codigo, setCodigo] = useState("");
-  const [descricao, setDescricao] = useState("");
 
   const token = localStorage.getItem("token");
 
@@ -119,7 +116,6 @@ function ModalCriarSolicitante({
         input: {
           nome: nome,
           codigo: codigo,
-          descricao: descricao,
           empresaClienteId: parseInt(clienteId as string),
           operadoraId: Number(operadoraId),
         },
@@ -229,15 +225,7 @@ function ModalCriarSolicitante({
             type="text"
             largura="100%"
           />
-          <TextoEntrada
-            placeholder="Descrição"
-            onChange={(e) => {
-              setDescricao(e.target.value);
-            }}
-            value={descricao}
-            type="text"
-            largura="100%"
-          />
+        
         </div>
 
         <div
@@ -269,7 +257,6 @@ function ModalCriarSolicitante({
               setCxCriarCentroCusto(false);
               setNome("")
               setCodigo("")
-              setDescricao("")
             }}
           >
             <p style={{ fontSize: 14, color: Cor.texto1, fontWeight: "bold" }}>

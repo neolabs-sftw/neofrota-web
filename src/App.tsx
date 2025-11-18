@@ -17,6 +17,7 @@ import EditarMotorista from "./telas/subtelas/motoristasAgregados/editarMotorist
 import VerMotorista from "./telas/subtelas/motoristasAgregados/verMotorista";
 import Rotas from "./telas/subtelas/rotas/rotas";
 import CriarFuncionario from "./telas/subtelas/funcionario/criarFuncionario";
+import Passageiros from "./telas/subtelas/empresaCliente/passageiros";
 
 function App() {
   return (
@@ -52,6 +53,7 @@ function App() {
               <Route path="/criarmotorista" element={<CriarMotorista />} />
               <Route path="/rotas" element={<Rotas />} />
               <Route path="/criarfuncionario" element={<CriarFuncionario />} />
+              <Route path="/passageiros" element={<Passageiros />} />
             </Route>
           </Routes>
         </BrowserRouter>

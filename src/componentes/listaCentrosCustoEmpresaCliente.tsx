@@ -9,7 +9,6 @@ const GET_CENTROS_CUSTO_CLIENTE_ID = gql`
       id
       nome
       codigo
-      descricao
       empresaClienteId {
         id
       }
@@ -182,7 +181,6 @@ function ListaCentrosCustoEmpresaCliente() {
           >
             <th>Nome</th>
             <th>Código</th>
-            <th>Descição</th>
             <th>Açoes</th>
           </tr>
         </thead>
@@ -196,7 +194,6 @@ function ListaCentrosCustoEmpresaCliente() {
             <tr key={solicitante.id}>
               <td>{solicitante.nome}</td>
               <td>{solicitante.codigo}</td>
-              <td>{solicitante.descricao}</td>
               <td>
                 <div
                   style={{

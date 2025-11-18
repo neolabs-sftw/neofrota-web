@@ -107,28 +107,28 @@ function VerEmpresaConteudo({
 
 function Cabecalho() {
   const GET_UNIDADE_MATRIZ = gql`
-   query UnidadeMatrizEmpresaCliente($empresaClienteId: ID!) {
-  unidadeMatrizEmpresaCliente(empresaClienteId: $empresaClienteId) {
-    id
-    nome
-    cnpj
-    endRua
-    endNumero
-    endBairro
-    endCep
-    endCidade
-    endComplemento
-    endUf
-    statusUnidadeCliente
-    matriz
-    empresaClienteId {
-      id
+    query UnidadeMatrizEmpresaCliente($empresaClienteId: ID!) {
+      unidadeMatrizEmpresaCliente(empresaClienteId: $empresaClienteId) {
+        id
+        nome
+        cnpj
+        endRua
+        endNumero
+        endBairro
+        endCep
+        endCidade
+        endComplemento
+        endUf
+        statusUnidadeCliente
+        matriz
+        empresaClienteId {
+          id
+        }
+        operadoraId {
+          id
+        }
+      }
     }
-    operadoraId {
-      id
-    }
-  }
-}
   `;
   const Cor = useTema().Cor;
   const { clienteId } = useParams();
@@ -217,9 +217,7 @@ function Cabecalho() {
                 style={{
                   fontSize: 12,
                   fontWeight: "700",
-                  color: empresaCliente.statusCliente
-                    ? Cor.ativo
-                    : Cor.inativo,
+                  color: empresaCliente.statusCliente ? Cor.ativo : Cor.inativo,
                 }}
               >
                 {empresaCliente.statusCliente ? "Ativo" : "Inativo"}
@@ -399,11 +397,48 @@ function Cabecalho() {
             <CriarUnidades />
             <CriarSolicitante empresaClienteId={clienteId} />
             <CriarCentroCusto />
+            <BtnPassageiros />
           </div>
         </div>
         {/*Fim Coluna Lado Direito detalhes Cliente */}
       </div>
     </div>
+  );
+}
+
+function BtnPassageiros() {
+  const Cor = useTema().Cor;
+
+  const navigate = useNavigate();
+  return (
+    <div
+      style={{
+        width: "25%",
+        height: 100,
+        backgroundColor: Cor.base2,
+        borderRadius: 22,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        border: "1px solid" + Cor.primaria + 50,
+        cursor: "pointer",
+        boxShadow: Cor.sombra,
+      }}
+      onClick={() => navigate("/passageiros")}
+    > <p
+          style={{
+            fontFamily: "Icone",
+            fontSize: 30,
+            color: Cor.primaria,
+            fontWeight: "bold",
+          }}
+        >
+         diversity_3
+        </p>
+        <p style={{ textAlign: "center", fontSize: 12, color: Cor.texto1 }}>
+          Passageiros
+        </p></div>
   );
 }
 

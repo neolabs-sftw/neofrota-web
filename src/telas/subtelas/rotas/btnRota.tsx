@@ -108,13 +108,13 @@ const OverlayModalRota = styled.div<OverlayRotaProps>`
   align-items: center;
   trasition: all 0.5s ease-in-out;
 `;
+
 interface ModalRotaProps {
   $bg: string;
   $modal: boolean;
   $sombra: string;
   $borda: string;
 }
-
 const ModalRota = styled.div<ModalRotaProps>`
   width: 70%;
   height: auto;

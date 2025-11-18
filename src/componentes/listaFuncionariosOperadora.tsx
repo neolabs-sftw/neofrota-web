@@ -1,18 +1,8 @@
 import { useState } from "react";
 import { useTema } from "../hooks/temaContext";
 import styled from "styled-components";
-// import { gql } from "@apollo/client";
-
-// const GET_ADMIN_USER_BY_OPERADORA = gql`
-//   query AdminUserOperadora($operadoraId: String) {
-//     adminUserOperadora(operadoraId: $operadoraId) {
-//       id
-//       nome
-//       email
-//       status
-//     }
-//   }
-// `;
+import { useListaAdminFuncionario } from "../hooks/useAdminFuncionario";
+import CircularProgress from "@mui/material/CircularProgress";
 
 interface TabelaFuncionariosProps {
   $texto1: string;
@@ -43,6 +33,7 @@ const TabelaFuncionarios = styled.table<TabelaFuncionariosProps>`
 `;
 
 const LinhaUsuario = styled.tr<LinhaFuncionarioProps>`
+  font-size: 14px;
   &:nth-child(even) {
     background-color: ${({ $base }) => $base};
   }
@@ -54,6 +45,9 @@ const LinhaUsuario = styled.tr<LinhaFuncionarioProps>`
 function ListaFuncionariosOperadora() {
   const [busca, setBusca] = useState("");
   const Cor = useTema().Cor;
+
+  const { listAdminFuncionario, loading } = useListaAdminFuncionario("1");
+
   return (
     <div
       style={{
@@ -168,100 +162,77 @@ function ListaFuncionariosOperadora() {
             <th style={{ width: "5%" }}>Id</th>
             <th style={{ width: "30%" }}>Nome</th>
             <th style={{ width: "20%" }}>E-mail</th>
-            <th style={{ width: "15%" }}>Telefone</th>
             <th style={{ width: "10%" }}>Função</th>
             <th style={{ width: "15%" }}>Status</th>
             <th style={{ width: "5%" }}>Ações</th>
           </tr>
         </thead>
         <tbody>
-          <LinhaUsuario $base={Cor.base} $texto1={Cor.texto1}>
-            <td>
-              <div style={{ display: "flex", flexDirection: "row", gap: 5 }}>
-                <img
-                  src="https://iyqleanlhzcnndzuugkg.supabase.co/storage/v1/object/public/neofrotabkt/img_perfis/lorena.png"
-                  alt=""
-                  style={{ width: 50, height: 50, borderRadius: "20%" }}
-                />
-              </div>
+          {loading ? (
+            <td
+              colSpan={7}
+              style={{
+                textAlign: "center",
+                justifyContent: "center",
+                alignItems: "center",
+                gap: 20,
+              }}
+            >
+              <text>Carregando...</text>
+              <CircularProgress size={15} thickness={3} color="inherit" />
             </td>
-            <td>Cristiane Assis Gonçalves</td>
-            <td>lorena_cs25@gmail.com</td>
-            <td>71 98485-4578</td>
-            <td>Ativo</td>
-            <td>Master</td>
-            <td>
-              <p
-                style={{
-                  fontFamily: "Icone",
-                  fontWeight: "bold",
-                  fontSize: "24px",
-                  color: Cor.primaria,
-                  cursor: "pointer",
-                }}
-              >
-                edit
-              </p>
-            </td>
-          </LinhaUsuario>
-          <LinhaUsuario $base={Cor.base} $texto1={Cor.texto1}>
-            <td>
-              <div style={{ display: "flex", flexDirection: "row", gap: 5 }}>
-                <img
-                  src="https://iyqleanlhzcnndzuugkg.supabase.co/storage/v1/object/public/neofrotabkt/img_perfis/lorena.png"
-                  alt=""
-                  style={{ width: 50, height: 50, borderRadius: "20%" }}
-                />
-              </div>
-            </td>
-            <td>Lorena Caises dos Santos</td>
-            <td>lorena_cs25@gmail.com</td>
-            <td>71 98485-4578</td>
-            <td>Ativo</td>
-            <td>Master</td>
-            <td>
-              <p
-                style={{
-                  fontFamily: "Icone",
-                  fontWeight: "bold",
-                  fontSize: "24px",
-                  color: Cor.primaria,
-                  cursor: "pointer",
-                }}
-              >
-                edit
-              </p>
-            </td>
-          </LinhaUsuario>
-          <LinhaUsuario $base={Cor.base} $texto1={Cor.texto1}>
-            <td>
-              <div style={{ display: "flex", flexDirection: "row", gap: 5 }}>
-                <img
-                  src="https://iyqleanlhzcnndzuugkg.supabase.co/storage/v1/object/public/neofrotabkt/img_perfis/lorena.png"
-                  alt=""
-                  style={{ width: 50, height: 50, borderRadius: "20%" }}
-                />
-              </div>
-            </td>
-            <td>Lorena Caises dos Santos</td>
-            <td>lorena_cs25@gmail.com</td>
-            <td>71 98485-4578</td>
-            <td>Ativo</td>
-            <td>Master</td>
-            <td>
-              <p
-                style={{
-                  fontFamily: "Icone",
-                  fontWeight: "bold",
-                  fontSize: "24px",
-                  color: Cor.primaria,
-                  cursor: "pointer",
-                }}
-              >
-                edit
-              </p>
-            </td>
-          </LinhaUsuario>
+          ) : (
+            listAdminFuncionario?.map((funcionario) => {
+              return (
+                <LinhaUsuario
+                  $base={Cor.base}
+                  $texto1={Cor.texto1}
+                  key={funcionario.id}
+                >
+                  <td>
+                    <div
+                      style={{ display: "flex", flexDirection: "row", gap: 5 }}
+                    >
+                      <img
+                        src={
+                          funcionario.fotoAdminOperadora
+                            ? funcionario.fotoAdminOperadora
+                            : "https://iyqleanlhzcnndzuugkg.supabase.co/storage/v1/object/public/neofrotabkt/img_perfis/default.png"
+                        }
+                        alt=""
+                        style={{
+                          width: 50,
+                          aspectRatio: 1,
+                          borderRadius: 14,
+                          objectFit: "cover",
+                          boxShadow: Cor.sombra,
+                        }}
+                      />
+                    </div>
+                  </td>
+                  <td>{funcionario?.nome}</td>
+                  <td>{funcionario?.email}</td>
+                  <td>{funcionario?.funcao}</td>
+                  <td>
+                    {funcionario?.statusAdminOperadora ? "Ativo" : "Inativo"}
+                  </td>
+                  <td>
+                    <p
+                      style={{
+                        fontFamily: "Icone",
+                        fontWeight: "bold",
+                        fontSize: "24px",
+                        color: Cor.primaria,
+                        cursor: "pointer",
+                      }}
+                    >
+                      edit
+                    </p>
+                  </td>
+                </LinhaUsuario>
+              );
+            })
+          )}
         </tbody>
       </TabelaFuncionarios>
     </div>
