@@ -53,7 +53,7 @@ function App() {
               <Route path="/criarmotorista" element={<CriarMotorista />} />
               <Route path="/rotas" element={<Rotas />} />
               <Route path="/criarfuncionario" element={<CriarFuncionario />} />
-              <Route path="/passageiros" element={<Passageiros />} />
+              <Route path="/passageiros/:clienteId" element={<Passageiros />} />
             </Route>
           </Routes>
         </BrowserRouter>

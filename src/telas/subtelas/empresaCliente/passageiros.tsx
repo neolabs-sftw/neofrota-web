@@ -58,6 +58,7 @@ function PassageirosConteudo() {
 
 function CadastrarNovoCliente() {
   const Cor = useTema().Cor;
+  
   return (
     <div
       style={{
@@ -136,8 +137,8 @@ const BtnLupa = styled.div<BtnLupaProps>`
   align-items: center;
   justify-content: center;
   border-radius: 0 22px 22px 0;
-  height: 50px;
-  width: 50px;
+  height: 40px;
+  width: 40px;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
 
@@ -167,7 +168,7 @@ function CampoBuscasPassageiros() {
         justifyContent: "space-between",
         backgroundColor: Cor.texto1 + 10,
         borderRadius: 22,
-        height: 50,
+        height: 40,
         marginRight: 50,
       }}
     >

@@ -397,7 +397,7 @@ function Cabecalho() {
             <CriarUnidades />
             <CriarSolicitante empresaClienteId={clienteId} />
             <CriarCentroCusto />
-            <BtnPassageiros />
+            <BtnPassageiros/>
           </div>
         </div>
         {/*Fim Coluna Lado Direito detalhes Cliente */}
@@ -408,6 +408,8 @@ function Cabecalho() {
 
 function BtnPassageiros() {
   const Cor = useTema().Cor;
+
+  const clienteId = useParams().clienteId;
 
   const navigate = useNavigate();
   return (
@@ -425,7 +427,7 @@ function BtnPassageiros() {
         cursor: "pointer",
         boxShadow: Cor.sombra,
       }}
-      onClick={() => navigate("/passageiros")}
+      onClick={() => navigate(`/passageiros/${clienteId}`)}
     > <p
           style={{
             fontFamily: "Icone",
@@ -437,7 +439,7 @@ function BtnPassageiros() {
          diversity_3
         </p>
         <p style={{ textAlign: "center", fontSize: 12, color: Cor.texto1 }}>
-          Passageiros
+          Passageiros {clienteId}
         </p></div>
   );
 }
