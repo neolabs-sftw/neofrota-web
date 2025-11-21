@@ -1,4 +1,4 @@
-import styled from "styled-components";
+// import styled from "styled-components";
 import { useTema } from "../hooks/temaContext";
 import { usePassageiros } from "../hooks/usePassageiros";
 import { useParams } from "react-router-dom";
@@ -8,7 +8,7 @@ function ListaPassageiros() {
 
   const clienteId = useParams().clienteId;
 
-  const { listaPassageiro, loading, error } = usePassageiros("1");
+  const { listaPassageiro } = usePassageiros("1");
 
   console.log(clienteId)
 
@@ -71,9 +71,9 @@ function ListaPassageiros() {
 
 export default ListaPassageiros;
 
-const TabelaPassageirosStyled = styled.table``;
+// const TabelaPassageirosStyled = styled.table``;
 
 
-function TabelaPassageiros() {
-  return <div></div>;
-}
+// function TabelaPassageiros() {
+//   return <div></div>;
+// }
