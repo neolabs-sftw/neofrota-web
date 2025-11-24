@@ -10,6 +10,12 @@ const GET_LIST_PASSAGEIROS_BY_EMPRESA_CLIENTE = gql`
       email
       ativo
       fotoPerfilPassageiro
+      endRua
+      endNumero
+      endBairro
+      endCidade
+      pontoApanha
+      horarioEmbarque
       centroCustoClienteId {
         id
         nome
@@ -30,6 +36,12 @@ interface Passageiro {
   email: string;
   ativo: boolean;
   fotoPerfilPassageiro: string;
+  endRua: string;
+  endNumero: string;
+  endBairro: string;
+  endCidade: string;
+  pontoApanha: string;
+  horarioEmbarque: string;
   centroCustoClienteId: {
     id: string;
     nome: string;
@@ -48,9 +60,12 @@ interface UsePassageirosResult {
 }
 
 export function usePassageiros(empresaClienteId: string) {
-  const { data, loading, error, refetch } = useQuery<UsePassageirosResult>(GET_LIST_PASSAGEIROS_BY_EMPRESA_CLIENTE, {
-    variables: { empresaClienteId },
-  });
+  const { data, loading, error, refetch } = useQuery<UsePassageirosResult>(
+    GET_LIST_PASSAGEIROS_BY_EMPRESA_CLIENTE,
+    {
+      variables: { empresaClienteId },
+    }
+  );
   return {
     listaPassageiro: data?.passageirosByEmpresaCliente,
     loading,
