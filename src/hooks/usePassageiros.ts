@@ -19,6 +19,7 @@ const GET_LIST_PASSAGEIROS_BY_EMPRESA_CLIENTE = gql`
       centroCustoClienteId {
         id
         nome
+        codigo
       }
       empresaClienteId {
         id
@@ -45,6 +46,7 @@ interface Passageiro {
   centroCustoClienteId: {
     id: string;
     nome: string;
+    codigo: string;
   };
   empresaClienteId: {
     id: string;

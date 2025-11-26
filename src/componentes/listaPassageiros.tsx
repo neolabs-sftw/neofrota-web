@@ -2,17 +2,17 @@ import styled from "styled-components";
 import { useTema } from "../hooks/temaContext";
 import { usePassageiros } from "../hooks/usePassageiros";
 import { useParams } from "react-router-dom";
+import { useEmpresaCliente } from "../hooks/useEmpresaCliente";
+import VerPassageiro from "../telas/subtelas/empresaCliente/btnComponentes/verPassageiro";
 
 function ListaPassageiros() {
   const Cor = useTema().Cor;
 
   const clienteId = useParams().clienteId;
 
-  const { listaPassageiro } = usePassageiros(clienteId!);
+  const empresaCliente = useEmpresaCliente(clienteId!).empresaCliente;
 
-  console.log(clienteId);
-
-  console.log(listaPassageiro);
+  const logo = empresaCliente?.fotoLogoCliente;
   return (
     <div
       style={{
@@ -39,12 +39,15 @@ function ListaPassageiros() {
             gap: 10,
           }}
         >
-          <div
+          <img
+            src={logo}
+            alt="Logo Empresa"
             style={{
               width: 50,
               height: 50,
-              backgroundColor: Cor.primaria,
-              borderRadius: 14,
+              borderRadius: 10,
+              objectFit: "cover",
+              boxShadow: Cor.sombra,
             }}
           />
           <div>
@@ -52,7 +55,11 @@ function ListaPassageiros() {
               Lista de Passageiros
             </p>
             <p style={{ fontSize: 12, color: Cor.secundaria }}>
-              Lista de passageiros cadastrados na empresa " ".
+              Lista de passageiros cadastrados na empresa{" "}
+              <strong style={{ fontSize: 16 }}>
+                {empresaCliente?.nome}
+              </strong>
+              .
             </p>
           </div>
         </div>
@@ -73,6 +80,7 @@ interface TabelaPassageirosProps {
 const TabelaPassageirosStyled = styled.table<TabelaPassageirosProps>`
   width: 100%;
   border-collapse: collapse;
+  font-size: 14px;
 
   th {
     text-align: left;
@@ -98,6 +106,7 @@ function TabelaPassageiros() {
   const Cor = useTema().Cor;
   const clienteId = useParams().clienteId;
   const { listaPassageiro } = usePassageiros(clienteId!);
+  console.log(listaPassageiro);
   return (
     <TabelaPassageirosStyled
       $texto1={Cor.texto1}
@@ -107,30 +116,17 @@ function TabelaPassageiros() {
       <thead>
         <tr>
           <th style={{ width: "5%", textAlign: "center" }}>Foto</th>
-          <th style={{ width: "25%", textAlign: "center" }}>Nome</th>
           <th style={{ width: "10%", textAlign: "center" }}>Matrícula</th>
-          <th style={{ width: "15%", textAlign: "center" }}>Telefone</th>
-          <th style={{ width: "30%", textAlign: "center" }}>Endereço</th>
+          <th style={{ width: "25%", textAlign: "center" }}>Nome</th>
           <th style={{ width: "5%", textAlign: "center" }}>Horário</th>
-          <th style={{ width: "10%", textAlign: "center" }}>Ações</th>
+          <th style={{ width: "30%", textAlign: "center" }}>Endereço</th>
+          <th style={{ width: "15%", textAlign: "center" }}>Centro Custo</th>
+          <th style={{ width: "10%", textAlign: "center" }}>Telefone</th>
         </tr>
       </thead>
       <tbody>
-        {listaPassageiro?.map((passageiro: any) => (
-          <tr key={passageiro.id}>
-            <td style={{ textAlign: "center" }}>
-              <img
-                src={passageiro.fotoPerfilPassageiro}
-                style={{ width: 35, height: 35, borderRadius: 10 }}
-              />
-            </td>
-            <td>{passageiro.nome}</td>
-            <td>{passageiro.matricula}</td>
-            <td>{passageiro.telefone}</td>
-            <td>
-              <text>{passageiro.endRua}, {passageiro.endBairro},</text>
-            </td>
-          </tr>
+        {listaPassageiro?.slice(60).map((passageiro: any) => (
+          <VerPassageiro passageiro={passageiro} key={passageiro.id}/>
         ))}
       </tbody>
     </TabelaPassageirosStyled>

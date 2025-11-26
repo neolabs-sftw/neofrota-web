@@ -176,7 +176,7 @@ function ListaEmpresasCadastradas() {
               }
 
             tr:hover {
-              background-color: ${Cor.texto1 + "05"};
+              background-color: ${Cor.texto1 + "10"};
               }`}
           </style>
           <thead
@@ -194,13 +194,12 @@ function ListaEmpresasCadastradas() {
               }}
             >
               <th style={{ width: 60, textAlign: "center" }}>Logo</th>
-              <th style={{ width: "20%" }}>Nome</th>
-              <th style={{ width: "10%" }}>Contato</th>
+              <th style={{ width: "25%" }}>Nome</th>
+              <th style={{ width: "15%" }}>Contato</th>
               <th style={{ width: "20%" }}>E-mail</th>
               <th style={{ width: "10%" }}>Telefone</th>
               <th style={{ width: "15%" }}>CNPJ</th>
               <th style={{ width: "10%", textAlign: "center" }}>Status</th>
-              <th style={{ width: "10%", textAlign: "center" }}>Ações</th>
             </tr>
           </thead>
           <tbody
@@ -212,7 +211,11 @@ function ListaEmpresasCadastradas() {
             {clientesFiltrados.map((cliente: any) => (
               <tr
                 key={cliente.id}
-                style={{ borderBottom: "1px solid" + Cor.texto2 + 10 }}
+                style={{
+                  borderBottom: "1px solid" + Cor.texto2 + 10,
+                  cursor: "pointer",
+                }}
+                onClick={() => navigate("/verempresa/" + cliente.id)}
               >
                 <td
                   style={{
@@ -263,41 +266,6 @@ function ListaEmpresasCadastradas() {
                   >
                     {cliente.statusCliente ? "Ativo" : "Inativo"}
                   </p>
-                </td>
-                <td>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "row",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: 25,
-                    }}
-                  >
-                    <p
-                      style={{
-                        fontFamily: "Icone",
-                        fontWeight: "bold",
-                        cursor: "pointer",
-                        color: Cor.texto1,
-                        fontSize: 22,
-                      }}
-                      onClick={() => navigate("/verempresa/" + cliente.id)}
-                    >
-                      visibility
-                    </p>
-                    <p
-                      style={{
-                        fontFamily: "Icone",
-                        fontWeight: "bold",
-                        cursor: "pointer",
-                        color: Cor.texto1,
-                        fontSize: 22,
-                      }}
-                    >
-                      edit
-                    </p>
-                  </div>
                 </td>
               </tr>
             ))}

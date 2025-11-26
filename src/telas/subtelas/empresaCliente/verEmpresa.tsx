@@ -439,7 +439,7 @@ function BtnPassageiros() {
          diversity_3
         </p>
         <p style={{ textAlign: "center", fontSize: 12, color: Cor.texto1 }}>
-          Passageiros {clienteId}
+          Passageiros
         </p></div>
   );
 }

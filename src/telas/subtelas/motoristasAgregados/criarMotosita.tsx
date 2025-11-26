@@ -395,7 +395,7 @@ function CriarMotoristaConteudo() {
                 }}
               >
                 <p style={{ color: Cor.texto1, fontSize: 12 }}>
-                  Adicione a logo da empresa.
+                  Adicione a foto do motorista.
                 </p>
                 <div
                   style={{ display: "flex", flexDirection: "column", gap: 20 }}

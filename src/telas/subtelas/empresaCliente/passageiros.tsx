@@ -3,6 +3,7 @@ import EditPerfil from "../../../componentes/editPerfil";
 import ListaPassageiros from "../../../componentes/listaPassageiros";
 import { useTema } from "../../../hooks/temaContext";
 import styled from "styled-components";
+import BtnCriarPassageiro from "./btnComponentes/criarPassageiro";
 
 function Passageiros() {
   return BaseTelas({
@@ -58,7 +59,7 @@ function PassageirosConteudo() {
 
 function CadastrarNovoCliente() {
   const Cor = useTema().Cor;
-  
+
   return (
     <div
       style={{
@@ -81,52 +82,19 @@ function CadastrarNovoCliente() {
           alignItems: "center",
         }}
       >
-        <text style={{ color: Cor.texto2, fontSize: 14 }}>
+        <p style={{ color: Cor.texto2, fontSize: 14 }}>
           Pesquisar por <br /> passageiros:
-        </text>
+        </p>
         <CampoBuscasPassageiros />
-        <text style={{ color: Cor.texto2, fontSize: 14 }}>
+        <p style={{ color: Cor.texto2, fontSize: 14 }}>
           Pesquisar por <br /> Centro de Custo:
-        </text>
+        </p>
         <SelectCentroCusto />
       </div>
-      <BtnCadastrarPassageiro />
+      <BtnCriarPassageiro />
     </div>
   );
 }
-
-interface BtnCadastrarPassageiroStyledProps {
-  $color: string;
-  $backgroundColor: string;
-}
-
-const BtnCadastrarPassageiroStyled = styled.button<BtnCadastrarPassageiroStyledProps>`
-  color: ${({ $color }) => $color};
-  background-color: ${({ $backgroundColor }) => $backgroundColor + 10};
-  border: 1px solid ${({ $backgroundColor }) => $backgroundColor + 70};
-  font-weight: bold;
-  padding: 10px 35px;
-  border-radius: 22px;
-  cursor: pointer;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 10px;
-`;
-
-function BtnCadastrarPassageiro() {
-  const Cor = useTema().Cor;
-  return (
-    <BtnCadastrarPassageiroStyled
-      $color={Cor.primaria}
-      $backgroundColor={Cor.primaria}
-    >
-      <text style={{ fontFamily: "Icone", fontSize: 24 }}>person_add</text>
-      <text>Cadastrar</text>
-    </BtnCadastrarPassageiroStyled>
-  );
-}
-
 interface BtnLupaProps {
   $corBG: string;
 }
@@ -186,9 +154,9 @@ function CampoBuscasPassageiros() {
       />
 
       <BtnLupa $corBG={Cor.primaria}>
-        <text style={{ fontFamily: "Icone", color: Cor.secundaria }}>
+        <p style={{ fontFamily: "Icone", color: Cor.secundaria }}>
           search
-        </text>
+        </p>
       </BtnLupa>
     </div>
   );
