@@ -138,6 +138,21 @@ function ModalVerPassageiro({
     }
   }
 
+  const a = {
+    nome: nome,
+    email: email,
+    telefone: telefone,
+    matricula: matricula,
+    centroCusto: centroCusto,
+    endRua: endRua,
+    endNumero: endNumero,
+    endBairro: endBairro,
+    endCidade: endCidade,
+    horarioEmbarque: horarioEmbarque,
+    pontoApanha: pontoApanha,
+    fotoPerfilPassageiro: fotoPerfilPassageiro,
+  };
+
   return (
     <div
       style={{
@@ -156,7 +171,7 @@ function ModalVerPassageiro({
         justifyContent: "center",
         gap: 20,
         zIndex: 10,
-        cursor: "default"
+        cursor: "default",
       }}
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) setCxVerPassageiro(false);
@@ -449,6 +464,8 @@ function ModalVerPassageiro({
             }}
             onClick={() => {
               //   criarUnidadeFunc();
+
+              console.log(a);
               setCxVerPassageiro(false);
               setNome("");
               setTelefone("");

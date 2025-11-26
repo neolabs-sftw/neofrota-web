@@ -1,4 +1,3 @@
-import { useParams } from "react-router-dom";
 import { useTema } from "../../../../hooks/temaContext";
 import { useState } from "react";
 import styled from "styled-components";
@@ -23,7 +22,6 @@ const BtnCadastrarPassageiroStyled = styled.button<BtnCadastrarPassageiroStyledP
 `;
 
 function BtnCriarPassageiro() {
-  const clientId = useParams().clienteId;
 
   const Cor = useTema().Cor;
   const [CxCriarPassageiro, setCxCriarPassageiro] = useState(false);
