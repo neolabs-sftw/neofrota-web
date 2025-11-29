@@ -464,7 +464,6 @@ function ModalVerPassageiro({
             }}
             onClick={() => {
               //   criarUnidadeFunc();
-
               console.log(a);
               setCxVerPassageiro(false);
               setNome("");

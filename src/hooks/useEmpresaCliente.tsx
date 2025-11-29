@@ -17,6 +17,7 @@ const GET_EMPRESA_CLIENTE = gql`
   }
 `;
 
+
 export function useEmpresaCliente(empresaClienteId: string) {
   const { data, loading, error, refetch } = useQuery(GET_EMPRESA_CLIENTE, {
     variables: { empresaClienteId },
@@ -28,3 +29,37 @@ export function useEmpresaCliente(empresaClienteId: string) {
     refetch: refetch || Promise.resolve(),
   };
 }
+
+
+const GET_LISTA_EMPRESA_CLIENTES = gql`
+  query EmpresaClienteOper($operadoraId: String) {
+    empresaClienteOper(operadoraId: $operadoraId) {
+      id
+      nome
+      rSocial
+      cnpj
+      fotoLogoCliente
+      operadoraId {
+        id
+      }
+      statusCliente
+    }
+  }
+`;
+
+export function useListaClientes(operadoraId: string) {
+  const { data, loading, error, refetch } = useQuery(
+    GET_LISTA_EMPRESA_CLIENTES,
+    {
+      variables: { operadoraId },
+    }
+  );
+  return {
+    listaClientes: data?.empresaClienteOper,
+    loading,
+    error,
+    refetch: refetch || Promise.resolve(),
+  };
+}
+
+

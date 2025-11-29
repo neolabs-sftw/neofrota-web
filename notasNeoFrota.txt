@@ -58,3 +58,5 @@ Page: **Produto**
  - Seção de Avaliações: Avaliações e notas dadas pelos usuários
  - Seção de CTA: Chamada para ação para compra, inscrição ou solicitação de demonstração
  - Rodapé
+
+https://ui.shadcn.com/examples/tasks 

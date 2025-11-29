@@ -18,6 +18,7 @@ import VerMotorista from "./telas/subtelas/motoristasAgregados/verMotorista";
 import Rotas from "./telas/subtelas/rotas/rotas";
 import CriarFuncionario from "./telas/subtelas/funcionario/criarFuncionario";
 import Passageiros from "./telas/subtelas/empresaCliente/passageiros";
+import NovoVoucher from "./telas/subtelas/VoucherExtra/novoVoucher";
 
 function App() {
   return (
@@ -54,6 +55,7 @@ function App() {
               <Route path="/rotas" element={<Rotas />} />
               <Route path="/criarfuncionario" element={<CriarFuncionario />} />
               <Route path="/passageiros/:clienteId" element={<Passageiros />} />
+              <Route path="/novovoucher" element={<NovoVoucher />} />
             </Route>
           </Routes>
         </BrowserRouter>

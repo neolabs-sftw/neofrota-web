@@ -178,7 +178,7 @@ function ListaFuncionariosOperadora() {
                 gap: 20,
               }}
             >
-              <text>Carregando...</text>
+              <p>Carregando...</p>
               <CircularProgress size={15} thickness={3} color="inherit" />
             </td>
           ) : (
