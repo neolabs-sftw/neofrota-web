@@ -7,22 +7,7 @@ import { gql, useQuery } from "@apollo/client";
 import { useAdminLogado } from "../../../hooks/AdminLogado";
 import BtnRota from "./btnRota";
 import CriarRota from "./criarRota";
-
-const GET_EMPRESAS_CLIENTES = gql`
-  query EmpresaClienteOper($operadoraId: String) {
-    empresaClienteOper(operadoraId: $operadoraId) {
-      id
-      nome
-      rSocial
-      cnpj
-      fotoLogoCliente
-      operadoraId {
-        id
-      }
-      statusCliente
-    }
-  }
-`;
+import { useListaClientes } from "../../../hooks/useEmpresaCliente";
 
 const GET_ROTAS = gql`
  query RotaEmpresaClienteId($rotaEmpresaClienteId: ID!) {
@@ -210,17 +195,16 @@ function ConteudoRotas() {
     statusCliente: string;
   } | null>(null);
 
-  const { data: empresaCliente } = useQuery(GET_EMPRESAS_CLIENTES, {
-    skip: !adminLogado?.operadora.id,
-    variables: { operadoraId: adminLogado?.operadora.id },
-  });
-
   const { data: rotasCliente } = useQuery(GET_ROTAS, {
     skip: !empresaSelecionada,
     variables: { rotaEmpresaClienteId: empresaSelecionada?.id },
   });
 
-  const empresas = empresaCliente?.empresaClienteOper;
+  const { listaClientes } = useListaClientes(String(adminLogado?.operadora.id) || "0");
+
+  const empresas = listaClientes
+
+  console.log(empresas)
 
   const rotas = rotasCliente?.rotaEmpresaClienteId;
   return (

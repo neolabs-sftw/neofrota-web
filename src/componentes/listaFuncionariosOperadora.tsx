@@ -169,8 +169,7 @@ function ListaFuncionariosOperadora() {
         </thead>
         <tbody>
           {loading ? (
-            <td
-              colSpan={7}
+            <tr
               style={{
                 textAlign: "center",
                 justifyContent: "center",
@@ -178,9 +177,11 @@ function ListaFuncionariosOperadora() {
                 gap: 20,
               }}
             >
-              <p>Carregando...</p>
-              <CircularProgress size={15} thickness={3} color="inherit" />
-            </td>
+              <td colSpan={7}>
+                <p>Carregando...</p>
+                <CircularProgress size={15} thickness={3} color="inherit" />
+              </td>
+            </tr>
           ) : (
             listAdminFuncionario?.map((funcionario) => {
               return (

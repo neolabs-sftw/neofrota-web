@@ -37,7 +37,7 @@ function ListaMotoristasAgregados() {
     adminUsuarioId?: string;
     operadoraId?: string;
   }
-  
+
   const token = localStorage.getItem("token");
   const decoded = token ? jwtDecode<JwtPayload>(token) : null;
   const operadoraId = decoded ? decoded.operadoraId : null;

@@ -4,6 +4,7 @@ import { useTema } from "../hooks/temaContext";
 import { useEffect, useState } from "react";
 import BtnProximaViagem from "../componentes/btnProximaViagem";
 import ListaProximasViagens from "../componentes/listaProximasViagens";
+import { useNavigate } from "react-router-dom";
 
 function Operacao() {
   return BaseTelas({
@@ -300,6 +301,8 @@ function OperacaoConteudo() {
 
   const Cor = useTema().Cor;
 
+   const navigate = useNavigate();
+
   return (
     <div
       style={{
@@ -487,7 +490,8 @@ function OperacaoConteudo() {
               borderRadius: 18,
               cursor: "pointer",
             }}
-          >
+            onClick={()=>{navigate("/novovoucher")}} 
+             >
             <style>{`
           .btn-novo-voucher {              
               background-color: ${Cor.primaria + 10};

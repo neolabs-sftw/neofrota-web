@@ -52,6 +52,7 @@ export function useListaClientes(operadoraId: string) {
     GET_LISTA_EMPRESA_CLIENTES,
     {
       variables: { operadoraId },
+      fetchPolicy: "cache-and-network"
     }
   );
   return {

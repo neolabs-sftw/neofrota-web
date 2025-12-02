@@ -66,6 +66,7 @@ export function usePassageiros(empresaClienteId: string) {
     GET_LIST_PASSAGEIROS_BY_EMPRESA_CLIENTE,
     {
       variables: { empresaClienteId },
+      fetchPolicy: "cache-and-network"
     }
   );
   return {
