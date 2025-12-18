@@ -40,57 +40,57 @@ function NovoVoucherConteudo() {
   const [dataHoraEntrada, setDataHoraEntrada] = useState<any>();
   const [dataHoraSaida, setDataHoraSaida] = useState<any>();
 
-  const [cxConfirmarVoucher, setCxConfirmarVoucher] = useState<boolean>(true);
-  const [cxEntrada, setCxEntrada] = useState<boolean>(true);
-  const [cxSaida, setCxSaida] = useState<boolean>(true);
+  // const [cxConfirmarVoucher, setCxConfirmarVoucher] = useState<boolean>(true);
+  // const [cxEntrada, setCxEntrada] = useState<boolean>(true);
+  // const [cxSaida, setCxSaida] = useState<boolean>(true);
 
-  const [lancamentos, setLancamentos] = useState<any[]>([]);
+  // const [lancamentos, setLancamentos] = useState<any[]>([]);
 
-  function verificarVoucher() {
-    const baseVoucher = {
-      Cliente: empresaCliente,
-      Unidade: unidadeEmpresaCliente,
-      Solicitante: solicitante,
-      Rota: rotaExtra,
-      Natureza: "Extra",
-      RotaValor: rotaValor,
-      Entrada: dataHoraEntrada,
-      Saida: dataHoraSaida,
-      Motorista: motorista,
-      PassageirosId: [passageirosVoucher],
-    };
+  // function verificarVoucher() {
+  //   const baseVoucher = {
+  //     Cliente: empresaCliente,
+  //     Unidade: unidadeEmpresaCliente,
+  //     Solicitante: solicitante,
+  //     Rota: rotaExtra,
+  //     Natureza: "Extra",
+  //     RotaValor: rotaValor,
+  //     Entrada: dataHoraEntrada,
+  //     Saida: dataHoraSaida,
+  //     Motorista: motorista,
+  //     PassageirosId: [passageirosVoucher],
+  //   };
 
-    const paraLancar = [];
+  //   const paraLancar = [];
 
-    if (tipo === "Entrada") {
-      paraLancar.push({
-        ...baseVoucher,
-        Saida: null,
-        Tipo: "Entrada",
-      });
-    } else if (tipo === "Saida") {
-      paraLancar.push({
-        ...baseVoucher,
-        Entrada: null,
-        Tipo: "Saida",
-      });
-    } else if (tipo === "Entrada e Saída") {
-      paraLancar.push({
-        ...baseVoucher,
-        Saida: null,
-        Tipo: "Entrada",
-      });
-      paraLancar.push({
-        ...baseVoucher,
-        Entrada: null,
-        Tipo: "Saida",
-      });
-    } else {
-      alert("Tipo de voucher inválido selecionado.");
-      return;
-    }
-    setLancamentos(paraLancar);
-  }
+  //   if (tipo === "Entrada") {
+  //     paraLancar.push({
+  //       ...baseVoucher,
+  //       Saida: null,
+  //       Tipo: "Entrada",
+  //     });
+  //   } else if (tipo === "Saida") {
+  //     paraLancar.push({
+  //       ...baseVoucher,
+  //       Entrada: null,
+  //       Tipo: "Saida",
+  //     });
+  //   } else if (tipo === "Entrada e Saída") {
+  //     paraLancar.push({
+  //       ...baseVoucher,
+  //       Saida: null,
+  //       Tipo: "Entrada",
+  //     });
+  //     paraLancar.push({
+  //       ...baseVoucher,
+  //       Entrada: null,
+  //       Tipo: "Saida",
+  //     });
+  //   } else {
+  //     alert("Tipo de voucher inválido selecionado.");
+  //     return;
+  //   }
+  //   setLancamentos(paraLancar);
+  // }
 
   function lancarVoucher() {
     const { ok, erro } = validarVoucher({
