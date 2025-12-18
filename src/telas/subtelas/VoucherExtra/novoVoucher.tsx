@@ -10,6 +10,8 @@ import { useSolicitante } from "../../../hooks/useSolicitantes";
 import { useRotaId, useRotasExtas } from "../../../hooks/useRotasExtras";
 import { useMotorista } from "../../../hooks/useMotorista";
 import { usePassageiros } from "../../../hooks/usePassageiros";
+import { validarVoucher } from "../../../hooks/validarVoucher";
+// import { validarVoucher } from "../../../hooks/validarVoucher";
 
 function NovoVoucher() {
   return BaseTelas({
@@ -31,27 +33,140 @@ function NovoVoucherConteudo() {
   const [rotaExtra, setRotaExtra] = useState<any>();
   const [rotaValor, setRotaValor] = useState<any>();
   const [tipo, setTipo] = useState<any>("");
-  const [dataHoraEntrada, setDataHoraEntrada] = useState<any>();
-  const [dataHoraSaida, setDataHoraSaida] = useState<any>();
   const [motorista, setMotorista] = useState<any>();
-
   const [carregandoEmpresa, setCarregandoEmpresa] = useState<boolean>(false);
-
   const [passageirosVoucher, setPassageirosVoucher] = useState<any[]>([]);
 
-  const voucherCompleto = {
-    Cliente: empresaCliente,
-    Unidade: unidadeEmpresaCliente,
-    Solicitante: solicitante,
-    Rota: rotaExtra,
-    Tipo: tipo,
-    Natureza: "Extra",
-    RotaValor: rotaValor,
-    Entrada: dataHoraEntrada,
-    Saida: dataHoraSaida,
-    Motorista: motorista,
-    PassageirosId: [passageirosVoucher],
-  };
+  const [dataHoraEntrada, setDataHoraEntrada] = useState<any>();
+  const [dataHoraSaida, setDataHoraSaida] = useState<any>();
+
+  const [cxConfirmarVoucher, setCxConfirmarVoucher] = useState<boolean>(true);
+  const [cxEntrada, setCxEntrada] = useState<boolean>(true);
+  const [cxSaida, setCxSaida] = useState<boolean>(true);
+
+  const [lancamentos, setLancamentos] = useState<any[]>([]);
+
+  function verificarVoucher() {
+    const baseVoucher = {
+      Cliente: empresaCliente,
+      Unidade: unidadeEmpresaCliente,
+      Solicitante: solicitante,
+      Rota: rotaExtra,
+      Natureza: "Extra",
+      RotaValor: rotaValor,
+      Entrada: dataHoraEntrada,
+      Saida: dataHoraSaida,
+      Motorista: motorista,
+      PassageirosId: [passageirosVoucher],
+    };
+
+    const paraLancar = [];
+
+    if (tipo === "Entrada") {
+      paraLancar.push({
+        ...baseVoucher,
+        Saida: null,
+        Tipo: "Entrada",
+      });
+    } else if (tipo === "Saida") {
+      paraLancar.push({
+        ...baseVoucher,
+        Entrada: null,
+        Tipo: "Saida",
+      });
+    } else if (tipo === "Entrada e Saída") {
+      paraLancar.push({
+        ...baseVoucher,
+        Saida: null,
+        Tipo: "Entrada",
+      });
+      paraLancar.push({
+        ...baseVoucher,
+        Entrada: null,
+        Tipo: "Saida",
+      });
+    } else {
+      alert("Tipo de voucher inválido selecionado.");
+      return;
+    }
+    setLancamentos(paraLancar);
+  }
+
+  function lancarVoucher() {
+    const { ok, erro } = validarVoucher({
+      empresaCliente,
+      unidadeEmpresaCliente,
+      solicitante,
+      rotaExtra,
+      rotaValor,
+      tipo,
+      motorista,
+    });
+
+    if (!ok) {
+      alert(erro);
+      return;
+    }
+    const baseVoucher = {
+      Cliente: empresaCliente,
+      Unidade: unidadeEmpresaCliente,
+      Solicitante: solicitante,
+      Rota: rotaExtra,
+      Natureza: "Extra",
+      RotaValor: rotaValor,
+      Entrada: dataHoraEntrada,
+      Saida: dataHoraSaida,
+      Motorista: motorista,
+      PassageirosId: [passageirosVoucher],
+      // O campo 'Tipo' será adicionado abaixo
+    };
+
+    // Array para armazenar os vouchers que serão lançados
+    const vouchersToLaunch = [];
+
+    // 3. Lógica Condicional para Criar os Vouchers
+    if (tipo === "Entrada") {
+      // Lança 1 voucher: Tipo 'Entrada'
+      vouchersToLaunch.push({
+        ...baseVoucher,
+        Saida: null,
+        Tipo: "Entrada",
+      });
+    } else if (tipo === "Saida") {
+      // Lança 1 voucher: Tipo 'Saída'
+      vouchersToLaunch.push({
+        ...baseVoucher,
+        Entrada: null,
+        Tipo: "Saida",
+      });
+    } else if (tipo === "Entrada e Saída") {
+      // Lança 2 vouchers: um 'Entrada' e um 'Saída'
+      // Voucher de Entrada
+      vouchersToLaunch.push({
+        ...baseVoucher,
+        Saida: null,
+        Tipo: "Entrada",
+      });
+      // Voucher de Saída
+      vouchersToLaunch.push({
+        ...baseVoucher,
+        Entrada: null,
+        Tipo: "Saida",
+      });
+    } else {
+      // Caso o tipo não seja reconhecido (opcional, mas recomendado)
+      alert("Tipo de voucher inválido selecionado.");
+      return;
+    }
+
+    // Continua o processo só se estiver tudo validado
+    console.log(`Vouchers a serem lançados: ${vouchersToLaunch.length}`);
+    console.log(vouchersToLaunch);
+  }
+
+  useEffect(() => {
+    setPassageirosVoucher([]);
+  }, [empresaCliente, rotaValor]);
 
   const Cor = useTema().Cor;
   return (
@@ -111,10 +226,17 @@ function NovoVoucherConteudo() {
       />
       <BtnLançarVoucherStyle
         $cor={Cor.primaria}
-        onClick={() => console.log(voucherCompleto)}
+        onClick={() => {
+          // setCxConfirmarVoucher(true);
+          lancarVoucher();
+        }}
       >
         <h3 style={{ color: Cor.primariaTxt }}>Lançar Voucher</h3>
       </BtnLançarVoucherStyle>
+      {/* <BaseModalConfirmacao
+        cxConfirmarVoucher={cxConfirmarVoucher}
+        setCxConfirmarVoucher={setCxConfirmarVoucher}
+      /> */}
     </div>
   );
 }
@@ -260,7 +382,7 @@ function DadosGerais({
               {listaClientes?.map((cliente: any) => {
                 return (
                   <option
-                    value={cliente?.id}
+                    value={cliente.id}
                     key={cliente?.id}
                     style={{
                       backgroundColor: Cor.base2,
@@ -559,7 +681,7 @@ function DetalhesDoVoucher({
               {listaMotoristas?.map((motorista: any) => {
                 return (
                   <option
-                    value={motorista?.nome}
+                    value={motorista?.id}
                     key={motorista?.id}
                     style={{
                       backgroundColor: Cor.base2,
@@ -888,7 +1010,20 @@ function IncluirPassageiros({
             Adicione abaixo os Passageiros ao voucher.
           </p>
         </div>
-        <div style={{ display: "flex", flexDirection: "row", gap: 10 }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            gap: 10,
+            alignItems: "center",
+          }}
+        >
+          <p style={{ color: Cor.texto2, fontSize: 12 }}>
+            Total de Passageiros adicionados{" "}
+            <strong style={{ fontSize: 14, color: Cor.primariaTxt }}>
+              {passageirosVoucher.length}
+            </strong>
+          </p>
           <SeletorPassageiro
             empresaCliente={empresaCliente}
             passageirosVoucher={passageirosVoucher}
@@ -898,13 +1033,13 @@ function IncluirPassageiros({
             disabled={desabilitado}
             style={{
               aspectRatio: 1,
-              width: 40,
-              backgroundColor: desabilitado ? Cor.texto2 : Cor.primaria,
+              width: 35,
+              backgroundColor: desabilitado ? Cor.texto2 + 50 : Cor.primaria,
               display: "flex",
               border: "none",
               justifyContent: "center",
               alignItems: "center",
-              borderRadius: 14,
+              borderRadius: 12,
               cursor: desabilitado ? "default" : "pointer",
             }}
             onClick={() => setPassageirosVoucher([])}
@@ -924,8 +1059,8 @@ function IncluirPassageiros({
           borderRadius: 22,
           boxShadow: Cor.sombra,
           gap: 5,
-          overflowY:"auto",
-          scrollbarWidth:"none"
+          overflowY: "auto",
+          scrollbarWidth: "none",
         }}
       >
         {passageirosVoucher.map((passageiro: any) => {
@@ -958,8 +1093,6 @@ function SeletorPassageiro({
 }) {
   const { listaPassageiro } = usePassageiros(empresaCliente || "0");
 
-  console.log(listaPassageiro);
-
   const desabilitado = !listaPassageiro || listaPassageiro.length === 0;
 
   const [cxPesquisa, setCxPesquisa] = useState<boolean>(false);
@@ -971,11 +1104,12 @@ function SeletorPassageiro({
       <button
         disabled={desabilitado}
         style={{
-          backgroundColor: desabilitado ? Cor.texto2 : Cor.primaria,
+          height: 35,
+          backgroundColor: desabilitado ? Cor.texto2 + 50 : Cor.primaria,
           border: "none",
           padding: "8px 25px",
           borderRadius: 12,
-          cursor: desabilitado ? "wait" : "pointer",
+          cursor: desabilitado ? "default" : "pointer",
         }}
         onClick={() => {
           setCxPesquisa(true);
@@ -1013,6 +1147,14 @@ function ModalSeletorPassageiro({
   const { listaPassageiro } = usePassageiros(empresaCliente || "0");
 
   const Cor = useTema().Cor;
+
+  function normalizarTexto(texto: string) {
+    return texto
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
+  }
+
   return (
     <>
       <div
@@ -1029,7 +1171,7 @@ function ModalSeletorPassageiro({
           backgroundColor: Cor.base2 + 50,
           backdropFilter: "blur(2px)",
           pointerEvents: cxPesquisa ? "auto" : "none",
-          transition: "all ease-in-out 0.2s",
+          transition: "all ease-in-out 0.3s",
           zIndex: 10,
         }}
         onClick={() => {
@@ -1049,6 +1191,8 @@ function ModalSeletorPassageiro({
             boxShadow: Cor.sombra,
             borderRadius: 22,
             padding: 15,
+            scale: cxPesquisa ? 1 : 0.6,
+            transition: "all ease-in-out 0.3s",
           }}
           onClick={(e) => {
             e.stopPropagation();
@@ -1099,12 +1243,15 @@ function ModalSeletorPassageiro({
           >
             {(
               listaPassageiro?.filter((p) => {
-                const porNome = p.nome
-                  .toLowerCase()
-                  .includes(nomeBusca.toLowerCase());
-                const porBairro = p.endBairro
-                  .toLowerCase()
-                  .includes(bairroBusca.toLowerCase());
+                const nome = normalizarTexto(p.nome);
+                const bairro = normalizarTexto(p.endBairro);
+
+                const buscaNome = normalizarTexto(nomeBusca);
+                const buscaBairro = normalizarTexto(bairroBusca);
+
+                const porNome = nome.includes(buscaNome);
+                const porBairro = bairro.includes(buscaBairro);
+
                 return porNome && porBairro;
               }) || []
             ).map((passageiro) => {
@@ -1113,6 +1260,7 @@ function ModalSeletorPassageiro({
               );
               return (
                 <LinhaPassageiro
+                  key={passageiro.id}
                   passageiro={passageiro}
                   selecionado={selecionado}
                   btnAdd={selecionado}
@@ -1299,18 +1447,27 @@ function LinhaPassageiro({
         </div>
         <div
           style={{
-            width: "5%",
+            width: 30,
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
             height: 30,
             borderRadius: 8,
-            backgroundColor: Cor.primaria,
+            backgroundColor: btnAdd ? Cor.primaria + 90 : Cor.primaria + 50,
             cursor: "pointer",
           }}
           onClick={() => adicionarPassageiro(passageiro)}
         >
-          <p style={{ fontFamily: "Icone" }}>{btnAdd ? "remove" : "add"}</p>
+          <p
+            style={{
+              fontFamily: "Icone",
+              fontWeight: "bold",
+              fontSize: 20,
+              color: Cor.primariaTxt,
+            }}
+          >
+            {btnAdd ? "close" : "add"}
+          </p>
         </div>
       </div>
     </>
@@ -1362,3 +1519,100 @@ function TextoEntrada({
     </div>
   );
 }
+
+// function BaseModalConfirmacao({
+//   cxConfirmarVoucher,
+//   setCxConfirmarVoucher,
+// }: {
+//   cxConfirmarVoucher: any;
+//   setCxConfirmarVoucher: any;
+// }) {
+//   const Cor = useTema().Cor;
+
+//   return (
+//     <div
+//       style={{
+//         display: "flex",
+//         alignItems: "center",
+//         justifyContent: "center",
+//         flexDirection: "row",
+//         opacity: cxConfirmarVoucher ? 1 : 0,
+
+//         gap: 15,
+//         position: "absolute",
+//         top: 0,
+//         left: 0,
+//         width: "100%",
+//         height: "100%",
+//         backgroundColor: Cor.base2 + 50,
+//         backdropFilter: "blur(2px)",
+//         pointerEvents: cxConfirmarVoucher ? "auto" : "none",
+//         transition: "all ease-in-out 0.3s",
+//         zIndex: 10,
+//       }}
+//       onClick={() => setCxConfirmarVoucher(false)}
+//     >
+//       <ModalConfirmacao />
+//     </div>
+//   );
+// }
+
+// function ModalConfirmacao({}: {}) {
+//   const Cor = useTema().Cor;
+//   return (
+//     <div
+//       style={{
+//         width: "40%",
+//         height: "75%",
+//         // scale: cxModal ? 1 : 0.6,
+//         backgroundColor: Cor.base2,
+//         borderRadius: 22,
+//         boxShadow: Cor.sombra,
+//         border: `1px solid ${Cor.texto2 + 30}`,
+//         // display: cxModal ? "flex" : "none",
+//         display: "flex",
+//         flexDirection: "column",
+//         transition: "all ease-in-out 0.3s",
+//       }}
+//     >
+//       <div
+//         style={{
+//           width: "100%",
+//           height: "8%",
+//           backgroundColor: Cor.primaria,
+//           borderRadius: "22px 22px 0 0",
+//           display: "flex",
+//           justifyContent: "center",
+//           alignItems: "center",
+//           gap: 50,
+//         }}
+//       >
+//         <p>Revisão Voucher Entrada</p>
+//         <p
+//           style={{ cursor: "pointer" }}
+//           onClick={() => {
+//             // setCxModal(false);
+//           }}
+//         >
+//           X
+//         </p>
+//       </div>
+//       <div
+//         style={{
+//           width: "100%",
+//           height: "92%",
+//           display: "flex",
+//           flexDirection: "column",
+//           padding: 5,
+//           gap: 5,
+//         }}
+//       >
+//         <div
+//           style={{ width: "100%", height: "20%", backgroundColor: "#FF9000" }}
+//         >
+//           s
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }

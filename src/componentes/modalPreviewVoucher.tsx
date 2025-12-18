@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useTema } from "../hooks/temaContext";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
+import assinaturaPNG from "../assets/assinaturaPNG.png";
 
 interface CxModalProps {
   $border: string;
@@ -91,7 +92,7 @@ function ModalPreviewVoucher({
     const handleKeyDown = (event: any) => {
       if (event.key === "Escape") {
         setVisivel(false);
-      } else if(event.key === "Enter") {
+      } else if (event.key === "Enter") {
         navigate(`/editar/${natureza}/${id}`);
       }
     };
@@ -99,12 +100,11 @@ function ModalPreviewVoucher({
     if (visivel) {
       document.addEventListener("keydown", handleKeyDown);
     }
-    
+
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [visivel, setVisivel]); // Dependências: o efeito roda quando a visibilidade muda
-
 
   return (
     <Overlay
@@ -1115,14 +1115,16 @@ function Assinatura() {
             width: "100%",
             height: "100%",
             backgroundColor: Cor.secundaria,
-            maskImage: `url(data:image/png;base64,${assinaturaBase64})`,
+            // maskImage: `url(data:image/png;base64,${assinaturaBase64})`,
+            maskImage: `url(${assinaturaPNG})`,
             maskRepeat: "no-repeat",
             maskSize: "contain",
-            WebkitMaskImage: `url(data:image/png;base64,${assinaturaBase64})`,
+            // WebkitMaskImage: `url(data:image/png;base64,${assinaturaBase64})`,
+            WebkitMaskImage: assinaturaPNG,
             WebkitMaskRepeat: "no-repeat",
             WebkitMaskSize: "contain",
           }}
-        ></div>
+        />
       </div>
     </div>
   );
