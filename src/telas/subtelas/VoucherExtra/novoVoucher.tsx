@@ -35,7 +35,7 @@ function NovoVoucherConteudo() {
   const [rotaValor, setRotaValor] = useState<any>();
   const [tipo, setTipo] = useState<any>("");
   const [motorista, setMotorista] = useState<any>();
-  const [motoristaSaida, setMotoristaSaida] = useState<any>();
+  // const [motoristaSaida, setMotoristaSaida] = useState<any>();
   const [carregandoEmpresa, setCarregandoEmpresa] = useState<boolean>(false);
 
   const [passageirosVoucher, setPassageirosVoucher] = useState<any[]>([]);
