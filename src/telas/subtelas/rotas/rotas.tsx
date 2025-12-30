@@ -204,8 +204,6 @@ function ConteudoRotas() {
 
   const empresas = listaClientes
 
-  console.log(empresas)
-
   const rotas = rotasCliente?.rotaEmpresaClienteId;
   return (
     <div

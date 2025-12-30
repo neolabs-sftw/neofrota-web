@@ -130,19 +130,6 @@ function ModalCriarSolicitante({
     ]
   });
 
-  const verCadastro = () => {
-    const input = {
-      nome: nome,
-      email: email,
-      telefone: telefone,
-      funcao: funcao,
-      empresa_cliente_id: empresaClienteId,
-      operadora_id: operadoraId,
-    };
-
-    console.log(input);
-  };
-
   const criarSolicitanteFunc = async () => {
     await criarSolicitanteMutation({
       variables: {
@@ -341,7 +328,6 @@ function ModalCriarSolicitante({
             }}
             onClick={() => {
               criarSolicitanteFunc();
-              verCadastro();
               setCxCriarSolicitante(false);
               setNome("");
               setEmail("");

@@ -193,17 +193,6 @@ function ModalNovoCarro({
         },
       },
     });
-    console.log({
-      placa,
-      cor,
-      crlv,
-      chassi,
-      ano,
-      marca: marca.nome,
-      modelo: modelo.nome,
-      agregadoId: motoristaId ? parseInt(motoristaId) : null,
-      operadoraId: operadoraId ? parseInt(operadoraId) : null,
-    });
     setPlaca("");
     setMarca({ id: 0, nome: "" });
     setModelo({ id: 0, nome: "", marcaId: { id: 0, nome: "" } });

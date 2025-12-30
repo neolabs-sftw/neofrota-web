@@ -70,8 +70,6 @@ function ListaUnidadesEmpresasClientes({
     );
   }, [listaUnidadesCompleta, busca]);
 
-  console.log(listaUnidadesCompleta);
-
   return (
     <div
       style={{

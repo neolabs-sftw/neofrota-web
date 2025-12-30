@@ -11,6 +11,7 @@ import { useRotaId, useRotasExtas } from "../../../hooks/useRotasExtras";
 import { useMotorista } from "../../../hooks/useMotorista";
 import { usePassageiros } from "../../../hooks/usePassageiros";
 import { validarVoucher } from "../../../hooks/validarVoucher";
+import { useAdminLogado } from "../../../hooks/AdminLogado";
 // import { validarVoucher } from "../../../hooks/validarVoucher";
 
 function NovoVoucher() {
@@ -34,63 +35,21 @@ function NovoVoucherConteudo() {
   const [rotaValor, setRotaValor] = useState<any>();
   const [tipo, setTipo] = useState<any>("");
   const [motorista, setMotorista] = useState<any>();
+  const [motoristaSaida, setMotoristaSaida] = useState<any>();
   const [carregandoEmpresa, setCarregandoEmpresa] = useState<boolean>(false);
+
   const [passageirosVoucher, setPassageirosVoucher] = useState<any[]>([]);
+
+  const userId = useAdminLogado();
 
   const [dataHoraEntrada, setDataHoraEntrada] = useState<any>();
   const [dataHoraSaida, setDataHoraSaida] = useState<any>();
 
-  // const [cxConfirmarVoucher, setCxConfirmarVoucher] = useState<boolean>(true);
+  const [cxConfirmarVoucher, setCxConfirmarVoucher] = useState<boolean>(false);
   // const [cxEntrada, setCxEntrada] = useState<boolean>(true);
   // const [cxSaida, setCxSaida] = useState<boolean>(true);
 
-  // const [lancamentos, setLancamentos] = useState<any[]>([]);
-
-  // function verificarVoucher() {
-  //   const baseVoucher = {
-  //     Cliente: empresaCliente,
-  //     Unidade: unidadeEmpresaCliente,
-  //     Solicitante: solicitante,
-  //     Rota: rotaExtra,
-  //     Natureza: "Extra",
-  //     RotaValor: rotaValor,
-  //     Entrada: dataHoraEntrada,
-  //     Saida: dataHoraSaida,
-  //     Motorista: motorista,
-  //     PassageirosId: [passageirosVoucher],
-  //   };
-
-  //   const paraLancar = [];
-
-  //   if (tipo === "Entrada") {
-  //     paraLancar.push({
-  //       ...baseVoucher,
-  //       Saida: null,
-  //       Tipo: "Entrada",
-  //     });
-  //   } else if (tipo === "Saida") {
-  //     paraLancar.push({
-  //       ...baseVoucher,
-  //       Entrada: null,
-  //       Tipo: "Saida",
-  //     });
-  //   } else if (tipo === "Entrada e Saída") {
-  //     paraLancar.push({
-  //       ...baseVoucher,
-  //       Saida: null,
-  //       Tipo: "Entrada",
-  //     });
-  //     paraLancar.push({
-  //       ...baseVoucher,
-  //       Entrada: null,
-  //       Tipo: "Saida",
-  //     });
-  //   } else {
-  //     alert("Tipo de voucher inválido selecionado.");
-  //     return;
-  //   }
-  //   setLancamentos(paraLancar);
-  // }
+  const [lancamentos, setLancamentos] = useState<any[]>([]);
 
   function lancarVoucher() {
     const { ok, erro } = validarVoucher({
@@ -117,6 +76,7 @@ function NovoVoucherConteudo() {
       Entrada: dataHoraEntrada,
       Saida: dataHoraSaida,
       Motorista: motorista,
+      operadorId: userId?.nome,
       PassageirosId: [passageirosVoucher],
       // O campo 'Tipo' será adicionado abaixo
     };
@@ -132,12 +92,12 @@ function NovoVoucherConteudo() {
         Saida: null,
         Tipo: "Entrada",
       });
-    } else if (tipo === "Saida") {
+    } else if (tipo === "Saída") {
       // Lança 1 voucher: Tipo 'Saída'
       vouchersToLaunch.push({
         ...baseVoucher,
         Entrada: null,
-        Tipo: "Saida",
+        Tipo: "Saída",
       });
     } else if (tipo === "Entrada e Saída") {
       // Lança 2 vouchers: um 'Entrada' e um 'Saída'
@@ -151,7 +111,7 @@ function NovoVoucherConteudo() {
       vouchersToLaunch.push({
         ...baseVoucher,
         Entrada: null,
-        Tipo: "Saida",
+        Tipo: "Saída",
       });
     } else {
       // Caso o tipo não seja reconhecido (opcional, mas recomendado)
@@ -162,6 +122,9 @@ function NovoVoucherConteudo() {
     // Continua o processo só se estiver tudo validado
     console.log(`Vouchers a serem lançados: ${vouchersToLaunch.length}`);
     console.log(vouchersToLaunch);
+
+    setLancamentos(vouchersToLaunch);
+    setCxConfirmarVoucher(true);
   }
 
   useEffect(() => {
@@ -233,10 +196,11 @@ function NovoVoucherConteudo() {
       >
         <h3 style={{ color: Cor.primariaTxt }}>Lançar Voucher</h3>
       </BtnLançarVoucherStyle>
-      {/* <BaseModalConfirmacao
+      <BaseModalConfirmacao
+        lancamentos={lancamentos}
         cxConfirmarVoucher={cxConfirmarVoucher}
         setCxConfirmarVoucher={setCxConfirmarVoucher}
-      /> */}
+      />
     </div>
   );
 }
@@ -1520,99 +1484,106 @@ function TextoEntrada({
   );
 }
 
-// function BaseModalConfirmacao({
-//   cxConfirmarVoucher,
-//   setCxConfirmarVoucher,
-// }: {
-//   cxConfirmarVoucher: any;
-//   setCxConfirmarVoucher: any;
-// }) {
-//   const Cor = useTema().Cor;
+function BaseModalConfirmacao({
+  lancamentos,
+  cxConfirmarVoucher,
+  setCxConfirmarVoucher,
+}: {
+  lancamentos: any;
+  cxConfirmarVoucher: any;
+  setCxConfirmarVoucher: any;
+}) {
+  const Cor = useTema().Cor;
 
-//   return (
-//     <div
-//       style={{
-//         display: "flex",
-//         alignItems: "center",
-//         justifyContent: "center",
-//         flexDirection: "row",
-//         opacity: cxConfirmarVoucher ? 1 : 0,
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexDirection: "row",
+        opacity: cxConfirmarVoucher ? 1 : 0,
+        gap: 15,
+        position: "absolute",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+        backgroundColor: Cor.base2 + 50,
+        backdropFilter: "blur(2px)",
+        pointerEvents: cxConfirmarVoucher ? "auto" : "none",
+        transition: "all ease-in-out 0.3s",
+        zIndex: 10,
+      }}
+      onClick={() => setCxConfirmarVoucher(false)}
+    >
+      {lancamentos.map((v: any) => {
+        return (
+          <ModalConfirmacao
+            v={v}
+            key={v.Tipo}
+            cxModal={cxConfirmarVoucher}
+          ></ModalConfirmacao>
+        );
+      })}
+    </div>
+  );
+}
 
-//         gap: 15,
-//         position: "absolute",
-//         top: 0,
-//         left: 0,
-//         width: "100%",
-//         height: "100%",
-//         backgroundColor: Cor.base2 + 50,
-//         backdropFilter: "blur(2px)",
-//         pointerEvents: cxConfirmarVoucher ? "auto" : "none",
-//         transition: "all ease-in-out 0.3s",
-//         zIndex: 10,
-//       }}
-//       onClick={() => setCxConfirmarVoucher(false)}
-//     >
-//       <ModalConfirmacao />
-//     </div>
-//   );
-// }
+function ModalConfirmacao({ v, cxModal }: { v: any; cxModal: boolean }) {
+  const Cor = useTema().Cor;
 
-// function ModalConfirmacao({}: {}) {
-//   const Cor = useTema().Cor;
-//   return (
-//     <div
-//       style={{
-//         width: "40%",
-//         height: "75%",
-//         // scale: cxModal ? 1 : 0.6,
-//         backgroundColor: Cor.base2,
-//         borderRadius: 22,
-//         boxShadow: Cor.sombra,
-//         border: `1px solid ${Cor.texto2 + 30}`,
-//         // display: cxModal ? "flex" : "none",
-//         display: "flex",
-//         flexDirection: "column",
-//         transition: "all ease-in-out 0.3s",
-//       }}
-//     >
-//       <div
-//         style={{
-//           width: "100%",
-//           height: "8%",
-//           backgroundColor: Cor.primaria,
-//           borderRadius: "22px 22px 0 0",
-//           display: "flex",
-//           justifyContent: "center",
-//           alignItems: "center",
-//           gap: 50,
-//         }}
-//       >
-//         <p>Revisão Voucher Entrada</p>
-//         <p
-//           style={{ cursor: "pointer" }}
-//           onClick={() => {
-//             // setCxModal(false);
-//           }}
-//         >
-//           X
-//         </p>
-//       </div>
-//       <div
-//         style={{
-//           width: "100%",
-//           height: "92%",
-//           display: "flex",
-//           flexDirection: "column",
-//           padding: 5,
-//           gap: 5,
-//         }}
-//       >
-//         <div
-//           style={{ width: "100%", height: "20%", backgroundColor: "#FF9000" }}
-//         >
-//           s
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
+  return (
+    <div
+      style={{
+        width: "40%",
+        height: "75%",
+        scale: cxModal ? 1 : 0.6,
+        backgroundColor: Cor.base2,
+        borderRadius: 22,
+        boxShadow: Cor.sombra,
+        border: `1px solid ${Cor.texto2 + 30}`,
+        display: "flex",
+        flexDirection: "column",
+        transition: "all ease-in-out 0.3s",
+      }}
+    >
+      <div
+        style={{
+          width: "100%",
+          borderBottom: `1px solid ${Cor.primaria}`,
+          borderRadius: "22px 22px 0 0",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: 15,
+          paddingBottom: 5,
+          gap: 50,
+        }}
+      >
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <p style={{ fontSize: 14, fontWeight: "bold", color: Cor.primariaTxt }}>
+            {v.Tipo}
+          </p>
+          <p style={{ fontSize: 12, color: Cor.texto2 }}>
+            Confirme todas as informações antes de lançar.
+          </p>
+        </div>
+      </div>
+      <div
+        style={{
+          width: "100%",
+          height: "92%",
+          display: "flex",
+          flexDirection: "column",
+          padding: 5,
+          gap: 5,
+        }}
+      >
+        <div
+          style={{ width: "100%", height: "20%", backgroundColor: "#FF9000" }}
+        ></div>
+      </div>
+    </div>
+  );
+}

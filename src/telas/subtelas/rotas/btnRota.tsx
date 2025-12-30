@@ -700,9 +700,6 @@ function LinhaValores({
 
   const Cor = useTema().Cor;
 
-  // console.log(rotaValor);
-  // console.log(pedagio);
-
   return (
     <div
       style={{
@@ -771,7 +768,6 @@ function LinhaValores({
             value={pegadioSelecionado?.id || "0"}
             // onChange={(e) => {
             //   setPedagio(e.target.value);
-            //   console.log(pegadioSelecionado?.nome);
             // }}
           >
             <option

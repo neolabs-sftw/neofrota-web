@@ -1,5 +1,5 @@
 import { useTema } from "../../../../hooks/temaContext";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
 
 interface BtnCadastrarPassageiroStyledProps {
@@ -22,7 +22,6 @@ const BtnCadastrarPassageiroStyled = styled.button<BtnCadastrarPassageiroStyledP
 `;
 
 function BtnCriarPassageiro() {
-
   const Cor = useTema().Cor;
   const [CxCriarPassageiro, setCxCriarPassageiro] = useState(false);
   return (
@@ -77,20 +76,9 @@ function ModalCriarPassageiro({
     }
   };
 
-  const a = {
-    nome: nome,
-    email: email,
-    telefone: telefone,
-    matricula: matricula,
-    centroCusto: centroCusto,
-    endRua: endRua,
-    endNumero: endNumero,
-    endBairro: endBairro,
-    endCidade: endCidade,
-    horarioEmbarque: horarioEmbarque,
-    pontoApanha: pontoApanha,
-    fotoPerfilPassageiro: fotoPerfilPassageiro,
-  };
+  useEffect(() => {
+    fotoPerfilPassageiro;
+  }, []);
   return (
     <div
       style={{
@@ -223,9 +211,7 @@ function ModalCriarPassageiro({
                   justifyContent: "center",
                 }}
               >
-                <p style={{ fontFamily: "Icone", fontWeight: "bold" }}>
-                  add
-                </p>
+                <p style={{ fontFamily: "Icone", fontWeight: "bold" }}>add</p>
                 <p style={{ fontSize: 15 }}>Foto perfil</p>
               </label>
 
@@ -402,7 +388,6 @@ function ModalCriarPassageiro({
             onClick={() => {
               //   criarUnidadeFunc();
               setCxCriarPassageiro(false);
-              console.log(a);
               setNome("");
               setTelefone("");
               setEmail("");

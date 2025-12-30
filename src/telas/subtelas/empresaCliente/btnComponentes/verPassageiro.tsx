@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTema } from "../../../../hooks/temaContext";
 
 interface PassageiroProps {
@@ -121,6 +121,10 @@ function ModalVerPassageiro({
     passageiro.fotoPerfilPassageiro
   );
 
+  useEffect(() => {
+      fotoPerfilPassageiro;
+    }, []);
+
   function carregarImagem(event: React.ChangeEvent<HTMLInputElement>) {
     const files = event.target.files;
     if (files && files[0]) {
@@ -137,22 +141,6 @@ function ModalVerPassageiro({
       setImgPreview("");
     }
   }
-
-  const a = {
-    nome: nome,
-    email: email,
-    telefone: telefone,
-    matricula: matricula,
-    centroCusto: centroCusto,
-    endRua: endRua,
-    endNumero: endNumero,
-    endBairro: endBairro,
-    endCidade: endCidade,
-    horarioEmbarque: horarioEmbarque,
-    pontoApanha: pontoApanha,
-    fotoPerfilPassageiro: fotoPerfilPassageiro,
-  };
-
   return (
     <div
       style={{
@@ -464,7 +452,6 @@ function ModalVerPassageiro({
             }}
             onClick={() => {
               //   criarUnidadeFunc();
-              console.log(a);
               setCxVerPassageiro(false);
               setNome("");
               setTelefone("");

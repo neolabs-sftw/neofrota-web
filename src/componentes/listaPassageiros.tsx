@@ -106,7 +106,6 @@ function TabelaPassageiros() {
   const Cor = useTema().Cor;
   const clienteId = useParams().clienteId;
   const { listaPassageiro } = usePassageiros(clienteId!);
-  console.log(listaPassageiro);
   return (
     <TabelaPassageirosStyled
       $texto1={Cor.texto1}

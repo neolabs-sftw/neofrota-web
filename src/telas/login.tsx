@@ -59,9 +59,6 @@ function Login() {
       const res = await login({ variables: { email, senha } });
       const token = res.data.login.token;
       localStorage.setItem("token", token);
-      console.log(res.data.login.token);
-      console.log(res.data.login.adminUsuario);
-      // alert("Login realizado!");
       navigator("/");
     } catch (err) {
       console.error(err);

@@ -6,8 +6,8 @@ export function validarVoucher({
   rotaValor,
   tipo,
   motorista,
-//   passageirosVoucher,
-}: {
+}: //   passageirosVoucher,
+{
   empresaCliente: any;
   unidadeEmpresaCliente: any;
   solicitante: any;
@@ -15,15 +15,18 @@ export function validarVoucher({
   rotaValor: any;
   tipo: string;
   motorista: any;
-//   passageirosVoucher: any[];
+  //   passageirosVoucher: any[];
 }) {
   // Validações básicas (campos obrigatórios)
   if (!empresaCliente) return { ok: false, erro: "Selecione a empresa." };
-  if (!unidadeEmpresaCliente) return { ok: false, erro: "Selecione a unidade." };
-  if (!solicitante) return { ok: false, erro: "Selecione quem é o solicitante." };
+  if (!unidadeEmpresaCliente)
+    return { ok: false, erro: "Selecione a unidade." };
+  if (!solicitante)
+    return { ok: false, erro: "Selecione quem é o solicitante." };
   if (!rotaExtra) return { ok: false, erro: "Selecione a rota." };
   if (!rotaValor) return { ok: false, erro: "Defina o valor da rota." };
-  if (!tipo || tipo === "") return { ok: false, erro: "Escolha o tipo de viagem." };
+  if (!tipo || tipo === "")
+    return { ok: false, erro: "Escolha o tipo de viagem." };
   if (!motorista) return { ok: false, erro: "Selecione o motorista." };
 
   // Garante que temos a categoria do veículo
