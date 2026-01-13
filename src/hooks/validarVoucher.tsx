@@ -5,7 +5,6 @@ export function validarVoucher({
   rotaExtra,
   rotaValor,
   tipo,
-  motorista,
 }: //   passageirosVoucher,
 {
   empresaCliente: any;
@@ -14,7 +13,6 @@ export function validarVoucher({
   rotaExtra: any;
   rotaValor: any;
   tipo: string;
-  motorista: any;
   //   passageirosVoucher: any[];
 }) {
   // Validações básicas (campos obrigatórios)
@@ -27,7 +25,6 @@ export function validarVoucher({
   if (!rotaValor) return { ok: false, erro: "Defina o valor da rota." };
   if (!tipo || tipo === "")
     return { ok: false, erro: "Escolha o tipo de viagem." };
-  if (!motorista) return { ok: false, erro: "Selecione o motorista." };
 
   // Garante que temos a categoria do veículo
   if (!rotaValor) {

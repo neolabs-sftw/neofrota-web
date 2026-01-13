@@ -1,7 +1,6 @@
 import styled from "styled-components";
 import { useTema } from "../hooks/temaContext";
-import ModalPreviewVoucher from "./modalPreviewVoucher";
-import { useState } from "react";
+import { useMotoristaId } from "../hooks/useMotorista";
 
 interface BtnProximaViagemProps {
   $bg: string;
@@ -33,32 +32,35 @@ const BtnProximaViagemStyled = styled.div<BtnProximaViagemProps>`
 `;
 
 function BtnProximaViagem({
-  natureza,
-  tipo,
-  id,
-  cliente,
-  motorista,
-  origem,
-  destino,
-  data,
-  hora,
+  v,
+  modalPreveiw,
+  setModalPreview,
+  setVoucherPreview,
 }: {
-  natureza: string;
-  tipo: string;
-  id: string;
-  cliente: string;
-  motorista: string;
-  origem: string;
-  destino: string;
-  data: string;
-  hora: string;
+  v: any;
+  modalPreveiw: boolean;
+  setModalPreview: (visible: boolean) => void;
+  setVoucherPreview: (voucher: any) => void;
 }) {
   const Cor = useTema().Cor;
   const bg = Cor.base;
-  const hover = natureza === "fixo" ? Cor.fixo + 10 : Cor.extra + 10;
-  const active = natureza === "fixo" ? Cor.fixo + 90 : Cor.extra + 90;
-
-  const [modalView, setModalView] = useState(false);
+  const hover =
+    v.natureza === "Fixo"
+      ? Cor.fixo + 10
+      : v.natureza === "Extra"
+      ? Cor.extra + 10
+      : v.natureza === "Turno"
+      ? Cor.turno + 10
+      : Cor.extra + 10;
+  const active =
+    v.natureza === "Fixo"
+      ? Cor.fixo + 90
+      : v.natureza === "Extra"
+      ? Cor.extra + 90
+      : v.natureza === "Turno"
+      ? Cor.turno + 90
+      : Cor.extra + 90;
+  const { motorista } = useMotoristaId(v?.motorista?.id || 0);
 
   return (
     <>
@@ -66,7 +68,10 @@ function BtnProximaViagem({
         $bg={bg}
         $active={active}
         $hover={hover}
-        onClick={() => setModalView(true)}
+        onClick={() => {
+          setVoucherPreview(v);
+          setModalPreview(!modalPreveiw);
+        }}
       >
         <div
           style={{
@@ -78,16 +83,26 @@ function BtnProximaViagem({
         >
           <p
             style={{
-              color: natureza === "fixo" ? Cor.textoFixo : Cor.textoExtra,
+              color:
+                v.natureza === "Fixo"
+                  ? Cor.textoFixo
+                  : v.natureza === "Turno"
+                  ? Cor.textoTurno
+                  : Cor.textoExtra,
             }}
           >
-            ID: <strong>{id.toString().slice(0, 5)}</strong>...
+            ID: <strong>{v.id.toString().slice(0, 5)}</strong>...
           </p>
           <div
             style={{
               width: 30,
               height: 30,
-              backgroundColor: natureza === "fixo" ? Cor.fixo : Cor.extra,
+              backgroundColor:
+                v.natureza === "Fixo"
+                  ? Cor.fixo
+                  : v.natureza === "Turno"
+                  ? Cor.turno
+                  : Cor.extra,
               borderRadius: 8,
               display: "flex",
               alignItems: "center",
@@ -102,7 +117,7 @@ function BtnProximaViagem({
                 color: Cor.base,
               }}
             >
-              {tipo === "entrada" ? "login" : "logout"}
+              {v.tipoCorrida === "Entrada" ? "login" : "logout"}
             </p>
           </div>
         </div>
@@ -119,7 +134,12 @@ function BtnProximaViagem({
           <p
             style={{
               fontWeight: "bold",
-              color: natureza === "fixo" ? Cor.textoFixo : Cor.textoExtra,
+              color:
+                v.natureza === "Fixo"
+                  ? Cor.textoFixo
+                  : v.natureza === "Turno"
+                  ? Cor.textoTurno
+                  : Cor.textoExtra,
               maxLines: 1,
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -127,7 +147,7 @@ function BtnProximaViagem({
               fontSize: 15,
             }}
           >
-            {cliente}
+            {v.empresaCliente?.nome || "Sem Cliente"}
           </p>
         </div>
         <div
@@ -143,7 +163,12 @@ function BtnProximaViagem({
           <p
             style={{
               fontWeight: "bold",
-              color: natureza === "fixo" ? Cor.textoFixo : Cor.textoExtra,
+              color:
+                v.natureza === "Fixo"
+                  ? Cor.textoFixo
+                  : v.natureza === "Turno"
+                  ? Cor.textoTurno
+                  : Cor.textoExtra,
               maxLines: 1,
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -151,7 +176,7 @@ function BtnProximaViagem({
               fontSize: 15,
             }}
           >
-            {motorista}
+            {motorista?.nome || "Sem Motorista"}
           </p>
         </div>
         <div
@@ -166,7 +191,12 @@ function BtnProximaViagem({
           <p
             style={{
               fontWeight: "bold",
-              color: natureza === "fixo" ? Cor.textoFixo : Cor.textoExtra,
+              color:
+                v.natureza === "Fixo"
+                  ? Cor.textoFixo
+                  : v.natureza === "Turno"
+                  ? Cor.textoTurno
+                  : Cor.textoExtra,
               maxLines: 1,
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -176,13 +206,18 @@ function BtnProximaViagem({
               width: "40%",
             }}
           >
-            {origem}
+            {v.origem}
           </p>
           <p style={{ fontSize: 12, color: Cor.texto2 }}>x</p>
           <p
             style={{
               fontWeight: "bold",
-              color: natureza === "fixo" ? Cor.textoFixo : Cor.textoExtra,
+              color:
+                v.natureza === "Fixo"
+                  ? Cor.textoFixo
+                  : v.natureza === "Turno"
+                  ? Cor.textoTurno
+                  : Cor.textoExtra,
               maxLines: 1,
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -192,7 +227,7 @@ function BtnProximaViagem({
               width: "40%",
             }}
           >
-            {destino}
+            {v.destino}
           </p>
         </div>
         <p
@@ -203,7 +238,12 @@ function BtnProximaViagem({
             color: Cor.texto1,
           }}
         >
-          {data}
+          {new Date(v.dataHoraProgramado).toLocaleDateString("pt-BR", {
+            timeZone: "UTC",
+            day: "2-digit",
+            month: "2-digit",
+            year: "2-digit",
+          })}
         </p>
         <div
           style={{ width: "100%", height: 1, backgroundColor: Cor.texto2 + 90 }}
@@ -215,18 +255,21 @@ function BtnProximaViagem({
             textAlign: "center",
             fontWeight: "bold",
             fontSize: 32,
-            color: natureza === "fixo" ? Cor.textoFixo : Cor.textoExtra,
+            color:
+              v.natureza === "Fixo"
+                ? Cor.textoFixo
+                : v.natureza === "Turno"
+                ? Cor.textoTurno
+                : Cor.textoExtra,
           }}
         >
-          {hora}
+          {new Date(v.dataHoraProgramado).toLocaleTimeString("pt-BR", {
+            timeZone: "UTC",
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
         </p>
       </BtnProximaViagemStyled>
-      <ModalPreviewVoucher
-        visivel={modalView}
-        setVisivel={setModalView}
-        natureza={natureza}
-        id={id}
-      />
     </>
   );
 }

@@ -74,13 +74,11 @@ const BtnEditarVoucher = styled.button<{ $bg: string }>`
 function ModalPreviewVoucher({
   visivel,
   setVisivel,
-  natureza,
-  id,
+  v,
 }: {
   visivel: boolean;
   setVisivel: any;
-  natureza: string;
-  id: string;
+  v: any;
 }) {
   const Cor = useTema().Cor;
 
@@ -93,7 +91,7 @@ function ModalPreviewVoucher({
       if (event.key === "Escape") {
         setVisivel(false);
       } else if (event.key === "Enter") {
-        navigate(`/editar/${natureza}/${id}`);
+        navigate(`/editar/${v.natureza}/${v.id}`);
       }
     };
 
@@ -149,10 +147,15 @@ function ModalPreviewVoucher({
             <p
               style={{
                 fontSize: 18,
-                color: natureza === "fixo" ? Cor.textoFixo : Cor.textoExtra,
+                color:
+                  v?.natureza === "Fixo"
+                    ? Cor.textoFixo
+                    : v?.natureza === "Turno"
+                    ? Cor.textoTurno
+                    : Cor.textoExtra,
               }}
             >
-              ID: <strong>{id}</strong>
+              ID: <strong>{v?.id}</strong>
             </p>
             <p
               style={{
@@ -167,16 +170,16 @@ function ModalPreviewVoucher({
             </p>
           </div>
         </div>
-        <PrimeiraLinha />
-        <DetalhesDaViagem natureza={natureza} />
+        <PrimeiraLinha v={v} />
+        <DetalhesDaViagem v={v} />
         <div
           style={{ width: "100%", height: 1, backgroundColor: Cor.texto2 + 70 }}
         />
-        <DetalhesDaViagem2 natureza={natureza} />
+        <DetalhesDaViagem2 v={v} />
         <div
           style={{ width: "100%", height: 1, backgroundColor: Cor.texto2 + 70 }}
         />
-        <DetalhesDoMotorista />
+        <DetalhesDoMotorista v={v} />
         <div
           style={{
             width: "100%",
@@ -186,7 +189,7 @@ function ModalPreviewVoucher({
             gap: 10,
           }}
         >
-          <ListaPassageirosVoucher />
+          <ListaPassageirosVoucher v={v} />
           <Assinatura />
         </div>
         <div
@@ -198,7 +201,7 @@ function ModalPreviewVoucher({
             justifyContent: "space-between",
           }}
         >
-          <ResultadoVoucher natureza={natureza} />
+          <ResultadoVoucher v={v} />
           <BtnEditarVoucher $bg={Cor.primaria}>
             <p style={{ color: Cor.base, fontWeight: "500", fontSize: 14 }}>
               Editar Voucher
@@ -212,122 +215,7 @@ function ModalPreviewVoucher({
 
 export default ModalPreviewVoucher;
 
-function CardPassageiroVoucher() {
-  const Cor = useTema().Cor;
-  return (
-    <div
-      style={{
-        height: 45,
-        width: "100%",
-        backgroundColor: Cor.base,
-        borderRadius: 10,
-        border: `1px solid ${Cor.texto2 + 40}`,
-        padding: 5,
-        display: "flex",
-        flexDirection: "row",
-        justifyContent: "space-between",
-        gap: 5,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          width: "28%",
-        }}
-      >
-        <p style={{ fontSize: 12, color: Cor.texto2 }}>Tipo</p>
-        <p
-          style={{
-            fontSize: 14,
-            fontWeight: "500",
-            color: Cor.texto1,
-            textOverflow: "ellipsis",
-            maxWidth: "95%",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-          }}
-        >
-          Fulano de Tal da Virgens Santos Silva Guerra
-        </p>
-      </div>
-      <div style={{ width: 1, height: "100%", backgroundColor: Cor.texto2 }} />
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          width: "14%",
-        }}
-      >
-        <p style={{ fontSize: 12, color: Cor.texto2 }}>Telefone</p>
-        <p
-          style={{
-            fontSize: 14,
-            fontWeight: "500",
-            color: Cor.texto1,
-            textOverflow: "ellipsis",
-            maxWidth: "95%",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-          }}
-        >
-          71 9 9999-9999
-        </p>
-      </div>
-      <div style={{ width: 1, height: "100%", backgroundColor: Cor.texto2 }} />
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          width: "8%",
-        }}
-      >
-        <p style={{ fontSize: 12, color: Cor.texto2 }}>Horário</p>
-        <p
-          style={{
-            fontSize: 14,
-            fontWeight: "500",
-            color: Cor.texto1,
-            textOverflow: "ellipsis",
-            maxWidth: "95%",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-          }}
-        >
-          23:30
-        </p>
-      </div>
-      <div style={{ width: 1, height: "100%", backgroundColor: Cor.texto2 }} />
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          width: "45%",
-        }}
-      >
-        <p style={{ fontSize: 12, color: Cor.texto2 }}>Endereço</p>
-        <p
-          style={{
-            fontSize: 14,
-            fontWeight: "500",
-            color: Cor.texto1,
-            textOverflow: "ellipsis",
-            maxWidth: "100%",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-          }}
-        >
-          lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod
-          tempor incididunt ut labore et dolore magna aliqua ut enim ad minim
-          veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-          commodo consequat
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function PrimeiraLinha() {
+function PrimeiraLinha({ v }: { v: any }) {
   const Cor = useTema().Cor;
 
   return (
@@ -352,7 +240,7 @@ function PrimeiraLinha() {
         }}
       >
         <img
-          src="src\assets\image\icon.png"
+          src={v?.empresaCliente?.fotoLogoCliente || "srcassetsimageicon.png"}
           alt="img_Marca_Cliente"
           style={{
             width: 75,
@@ -363,8 +251,18 @@ function PrimeiraLinha() {
         />
         <div style={{ display: "flex", flexDirection: "column", width: "80%" }}>
           <p style={{ fontSize: 12, color: Cor.texto2 }}>Cliente</p>
-          <p style={{ fontSize: 16, fontWeight: "bold", color: Cor.texto1 }}>
-            Nome da Empresa Cliente
+          <p
+            style={{
+              fontSize: 14,
+              fontWeight: "500",
+              color: Cor.texto1,
+              textOverflow: "ellipsis",
+              maxWidth: "95%",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+            }}
+          >
+            {v?.empresaCliente?.rSocial}
           </p>
           <p style={{ fontSize: 12, color: Cor.texto2 }}>Unidade</p>
           <p
@@ -378,7 +276,8 @@ function PrimeiraLinha() {
               overflow: "hidden",
             }}
           >
-            Nome e Endereço da Unidade selecionada.
+            {v?.unidadeCliente?.nome} - {v?.unidadeCliente?.endRua},{" "}
+            {v?.unidadeCliente?.endNumero} - {v?.unidadeCliente?.endBairro}
           </p>
         </div>
       </div>
@@ -393,7 +292,7 @@ function PrimeiraLinha() {
         }}
       >
         <img
-          src="src\assets\image\img-bg.png"
+          src={v?.motorista?.fotoMotorista || "srcassetsimageimg-bg.png"}
           alt="img_Marca_Cliente"
           style={{
             width: 75,
@@ -405,7 +304,7 @@ function PrimeiraLinha() {
         <div style={{ display: "flex", flexDirection: "column", width: "80%" }}>
           <p style={{ fontSize: 12, color: Cor.texto2 }}>Motorista</p>
           <p style={{ fontSize: 16, fontWeight: "bold", color: Cor.texto1 }}>
-            Nome do motorista
+            {v?.motorista?.nome}
           </p>
           <p style={{ fontSize: 12, color: Cor.texto2 }}>Veículo</p>
           <p
@@ -419,7 +318,8 @@ function PrimeiraLinha() {
               display: "block",
             }}
           >
-            Marca, Modelo, Cor e Placa
+            {v?.carro?.marca} {v?.carro?.modelo} {v?.carro?.cor} / Placa -{" "}
+            {v?.carro?.placa}
           </p>
         </div>
       </div>
@@ -427,7 +327,7 @@ function PrimeiraLinha() {
   );
 }
 
-function DetalhesDaViagem({ natureza }: { natureza: string }) {
+function DetalhesDaViagem({ v }: { v: any }) {
   const Cor = useTema().Cor;
   return (
     <div
@@ -453,7 +353,12 @@ function DetalhesDaViagem({ natureza }: { natureza: string }) {
           style={{
             width: 35,
             height: 35,
-            backgroundColor: natureza === "fixo" ? Cor.fixo : Cor.extra,
+            backgroundColor:
+              v?.natureza === "Fixo"
+                ? Cor.fixo
+                : v?.natureza === "Turno"
+                ? Cor.turno
+                : Cor.extra,
             borderRadius: 8,
             display: "flex",
             alignItems: "center",
@@ -468,7 +373,11 @@ function DetalhesDaViagem({ natureza }: { natureza: string }) {
               fontSize: 24,
             }}
           >
-            {natureza === "fixo" ? "history" : "car_tag"}
+            {v?.natureza === "Fixo"
+              ? "history"
+              : v?.natureza === "Turno"
+              ? "cycle"
+              : "car_tag"}
           </p>
         </div>
         <div style={{ display: "flex", flexDirection: "column" }}>
@@ -477,10 +386,15 @@ function DetalhesDaViagem({ natureza }: { natureza: string }) {
             style={{
               fontSize: 14,
               fontWeight: "bold",
-              color: natureza === "fixo" ? Cor.textoFixo : Cor.textoExtra,
+              color:
+                v?.natureza === "Fixo"
+                  ? Cor.textoFixo
+                  : v?.natureza === "Turno"
+                  ? Cor.textoTurno
+                  : Cor.textoExtra,
             }}
           >
-            {natureza === "fixo" ? "Fixo" : "Extra"}
+            {v?.natureza}
           </p>
         </div>
       </div>
@@ -496,7 +410,12 @@ function DetalhesDaViagem({ natureza }: { natureza: string }) {
           style={{
             width: 35,
             height: 35,
-            backgroundColor: natureza === "fixo" ? Cor.fixo : Cor.extra,
+            backgroundColor:
+              v?.natureza === "Fixo"
+                ? Cor.fixo
+                : v?.natureza === "Turno"
+                ? Cor.turno
+                : Cor.extra,
             borderRadius: 8,
             display: "flex",
             alignItems: "center",
@@ -520,10 +439,15 @@ function DetalhesDaViagem({ natureza }: { natureza: string }) {
             style={{
               fontSize: 14,
               fontWeight: "bold",
-              color: natureza === "fixo" ? Cor.textoFixo : Cor.textoExtra,
+              color:
+                v?.natureza === "Fixo"
+                  ? Cor.textoFixo
+                  : v?.natureza === "Turno"
+                  ? Cor.textoTurno
+                  : Cor.textoExtra,
             }}
           >
-            Entrada
+            {v?.tipoCorrida}
           </p>
         </div>
       </div>
@@ -559,21 +483,31 @@ function DetalhesDaViagem({ natureza }: { natureza: string }) {
                 width: 125,
                 fontSize: 14,
                 fontWeight: "bold",
-                color: natureza === "fixo" ? Cor.textoFixo : Cor.textoExtra,
+                color:
+                  v?.natureza === "Fixo"
+                    ? Cor.textoFixo
+                    : v?.natureza === "Turno"
+                    ? Cor.textoTurno
+                    : Cor.textoExtra,
                 whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 display: "block",
               }}
             >
-              Fábrica
+              {v?.origem}
             </p>
           </div>
           <div
             style={{
               width: 30,
               height: 30,
-              backgroundColor: natureza === "fixo" ? Cor.fixo : Cor.extra,
+              backgroundColor:
+                v?.natureza === "Fixo"
+                  ? Cor.fixo
+                  : v?.natureza === "Turno"
+                  ? Cor.turno
+                  : Cor.extra,
               borderRadius: 8,
               display: "flex",
               alignItems: "center",
@@ -596,7 +530,12 @@ function DetalhesDaViagem({ natureza }: { natureza: string }) {
           style={{
             fontFamily: "Icone",
             fontWeight: "bold",
-            color: natureza === "fixo" ? Cor.textoFixo : Cor.textoExtra,
+            color:
+              v?.natureza === "Fixo"
+                ? Cor.textoFixo
+                : v?.natureza === "Turno"
+                ? Cor.textoTurno
+                : Cor.textoExtra,
             fontSize: 24,
           }}
         >
@@ -616,7 +555,12 @@ function DetalhesDaViagem({ natureza }: { natureza: string }) {
             style={{
               width: 30,
               height: 30,
-              backgroundColor: natureza === "fixo" ? Cor.fixo : Cor.extra,
+              backgroundColor:
+                v?.natureza === "Fixo"
+                  ? Cor.fixo
+                  : v?.natureza === "Turno"
+                  ? Cor.turno
+                  : Cor.extra,
               borderRadius: 8,
               display: "flex",
               alignItems: "center",
@@ -655,7 +599,12 @@ function DetalhesDaViagem({ natureza }: { natureza: string }) {
                 width: 125,
                 fontSize: 14,
                 fontWeight: "bold",
-                color: natureza === "fixo" ? Cor.textoFixo : Cor.textoExtra,
+                color:
+                  v?.natureza === "Fixo"
+                    ? Cor.textoFixo
+                    : v?.natureza === "Turno"
+                    ? Cor.textoTurno
+                    : Cor.textoExtra,
                 whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
@@ -663,7 +612,7 @@ function DetalhesDaViagem({ natureza }: { natureza: string }) {
                 textAlign: "right",
               }}
             >
-              Cidade
+              {v?.destino}
             </p>
           </div>
         </div>
@@ -680,7 +629,12 @@ function DetalhesDaViagem({ natureza }: { natureza: string }) {
           style={{
             width: 35,
             height: 35,
-            backgroundColor: natureza === "fixo" ? Cor.fixo : Cor.extra,
+            backgroundColor:
+              v?.natureza === "Fixo"
+                ? Cor.fixo
+                : v?.natureza === "Turno"
+                ? Cor.turno
+                : Cor.extra,
             borderRadius: 8,
             display: "flex",
             alignItems: "center",
@@ -704,11 +658,16 @@ function DetalhesDaViagem({ natureza }: { natureza: string }) {
             style={{
               fontSize: 18,
               fontWeight: "bold",
-              color: natureza === "fixo" ? Cor.textoFixo : Cor.textoExtra,
+              color:
+                v?.natureza === "Fixo"
+                  ? Cor.textoFixo
+                  : v?.natureza === "Turno"
+                  ? Cor.textoTurno
+                  : Cor.textoExtra,
             }}
           >
-            {new Date().toLocaleString("pt-BR", {
-              timeZone: "America/Sao_Paulo",
+            {new Date(v?.dataHoraProgramado).toLocaleString("pt-BR", {
+              timeZone: "UTC",
               weekday: "short",
               hour: "2-digit",
               minute: "2-digit",
@@ -723,8 +682,259 @@ function DetalhesDaViagem({ natureza }: { natureza: string }) {
   );
 }
 
-function Solicitante({ natureza }: { natureza: string }) {
+function DetalhesDaViagem2({ v }: { v: any }) {
   const Cor = useTema().Cor;
+  return (
+    <div
+      style={{
+        width: "100%",
+        height: 50,
+        borderRadius: 18,
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 10,
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "center",
+        }}
+      >
+        <div
+          style={{
+            width: 35,
+            height: 35,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <p
+            style={{
+              fontFamily: "Icone",
+              fontWeight: "bold",
+              color:
+                v?.natureza === "Fixo"
+                  ? Cor.fixo
+                  : v?.natureza === "Turno"
+                  ? Cor.turno
+                  : Cor.extra,
+              fontSize: 24,
+            }}
+          >
+            request_quote
+          </p>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <p style={{ fontSize: 12, color: Cor.texto2 }}>Valor Cobrança</p>
+          <p
+            style={{
+              fontSize: 20,
+              color:
+                v?.natureza === "Fixo"
+                  ? Cor.textoFixo
+                  : v?.natureza === "Turno"
+                  ? Cor.textoTurno
+                  : Cor.textoExtra,
+            }}
+          >
+            R$ <strong>{v?.valorViagem}</strong>
+          </p>
+        </div>
+      </div>
+      <div
+        style={{
+          width: 1,
+          height: "80%",
+          backgroundColor: Cor.texto2 + 70,
+        }}
+      />
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "center",
+        }}
+      >
+        <div
+          style={{
+            width: 35,
+            height: 35,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <p
+            style={{
+              fontFamily: "Icone",
+              fontWeight: "bold",
+              color:
+                v?.natureza === "Fixo"
+                  ? Cor.fixo
+                  : v?.natureza === "Turno"
+                  ? Cor.turno
+                  : Cor.extra,
+              fontSize: 24,
+            }}
+          >
+            mintmark
+          </p>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <p style={{ fontSize: 12, color: Cor.texto2 }}>Valor Repasse</p>
+          <p
+            style={{
+              fontSize: 20,
+              color:
+                v?.natureza === "Fixo"
+                  ? Cor.textoFixo
+                  : v?.natureza === "Turno"
+                  ? Cor.textoTurno
+                  : Cor.textoExtra,
+            }}
+          >
+            R$ <strong>{v?.valorViagemRepasse}</strong>
+          </p>
+        </div>
+      </div>
+      <div
+        style={{
+          width: 1,
+          height: "80%",
+          backgroundColor: Cor.texto2 + 70,
+        }}
+      />
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "center",
+        }}
+      >
+        <div
+          style={{
+            width: 35,
+            height: 35,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <p
+            style={{
+              fontFamily: "Icone",
+              fontWeight: "bold",
+              color:
+                v?.natureza === "Fixo"
+                  ? Cor.fixo
+                  : v?.natureza === "Turno"
+                  ? Cor.turno
+                  : Cor.extra,
+              fontSize: 24,
+            }}
+          >
+            request_quote
+          </p>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <p style={{ fontSize: 12, color: Cor.texto2 }}>Desloc. Cobrança</p>
+          <p
+            style={{
+              fontSize: 20,
+              color:
+                v?.natureza === "Fixo"
+                  ? Cor.textoFixo
+                  : v?.natureza === "Turno"
+                  ? Cor.textoTurno
+                  : Cor.textoExtra,
+            }}
+          >
+            R$ <strong>15,00</strong>
+          </p>
+        </div>
+      </div>
+      <div
+        style={{
+          width: 1,
+          height: "80%",
+          backgroundColor: Cor.texto2 + 70,
+        }}
+      />
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "center",
+        }}
+      >
+        <div
+          style={{
+            width: 35,
+            height: 35,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <p
+            style={{
+              fontFamily: "Icone",
+              fontWeight: "bold",
+              color:
+                v?.natureza === "Fixo"
+                  ? Cor.fixo
+                  : v?.natureza === "Turno"
+                  ? Cor.turno
+                  : Cor.extra,
+              fontSize: 24,
+            }}
+          >
+            mintmark
+          </p>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <p style={{ fontSize: 12, color: Cor.texto2 }}>Desloc. Repasse</p>
+          <p
+            style={{
+              fontSize: 20,
+              color:
+                v?.natureza === "Fixo"
+                  ? Cor.textoFixo
+                  : v?.natureza === "Turno"
+                  ? Cor.textoTurno
+                  : Cor.textoExtra,
+            }}
+          >
+            R$ <strong>11,00</strong>
+          </p>
+        </div>
+      </div>
+      <div
+        style={{
+          width: 1,
+          height: "80%",
+          backgroundColor: Cor.texto2 + 70,
+        }}
+      />
+      {v?.natureza === "Fixo" ? (
+        <CodigoRoteiro v={v} />
+      ) : v?.natureza === "Turno" ? (
+        <CodigoRoteiro v={v} />
+      ) : (
+        <Solicitante v={v} />
+      )}
+    </div>
+  );
+}
+
+function Solicitante({ v }: { v: any }) {
+  const Cor = useTema().Cor;
+  const natureza = v?.natureza;
 
   return (
     <div
@@ -767,14 +977,14 @@ function Solicitante({ natureza }: { natureza: string }) {
             color: natureza === "fixo" ? Cor.textoFixo : Cor.textoExtra,
           }}
         >
-          Manoel Gomes
+          {v?.solicitante?.nome}
         </p>
       </div>
     </div>
   );
 }
 
-function CodigoRoteiro({ natureza }: { natureza: string }) {
+function CodigoRoteiro({ v }: { v: any }) {
   const Cor = useTema().Cor;
 
   return (
@@ -786,7 +996,13 @@ function CodigoRoteiro({ natureza }: { natureza: string }) {
         alignItems: "center",
         backgroundColor: Cor.texto2 + 20,
         padding: "5px 10px",
-        borderLeft: `12px solid ${natureza === "fixo" ? Cor.fixo : Cor.extra}`,
+        borderLeft: `12px solid ${
+          v?.natureza === "Fixo"
+            ? Cor.fixo
+            : v?.natureza === "Turno"
+            ? Cor.turno
+            : Cor.extra
+        }`,
         borderTop: `1px solid ${Cor.texto2 + 20}`,
         borderRight: `1px solid ${Cor.texto2 + 20}`,
         borderBottom: `1px solid ${Cor.texto2 + 20}`,
@@ -798,7 +1014,12 @@ function CodigoRoteiro({ natureza }: { natureza: string }) {
         style={{
           fontFamily: "Icone",
           fontWeight: "bold",
-          color: natureza === "fixo" ? Cor.fixo : Cor.extra,
+          color:
+            v?.natureza === "Fixo"
+              ? Cor.fixo
+              : v?.natureza === "Turno"
+              ? Cor.turno
+              : Cor.extra,
           fontSize: 28,
         }}
       >
@@ -815,7 +1036,12 @@ function CodigoRoteiro({ natureza }: { natureza: string }) {
           style={{
             fontSize: 20,
             fontWeight: "bold",
-            color: natureza === "fixo" ? Cor.textoFixo : Cor.textoExtra,
+            color:
+              v?.natureza === "Fixo"
+                ? Cor.textoFixo
+                : v?.natureza === "Turno"
+                ? Cor.textoTurno
+                : Cor.textoExtra,
           }}
         >
           ADM 02
@@ -825,234 +1051,38 @@ function CodigoRoteiro({ natureza }: { natureza: string }) {
   );
 }
 
-function DetalhesDaViagem2({ natureza }: { natureza: string }) {
-  const Cor = useTema().Cor;
-  return (
-    <div
-      style={{
-        width: "100%",
-        height: 50,
-        borderRadius: 18,
-        display: "flex",
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: 10,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-        }}
-      >
-        <div
-          style={{
-            width: 35,
-            height: 35,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <p
-            style={{
-              fontFamily: "Icone",
-              fontWeight: "bold",
-              color: natureza === "fixo" ? Cor.fixo : Cor.extra,
-              fontSize: 24,
-            }}
-          >
-            request_quote
-          </p>
-        </div>
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <p style={{ fontSize: 12, color: Cor.texto2 }}>Valor Cobrança</p>
-          <p
-            style={{
-              fontSize: 20,
-              color: natureza === "fixo" ? Cor.textoFixo : Cor.textoExtra,
-            }}
-          >
-            R$ <strong>91,58</strong>
-          </p>
-        </div>
-      </div>
-      <div
-        style={{
-          width: 1,
-          height: "80%",
-          backgroundColor: Cor.texto2 + 70,
-        }}
-      />
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-        }}
-      >
-        <div
-          style={{
-            width: 35,
-            height: 35,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <p
-            style={{
-              fontFamily: "Icone",
-              fontWeight: "bold",
-              color: natureza === "fixo" ? Cor.fixo : Cor.extra,
-              fontSize: 24,
-            }}
-          >
-            mintmark
-          </p>
-        </div>
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <p style={{ fontSize: 12, color: Cor.texto2 }}>Valor Repasse</p>
-          <p
-            style={{
-              fontSize: 20,
-              color: natureza === "fixo" ? Cor.textoFixo : Cor.textoExtra,
-            }}
-          >
-            R$ <strong>71,58</strong>
-          </p>
-        </div>
-      </div>
-      <div
-        style={{
-          width: 1,
-          height: "80%",
-          backgroundColor: Cor.texto2 + 70,
-        }}
-      />
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-        }}
-      >
-        <div
-          style={{
-            width: 35,
-            height: 35,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <p
-            style={{
-              fontFamily: "Icone",
-              fontWeight: "bold",
-              color: natureza === "fixo" ? Cor.fixo : Cor.extra,
-              fontSize: 24,
-            }}
-          >
-            request_quote
-          </p>
-        </div>
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <p style={{ fontSize: 12, color: Cor.texto2 }}>Desloc. Cobrança</p>
-          <p
-            style={{
-              fontSize: 20,
-              color: natureza === "fixo" ? Cor.textoFixo : Cor.textoExtra,
-            }}
-          >
-            R$ <strong>15,00</strong>
-          </p>
-        </div>
-      </div>
-      <div
-        style={{
-          width: 1,
-          height: "80%",
-          backgroundColor: Cor.texto2 + 70,
-        }}
-      />
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-        }}
-      >
-        <div
-          style={{
-            width: 35,
-            height: 35,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <p
-            style={{
-              fontFamily: "Icone",
-              fontWeight: "bold",
-              color: natureza === "fixo" ? Cor.fixo : Cor.extra,
-              fontSize: 24,
-            }}
-          >
-            mintmark
-          </p>
-        </div>
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <p style={{ fontSize: 12, color: Cor.texto2 }}>Desloc. Repasse</p>
-          <p
-            style={{
-              fontSize: 20,
-              color: natureza === "fixo" ? Cor.textoFixo : Cor.textoExtra,
-            }}
-          >
-            R$ <strong>11,00</strong>
-          </p>
-        </div>
-      </div>
-      <div
-        style={{
-          width: 1,
-          height: "80%",
-          backgroundColor: Cor.texto2 + 70,
-        }}
-      />
-      {natureza === "fixo" ? (
-        <CodigoRoteiro natureza={natureza} />
-      ) : (
-        <Solicitante natureza={natureza} />
-      )}
-    </div>
-  );
-}
-
-function DetalhesDoMotorista() {
+function DetalhesDoMotorista({ v }: { v: any }) {
   const Cor = useTema().Cor;
   return (
     <div
       style={{
         width: "100%",
         backgroundColor: Cor.texto2 + 20,
-        height: 70,
+        height: 35,
         borderRadius: 18,
         alignItems: "center",
         display: "flex",
+        flexDirection: "row",
         padding: 10,
       }}
     >
-      <p style={{ fontSize: 12, color: Cor.texto1 }}>Detalhes</p>
+      <p style={{ fontSize: 12, color: Cor.texto1 }}>Obs. Motorista: </p>
+      <p
+        style={{
+          fontSize: 14,
+          fontWeight: "500",
+          color: Cor.texto1,
+          marginLeft: 5,
+        }}
+      >
+        {v?.observacaoMotorista || "Nenhuma observação registrada."}
+      </p>
     </div>
   );
 }
 
-function ListaPassageirosVoucher() {
+function ListaPassageirosVoucher({ v }: { v: any }) {
+  const passageiros = v?.passageiros || [];
   const Cor = useTema().Cor;
   return (
     <div
@@ -1071,10 +1101,122 @@ function ListaPassageirosVoucher() {
         scrollbarColor: `${Cor.secundaria} ${Cor.base + "00"}`,
       }}
     >
-      <CardPassageiroVoucher />
-      <CardPassageiroVoucher />
-      <CardPassageiroVoucher />
-      <CardPassageiroVoucher />
+      {passageiros.map((p: any, index: number) => (
+        <CardPassageiroVoucher key={index} p={p} />
+      ))}
+    </div>
+  );
+}
+
+function CardPassageiroVoucher({ p }: { p: any }) {
+  const Cor = useTema().Cor;
+  return (
+    <div
+      style={{
+        height: 45,
+        width: "100%",
+        backgroundColor: Cor.base,
+        borderRadius: 10,
+        border: `1px solid ${Cor.texto2 + 40}`,
+        padding: 5,
+        display: "flex",
+        flexDirection: "row",
+        justifyContent: "space-between",
+        gap: 5,
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          width: "28%",
+        }}
+      >
+        <p style={{ fontSize: 12, color: Cor.texto2 }}>Tipo</p>
+        <p
+          style={{
+            fontSize: 14,
+            fontWeight: "500",
+            color: Cor.texto1,
+            textOverflow: "ellipsis",
+            maxWidth: "95%",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+          }}
+        >
+          {p?.passageiroId?.nome}
+        </p>
+      </div>
+      <div style={{ width: 1, height: "100%", backgroundColor: Cor.texto2 }} />
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          width: "14%",
+        }}
+      >
+        <p style={{ fontSize: 12, color: Cor.texto2 }}>Telefone</p>
+        <p
+          style={{
+            fontSize: 14,
+            fontWeight: "500",
+            color: Cor.texto1,
+            textOverflow: "ellipsis",
+            maxWidth: "95%",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+          }}
+        >
+          {p?.passageiroId?.telefone}
+        </p>
+      </div>
+      <div style={{ width: 1, height: "100%", backgroundColor: Cor.texto2 }} />
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          width: "8%",
+        }}
+      >
+        <p style={{ fontSize: 12, color: Cor.texto2 }}>Horário</p>
+        <p
+          style={{
+            fontSize: 14,
+            fontWeight: "500",
+            color: Cor.texto1,
+            textOverflow: "ellipsis",
+            maxWidth: "95%",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+          }}
+        >
+          {p?.passageiroId?.horarioEmbarque}
+        </p>
+      </div>
+      <div style={{ width: 1, height: "100%", backgroundColor: Cor.texto2 }} />
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          width: "45%",
+        }}
+      >
+        <p style={{ fontSize: 12, color: Cor.texto2 }}>Endereço</p>
+        <p
+          style={{
+            fontSize: 14,
+            fontWeight: "500",
+            color: Cor.texto1,
+            textOverflow: "ellipsis",
+            maxWidth: "100%",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+          }}
+        >
+          {p?.passageiroId?.endRua}, {p?.passageiroId?.endNumero} -{" "}
+          {p?.passageiroId?.endBairro} - {p?.passageiroId?.endCidade}
+        </p>
+      </div>
     </div>
   );
 }
@@ -1130,7 +1272,10 @@ function Assinatura() {
   );
 }
 
-function ResultadoVoucher({ natureza }: { natureza: string }) {
+function ResultadoVoucher({ v }: { v: any }) {
+  console.log(v);
+  const totalCobranca = v?.valorViagem + v?.valorDeslocamento + v?.valorHoraParada;
+  const totalRepasse = v?.valorViagemRepasse + v?.valorDeslocamentoRepasse + v?.valorHoraParadaRepasse;
   const Cor = useTema().Cor;
   return (
     <div
@@ -1154,10 +1299,10 @@ function ResultadoVoucher({ natureza }: { natureza: string }) {
           style={{
             fontSize: 24,
             fontWeight: "bold",
-            color: natureza === "fixo" ? Cor.textoFixo : Cor.textoExtra,
+            color: v?.natureza === "Fixo" ? Cor.textoFixo : v?.natureza === "Turno" ? Cor.textoTurno : Cor.textoExtra,
           }}
         >
-          R$<strong>106,58</strong>
+          R$<strong>{totalCobranca}</strong>
         </p>
       </div>
       <div
@@ -1178,10 +1323,10 @@ function ResultadoVoucher({ natureza }: { natureza: string }) {
           style={{
             fontSize: 24,
             fontWeight: "bold",
-            color: natureza === "fixo" ? Cor.textoFixo : Cor.textoExtra,
+            color: v?.natureza === "Fixo" ? Cor.textoFixo : v?.natureza === "Turno" ? Cor.textoTurno : Cor.textoExtra,
           }}
         >
-          R$ <strong>82,58</strong>
+          R$ <strong>{totalRepasse}</strong>
         </p>
       </div>
     </div>

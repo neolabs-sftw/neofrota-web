@@ -36,6 +36,17 @@ const GET_ROTA_ID = gql`
       rotaValor {
         id
         categoria
+        valorViagem
+        valorViagemRepasse
+        valorHoraParada
+        valorHoraParadaRepasse
+        valorDeslocamento
+        valorDeslocamentoRepasse
+        valorPedagio {
+          id
+          nome
+          valor
+        }
       }
     }
   }

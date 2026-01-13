@@ -66,11 +66,60 @@ export function usePassageiros(empresaClienteId: string) {
     GET_LIST_PASSAGEIROS_BY_EMPRESA_CLIENTE,
     {
       variables: { empresaClienteId },
-      fetchPolicy: "cache-and-network"
+      fetchPolicy: "cache-and-network",
     }
   );
   return {
     listaPassageiro: data?.passageirosByEmpresaCliente,
+    loading,
+    error,
+    refetch: refetch || Promise.resolve(),
+  };
+}
+
+const GET_PASSAGEIRO_ID = gql`
+  query Passageiro($passageiroId: ID!) {
+    passageiro(id: $passageiroId) {
+      id
+      nome
+      matricula
+      telefone
+      email
+      ativo
+      fotoPerfilPassageiro
+      endRua
+      endNumero
+      endBairro
+      endCidade
+      pontoApanha
+      horarioEmbarque
+      centroCustoClienteId {
+        id
+        nome
+        codigo
+      }
+      empresaClienteId {
+        id
+        nome
+      }
+    }
+  }
+`;
+
+interface PassageiroIdResult {
+  passageiro: Passageiro | null;
+}
+
+export function usePassageiroId(passageiroId: string) {
+  const { data, loading, error, refetch } = useQuery<PassageiroIdResult>(
+    GET_PASSAGEIRO_ID,
+    {
+      variables: { passageiroId },
+      fetchPolicy: "cache-and-network",
+    }
+  );
+  return {
+    passageiro: data?.passageiro,
     loading,
     error,
     refetch: refetch || Promise.resolve(),

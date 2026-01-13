@@ -12,7 +12,8 @@ import { useMotorista } from "../../../hooks/useMotorista";
 import { usePassageiros } from "../../../hooks/usePassageiros";
 import { validarVoucher } from "../../../hooks/validarVoucher";
 import { useAdminLogado } from "../../../hooks/AdminLogado";
-// import { validarVoucher } from "../../../hooks/validarVoucher";
+import { useCarros } from "../../../hooks/useCarros";
+import { useCreateVoucher } from "../../../hooks/useVouchers";
 
 function NovoVoucher() {
   return BaseTelas({
@@ -28,6 +29,7 @@ function NovoVoucher() {
 export default NovoVoucher;
 
 function NovoVoucherConteudo() {
+  // Variáveis de estado
   const [empresaCliente, setEmpresaCliente] = useState<any>();
   const [unidadeEmpresaCliente, setUnidadeEmpresaCliente] = useState<any>();
   const [solicitante, setSolicitante] = useState<any>();
@@ -35,23 +37,70 @@ function NovoVoucherConteudo() {
   const [rotaValor, setRotaValor] = useState<any>();
   const [tipo, setTipo] = useState<any>("");
   const [motorista, setMotorista] = useState<any>();
-  // const [motoristaSaida, setMotoristaSaida] = useState<any>();
+  const [motoristaSaida, setMotoristaSaida] = useState<any>();
   const [carregandoEmpresa, setCarregandoEmpresa] = useState<boolean>(false);
+  const [carro, setCarro] = useState<any>();
+  const [carroSaida, setCarroSaida] = useState<any>();
 
   const [passageirosVoucher, setPassageirosVoucher] = useState<any[]>([]);
 
-  const userId = useAdminLogado();
+  const passageiros = passageirosVoucher.map((p) => {
+    return { passageiroId: p.id };
+  });
 
   const [dataHoraEntrada, setDataHoraEntrada] = useState<any>();
   const [dataHoraSaida, setDataHoraSaida] = useState<any>();
 
   const [cxConfirmarVoucher, setCxConfirmarVoucher] = useState<boolean>(false);
-  // const [cxEntrada, setCxEntrada] = useState<boolean>(true);
-  // const [cxSaida, setCxSaida] = useState<boolean>(true);
 
   const [lancamentos, setLancamentos] = useState<any[]>([]);
 
-  function lancarVoucher() {
+  //Chamadas de hooks
+
+  const userId = useAdminLogado();
+
+  const { rota } = useRotaId(rotaExtra || "");
+
+  const valores = rota?.rotaValor || [];
+
+  const tipoCarro = valores.find((v: any) => v.id === rotaValor);
+
+  const { listaCarros: listaCarrosEntrada } = useCarros(motorista || "");
+  const { listaCarros: listaCarrosSaida } = useCarros(motoristaSaida || "");
+
+  const { lancar, error } = useCreateVoucher();
+
+  async function revisado() {
+    const lancados = await lancar(lancamentos[0]);
+
+    if(error){
+      console.log("Erro ao lançar voucher: " + error);
+    }
+
+    return lancados.data;
+  }
+
+  // Atualizações de estado baseadas em efeitos colaterais
+
+  useEffect(() => {
+    if (listaCarrosEntrada && listaCarrosEntrada.length > 0) {
+      setCarro(listaCarrosEntrada[0]);
+    } else {
+      setCarro(undefined);
+    }
+  }, [listaCarrosEntrada]);
+
+  useEffect(() => {
+    if (listaCarrosSaida && listaCarrosSaida.length > 0) {
+      setCarroSaida(listaCarrosSaida[0]);
+    } else {
+      setCarroSaida(undefined);
+    }
+  }, [listaCarrosSaida]);
+
+  // Funções auxiliares
+
+  async function lancarVoucher() {
     const { ok, erro } = validarVoucher({
       empresaCliente,
       unidadeEmpresaCliente,
@@ -59,59 +108,72 @@ function NovoVoucherConteudo() {
       rotaExtra,
       rotaValor,
       tipo,
-      motorista,
     });
 
     if (!ok) {
       alert(erro);
       return;
     }
+
     const baseVoucher = {
-      Cliente: empresaCliente,
-      Unidade: unidadeEmpresaCliente,
-      Solicitante: solicitante,
-      Rota: rotaExtra,
-      Natureza: "Extra",
-      RotaValor: rotaValor,
-      Entrada: dataHoraEntrada,
-      Saida: dataHoraSaida,
-      Motorista: motorista,
-      operadorId: userId?.nome,
-      PassageirosId: [passageirosVoucher],
-      // O campo 'Tipo' será adicionado abaixo
+      adminUsuarioId: userId?.id,
+      empresaClienteId: empresaCliente,
+      unidadeClienteId: unidadeEmpresaCliente,
+      operadoraId: userId?.operadora.id,
+      solicitanteId: solicitante,
+      rotaId: rotaExtra,
+      natureza: "Extra",
+      valorViagem: tipoCarro?.valorViagem || 0,
+      valorViagemRepasse: tipoCarro?.valorViagemRepasse || 0,
+      valorHoraParada: tipoCarro?.valorHoraParada || 0,
+      valorHoraParadaRepasse: tipoCarro?.valorHoraParadaRepasse || 0,
+      valorDeslocamento: tipoCarro?.valorDeslocamento || 0,
+      valorDeslocamentoRepasse: tipoCarro?.valorDeslocamentoRepasse || 0,
+      valorPedagio: tipoCarro?.valorPedagio?.valor || 0,
+      valorEstacionamento: 0,
+      passageiros: passageiros,
     };
 
-    // Array para armazenar os vouchers que serão lançados
-    const vouchersToLaunch = [];
+    const vouchers = [];
 
-    // 3. Lógica Condicional para Criar os Vouchers
     if (tipo === "Entrada") {
-      // Lança 1 voucher: Tipo 'Entrada'
-      vouchersToLaunch.push({
+      vouchers.push({
         ...baseVoucher,
-        Saida: null,
-        Tipo: "Entrada",
+        carroId: carro?.id,
+        dataHoraProgramado: dataHoraEntrada,
+        destino: rota.origem,
+        origem: rota.destino,
+        motoristaId: motorista,
+        tipoCorrida: "Entrada",
       });
     } else if (tipo === "Saída") {
-      // Lança 1 voucher: Tipo 'Saída'
-      vouchersToLaunch.push({
+      vouchers.push({
         ...baseVoucher,
-        Entrada: null,
-        Tipo: "Saída",
+        carroId: carroSaida?.id,
+        dataHoraProgramado: dataHoraSaida,
+        destino: rota.destino,
+        origem: rota.origem,
+        motoristaId: motoristaSaida,
+        tipoCorrida: "Saída",
       });
     } else if (tipo === "Entrada e Saída") {
-      // Lança 2 vouchers: um 'Entrada' e um 'Saída'
-      // Voucher de Entrada
-      vouchersToLaunch.push({
+      vouchers.push({
         ...baseVoucher,
-        Saida: null,
-        Tipo: "Entrada",
+        carroId: carro?.id,
+        dataHoraProgramado: dataHoraEntrada,
+        destino: rota.origem,
+        origem: rota.destino,
+        motoristaId: motorista,
+        tipoCorrida: "Entrada",
       });
-      // Voucher de Saída
-      vouchersToLaunch.push({
+      vouchers.push({
         ...baseVoucher,
-        Entrada: null,
-        Tipo: "Saída",
+        carroId: carroSaida?.id,
+        dataHoraProgramado: dataHoraSaida,
+        destino: rota.destino,
+        origem: rota.origem,
+        motoristaId: motoristaSaida,
+        tipoCorrida: "Saída",
       });
     } else {
       // Caso o tipo não seja reconhecido (opcional, mas recomendado)
@@ -120,16 +182,32 @@ function NovoVoucherConteudo() {
     }
 
     // Continua o processo só se estiver tudo validado
-    console.log(`Vouchers a serem lançados: ${vouchersToLaunch.length}`);
-    console.log(vouchersToLaunch);
+    console.log(`Vouchers a serem lançados: ${vouchers.length}`);
+    console.log(vouchers);
 
-    setLancamentos(vouchersToLaunch);
+    setLancamentos(vouchers);
     setCxConfirmarVoucher(true);
   }
 
   useEffect(() => {
+    setUnidadeEmpresaCliente("");
+    setSolicitante("");
+    setRotaExtra("");
+    setRotaValor("");
+    setTipo("");
+    setMotorista("");
+    setMotoristaSaida("");
+    setDataHoraEntrada("");
+    setDataHoraSaida("");
+  }, [empresaCliente]);
+
+  useEffect(() => {
     setPassageirosVoucher([]);
   }, [empresaCliente, rotaValor]);
+
+  useEffect(() => {
+    setRotaValor("");
+  }, [rotaExtra]);
 
   const Cor = useTema().Cor;
   return (
@@ -181,6 +259,7 @@ function NovoVoucherConteudo() {
         setDataHoraEntrada={setDataHoraEntrada}
         setDataHoraSaida={setDataHoraSaida}
         carregandoEmpresa={carregandoEmpresa}
+        setMotoristaSaida={setMotoristaSaida}
       />
       <IncluirPassageiros
         empresaCliente={empresaCliente}
@@ -200,6 +279,7 @@ function NovoVoucherConteudo() {
         lancamentos={lancamentos}
         cxConfirmarVoucher={cxConfirmarVoucher}
         setCxConfirmarVoucher={setCxConfirmarVoucher}
+        revisado={revisado}
       />
     </div>
   );
@@ -491,6 +571,7 @@ function DetalhesDoVoucher({
   setRotaValor,
   setMotorista,
   setDataHoraEntrada,
+  setMotoristaSaida,
   setDataHoraSaida,
 }: {
   tipo: any;
@@ -502,6 +583,7 @@ function DetalhesDoVoucher({
   setRotaValor: any;
   setMotorista: any;
   setDataHoraEntrada: any;
+  setMotoristaSaida: any;
   setDataHoraSaida: any;
 }) {
   const Cor = useTema().Cor;
@@ -606,241 +688,7 @@ function DetalhesDoVoucher({
             </select>
           </div>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", width: "32%" }}>
-          <p
-            style={{
-              fontSize: 14,
-              color: Cor.primariaTxt + 90,
-              fontWeight: "bold",
-              margin: 5,
-            }}
-          >
-            Motorista:
-          </p>
-          <div
-            style={{
-              width: "100%",
-              border: `1px solid ${Cor.texto2 + 50}`,
-              padding: 10,
-              borderRadius: 14,
-            }}
-          >
-            <select
-              name=""
-              id=""
-              style={{
-                outline: "none",
-                border: "none",
-                width: "100%",
-                backgroundColor: "transparent",
-                color: Cor.texto1,
-              }}
-              onChange={(e) => setMotorista(e.target.value)}
-              defaultValue={""}
-              disabled={carregandoMotoristas}
-            >
-              <option value="" disabled style={{ backgroundColor: Cor.base2 }}>
-                Selecione um Motorista
-              </option>
-              {listaMotoristas?.map((motorista: any) => {
-                return (
-                  <option
-                    value={motorista?.id}
-                    key={motorista?.id}
-                    style={{
-                      backgroundColor: Cor.base2,
-                    }}
-                  >
-                    {motorista?.nome}
-                  </option>
-                );
-              })}
-            </select>
-          </div>
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", width: "32%" }}>
-          <p
-            style={{
-              fontSize: 14,
-              color: Cor.primariaTxt + 90,
-              fontWeight: "bold",
-              margin: 5,
-            }}
-          >
-            Tipo da Rota:
-          </p>
-          <div
-            style={{
-              width: "100%",
-              border: `1px solid ${Cor.texto2 + 50}`,
-              padding: 10,
-              borderRadius: 14,
-            }}
-          >
-            <select
-              name=""
-              id=""
-              style={{
-                outline: "none",
-                border: "none",
-                width: "100%",
-                backgroundColor: "transparent",
-                color: Cor.texto1,
-              }}
-              onChange={(e) => setTipo(e.target.value)}
-              defaultValue={""}
-            >
-              <option value="" disabled style={{ backgroundColor: Cor.base2 }}>
-                Defina tipo de Rota
-              </option>
-              <option value="Entrada" style={{ backgroundColor: Cor.base2 }}>
-                Entrada
-              </option>
-              <option value="Saída" style={{ backgroundColor: Cor.base2 }}>
-                Saída
-              </option>
-              <option
-                value="Entrada e Saída"
-                style={{ backgroundColor: Cor.base2 }}
-              >
-                Entrada e Saída
-              </option>
-            </select>
-          </div>
-        </div>
-      </div>
-      <div
-        style={{
-          width: "100%",
-          display: "flex",
-          flexDirection: "row",
-          justifyContent: "space-between",
-        }}
-      >
         <div style={{ display: "flex", flexDirection: "column", width: "25%" }}>
-          <p
-            style={{
-              fontSize: 14,
-              color:
-                tipo === "Entrada" || tipo === "Entrada e Saída"
-                  ? Cor.primariaTxt + 90
-                  : Cor.texto2 + 90,
-              fontWeight: "bold",
-              margin: 5,
-            }}
-          >
-            Data e Hora Entrada:
-          </p>
-          <div
-            style={{
-              width: "100%",
-              border: `1px solid ${Cor.texto2 + 50}`,
-              padding: 10,
-              borderRadius: 14,
-              position: "relative",
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-            }}
-          >
-            {tipo === "Entrada" || tipo === "Entrada e Saída" ? (
-              <input
-                type="datetime-local"
-                style={{
-                  backgroundColor: "transparent",
-                  color: Cor.texto1,
-                  width: "100%",
-                  outline: "none",
-                  border: "none",
-                  zIndex: 8,
-                }}
-                onChange={(e) => setDataHoraEntrada(e.target.value)}
-              />
-            ) : (
-              <div
-                style={{
-                  width: "50%",
-                  height: 18,
-                  backgroundColor: Cor.texto2 + 50,
-                }}
-              ></div>
-            )}
-            <div
-              style={{
-                width: 25,
-                height: 25,
-                backgroundColor: "#F4F4F4",
-                borderRadius: 22,
-                position: "absolute",
-                right: 6,
-                alignSelf: "center",
-              }}
-            />
-          </div>
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", width: "25%" }}>
-          <p
-            style={{
-              fontSize: 14,
-              color:
-                tipo === "Saída" || tipo === "Entrada e Saída"
-                  ? Cor.primariaTxt + 90
-                  : Cor.texto2 + 90,
-              fontWeight: "bold",
-              margin: 5,
-            }}
-          >
-            Data e Hora Saída:
-          </p>
-          <div
-            style={{
-              width: "100%",
-              border: `1px solid ${Cor.texto2 + 50}`,
-              padding: 10,
-              borderRadius: 14,
-              position: "relative",
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-            }}
-          >
-            {tipo === "Saída" || tipo === "Entrada e Saída" ? (
-              <input
-                type="datetime-local"
-                style={{
-                  backgroundColor: "transparent",
-                  color: Cor.texto1,
-                  width: "100%",
-                  outline: "none",
-                  border: "none",
-                  zIndex: 8,
-                }}
-                onChange={(e) => setDataHoraSaida(e.target.value)}
-              />
-            ) : (
-              <div
-                style={{
-                  width: "50%",
-                  height: 18,
-                  backgroundColor: Cor.texto2 + 50,
-                }}
-              ></div>
-            )}
-            <div
-              style={{
-                width: 25,
-                height: 25,
-                backgroundColor: "#F4F4F4",
-                borderRadius: 22,
-                position: "absolute",
-                right: 6,
-                alignSelf: "center",
-              }}
-            />
-          </div>
-        </div>
-
-        <div style={{ display: "flex", flexDirection: "column", width: "30%" }}>
           <p
             style={{
               fontSize: 14,
@@ -890,6 +738,57 @@ function DetalhesDoVoucher({
             </select>
           </div>
         </div>
+
+        <div style={{ display: "flex", flexDirection: "column", width: "25%" }}>
+          <p
+            style={{
+              fontSize: 14,
+              color: Cor.primariaTxt + 90,
+              fontWeight: "bold",
+              margin: 5,
+            }}
+          >
+            Tipo da Rota:
+          </p>
+          <div
+            style={{
+              width: "100%",
+              border: `1px solid ${Cor.texto2 + 50}`,
+              padding: 10,
+              borderRadius: 14,
+            }}
+          >
+            <select
+              name=""
+              id=""
+              style={{
+                outline: "none",
+                border: "none",
+                width: "100%",
+                backgroundColor: "transparent",
+                color: Cor.texto1,
+              }}
+              onChange={(e) => setTipo(e.target.value)}
+              defaultValue={""}
+            >
+              <option value="" disabled style={{ backgroundColor: Cor.base2 }}>
+                Defina tipo de Rota
+              </option>
+              <option value="Entrada" style={{ backgroundColor: Cor.base2 }}>
+                Entrada
+              </option>
+              <option value="Saída" style={{ backgroundColor: Cor.base2 }}>
+                Saída
+              </option>
+              <option
+                value="Entrada e Saída"
+                style={{ backgroundColor: Cor.base2 }}
+              >
+                Entrada e Saída
+              </option>
+            </select>
+          </div>
+        </div>
         <div style={{ display: "flex", flexDirection: "column", width: "15%" }}>
           <p
             style={{
@@ -916,6 +815,265 @@ function DetalhesDoVoucher({
                 border: "none",
                 color: Cor.texto1,
                 backgroundColor: "transparent",
+              }}
+            />
+          </div>
+        </div>
+      </div>
+      <div
+        style={{
+          width: "100%",
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <div style={{ display: "flex", flexDirection: "column", width: "30%" }}>
+          <p
+            style={{
+              fontSize: 14,
+              color:
+                tipo === "Entrada" || tipo === "Entrada e Saída"
+                  ? Cor.primariaTxt + 90
+                  : Cor.texto2 + 90,
+              fontWeight: "bold",
+              margin: 5,
+            }}
+          >
+            Motorista Entrada:
+          </p>
+          <div
+            style={{
+              width: "100%",
+              border: `1px solid ${Cor.texto2 + 50}`,
+              padding: 10,
+              borderRadius: 14,
+            }}
+          >
+            <select
+              name=""
+              id=""
+              style={{
+                outline: "none",
+                border: "none",
+                width: "100%",
+                backgroundColor: "transparent",
+                color: Cor.texto1,
+                opacity:
+                  tipo === "Entrada" || tipo === "Entrada e Saída" ? 1 : 0.5,
+              }}
+              onChange={(e) => setMotorista(e.target.value)}
+              defaultValue={""}
+              disabled={carregandoMotoristas || tipo === "" || tipo === "Saída"}
+            >
+              <option value="" disabled style={{ backgroundColor: Cor.base2 }}>
+                Selecione um Motorista
+              </option>
+              {listaMotoristas?.map((motorista: any) => {
+                return (
+                  <option
+                    value={motorista?.id}
+                    key={motorista?.id}
+                    style={{
+                      backgroundColor: Cor.base2,
+                    }}
+                  >
+                    {motorista?.nome}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", width: "15%" }}>
+          <p
+            style={{
+              fontSize: 14,
+              color:
+                tipo === "Entrada" || tipo === "Entrada e Saída"
+                  ? Cor.primariaTxt + 90
+                  : Cor.texto2 + 90,
+              fontWeight: "bold",
+              margin: 5,
+            }}
+          >
+            Data e Hora Entrada:
+          </p>
+          <div
+            style={{
+              width: "100%",
+              border: `1px solid ${Cor.texto2 + 50}`,
+              padding: 10,
+              borderRadius: 14,
+              position: "relative",
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+            }}
+          >
+            {tipo === "Entrada" || tipo === "Entrada e Saída" ? (
+              <input
+                type="datetime-local"
+                style={{
+                  backgroundColor: "transparent",
+                  color: Cor.texto1,
+                  width: "100%",
+                  outline: "none",
+                  border: "none",
+                  zIndex: 8,
+                }}
+                onChange={(e) =>
+                  setDataHoraEntrada(`${e.target.value}:00.000Z`)
+                }
+              />
+            ) : (
+              <div
+                style={{
+                  width: "50%",
+                  height: 18,
+                  backgroundColor: Cor.texto2 + 50,
+                }}
+              ></div>
+            )}
+            <div
+              style={{
+                width: 25,
+                height: 25,
+                backgroundColor: "#F4F4F4",
+                borderRadius: 22,
+                position: "absolute",
+                right: 6,
+                alignSelf: "center",
+              }}
+            />
+          </div>
+        </div>
+        <p
+          style={{
+            fontFamily: "Icone",
+            fontWeight: "bold",
+            fontSize: 48,
+            color: Cor.primaria,
+            marginTop: 20,
+          }}
+        >
+          call_split
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", width: "30%" }}>
+          <p
+            style={{
+              fontSize: 14,
+              color:
+                tipo === "Saída" || tipo === "Entrada e Saída"
+                  ? Cor.primariaTxt + 90
+                  : Cor.texto2 + 90,
+              fontWeight: "bold",
+              margin: 5,
+            }}
+          >
+            Motorista Saída:
+          </p>
+          <div
+            style={{
+              width: "100%",
+              border: `1px solid ${Cor.texto2 + 50}`,
+              padding: 10,
+              borderRadius: 14,
+            }}
+          >
+            <select
+              name=""
+              id=""
+              style={{
+                outline: "none",
+                border: "none",
+                width: "100%",
+                backgroundColor: "transparent",
+                color: Cor.texto1,
+              }}
+              onChange={(e) => setMotoristaSaida(e.target.value)}
+              defaultValue={""}
+              disabled={
+                carregandoMotoristas || tipo === "" || tipo === "Entrada"
+              }
+            >
+              <option value="" disabled style={{ backgroundColor: Cor.base2 }}>
+                Selecione um Motorista
+              </option>
+              {listaMotoristas?.map((motorista: any) => {
+                return (
+                  <option
+                    value={motorista?.id}
+                    key={motorista?.id}
+                    style={{
+                      backgroundColor: Cor.base2,
+                    }}
+                  >
+                    {motorista?.nome}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", width: "15%" }}>
+          <p
+            style={{
+              fontSize: 14,
+              color:
+                tipo === "Saída" || tipo === "Entrada e Saída"
+                  ? Cor.primariaTxt + 90
+                  : Cor.texto2 + 90,
+              fontWeight: "bold",
+              margin: 5,
+            }}
+          >
+            Data e Hora Saída:
+          </p>
+          <div
+            style={{
+              width: "100%",
+              border: `1px solid ${Cor.texto2 + 50}`,
+              padding: 10,
+              borderRadius: 14,
+              position: "relative",
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+            }}
+          >
+            {tipo === "Saída" || tipo === "Entrada e Saída" ? (
+              <input
+                type="datetime-local"
+                style={{
+                  backgroundColor: "transparent",
+                  color: Cor.texto1,
+                  width: "100%",
+                  outline: "none",
+                  border: "none",
+                  zIndex: 8,
+                }}
+                onChange={(e) => setDataHoraSaida(`${e.target.value}:00.000Z`)}
+              />
+            ) : (
+              <div
+                style={{
+                  width: "50%",
+                  height: 18,
+                  backgroundColor: Cor.texto2 + 50,
+                }}
+              ></div>
+            )}
+            <div
+              style={{
+                width: 25,
+                height: 25,
+                backgroundColor: "#F4F4F4",
+                borderRadius: 22,
+                position: "absolute",
+                right: 6,
+                alignSelf: "center",
               }}
             />
           </div>
@@ -1488,10 +1646,12 @@ function BaseModalConfirmacao({
   lancamentos,
   cxConfirmarVoucher,
   setCxConfirmarVoucher,
+  revisado,
 }: {
   lancamentos: any;
   cxConfirmarVoucher: any;
   setCxConfirmarVoucher: any;
+  revisado: any;
 }) {
   const Cor = useTema().Cor;
 
@@ -1521,8 +1681,9 @@ function BaseModalConfirmacao({
         return (
           <ModalConfirmacao
             v={v}
-            key={v.Tipo}
+            key={v.tipo}
             cxModal={cxConfirmarVoucher}
+            revisado={revisado}
           ></ModalConfirmacao>
         );
       })}
@@ -1530,7 +1691,15 @@ function BaseModalConfirmacao({
   );
 }
 
-function ModalConfirmacao({ v, cxModal }: { v: any; cxModal: boolean }) {
+function ModalConfirmacao({
+  v,
+  cxModal,
+  revisado,
+}: {
+  v: any;
+  cxModal: boolean;
+  revisado: any;
+}) {
   const Cor = useTema().Cor;
 
   return (
@@ -1562,8 +1731,10 @@ function ModalConfirmacao({ v, cxModal }: { v: any; cxModal: boolean }) {
         }}
       >
         <div style={{ display: "flex", flexDirection: "column" }}>
-          <p style={{ fontSize: 14, fontWeight: "bold", color: Cor.primariaTxt }}>
-            {v.Tipo}
+          <p
+            style={{ fontSize: 14, fontWeight: "bold", color: Cor.primariaTxt }}
+          >
+            {v.tipo} - {v.dataHoraProgramado}
           </p>
           <p style={{ fontSize: 12, color: Cor.texto2 }}>
             Confirme todas as informações antes de lançar.
@@ -1581,8 +1752,24 @@ function ModalConfirmacao({ v, cxModal }: { v: any; cxModal: boolean }) {
         }}
       >
         <div
-          style={{ width: "100%", height: "20%", backgroundColor: "#FF9000" }}
-        ></div>
+          style={{
+            width: "100%",
+            height: "20%",
+            backgroundColor: "#FF9000",
+            display: "flex",
+            flexDirection: "column",
+            padding: 10,
+            borderRadius: 12,
+          }}
+        >
+          <p>{v.adminUsuarioId}</p>
+          <p>{v.carroId || "Sem Carro"}</p>
+          <p>{v.dataHoraProgramado}</p>
+          <p>{v.motoristaId}</p>
+        </div>
+        <button onClick={() => revisado(v)} style={{ marginTop: "auto" }}>
+          <p>Confirmar {v.tipo}</p>
+        </button>
       </div>
     </div>
   );

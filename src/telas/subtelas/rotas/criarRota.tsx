@@ -58,6 +58,7 @@ const CRIAR_ROTA = gql`
     createRota(input: $data) {
       origem
       destino
+      tributacao
       operadoraId {
         id
         nome
@@ -70,13 +71,13 @@ const CRIAR_ROTA = gql`
   }
 `;
 
-
 const GET_ROTAS = gql`
   query RotaEmpresaClienteId($rotaEmpresaClienteId: ID!) {
     rotaEmpresaClienteId(id: $rotaEmpresaClienteId) {
       id
       origem
       destino
+      tributacao
       operadoraId {
         id
         nome
@@ -99,6 +100,7 @@ function CriarRota(empresaSelecionada: { empresaSelecionada: any }) {
 
   const [origem, setOrigem] = useState("");
   const [destino, setDestino] = useState("");
+  const [tributacao, setTributacao] = useState("");
   const [modalCriarRotaView, setModalCriarRotaView] = useState(false);
 
   const [criarRota] = useMutation(CRIAR_ROTA, {
@@ -122,6 +124,7 @@ function CriarRota(empresaSelecionada: { empresaSelecionada: any }) {
         data: {
           origem: origem,
           destino: destino,
+          tributacao: tributacao,
           operadoraId: cliente.operadoraId.id,
           empresaClienteId: cliente.id,
         },
@@ -253,6 +256,39 @@ function CriarRota(empresaSelecionada: { empresaSelecionada: any }) {
               type="text"
               largura="50%"
             />
+
+            <select
+              defaultValue={""}
+              style={{
+                padding: 10,
+                borderRadius: 22,
+                border: "none",
+                outline: "none",
+                backgroundColor: Cor.texto2 + 20,
+                color: Cor.texto1,
+              }}
+              onChange={(e) => setTributacao(e.target.value)}
+            >
+              <option
+                value=""
+                disabled
+                style={{ backgroundColor: Cor.base, color: Cor.texto1 }}
+              >
+                Tributação
+              </option>
+              <option
+                value="ISS"
+                style={{ backgroundColor: Cor.base, color: Cor.texto1 }}
+              >
+                ISS
+              </option>
+              <option
+                value="ISCM"
+                style={{ backgroundColor: Cor.base, color: Cor.texto1 }}
+              >
+                ISCM
+              </option>
+            </select>
           </div>
           <div
             style={{

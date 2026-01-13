@@ -766,9 +766,10 @@ function LinhaValores({
               backgroundColor: "transparent",
             }}
             value={pegadioSelecionado?.id || "0"}
-            // onChange={(e) => {
-            //   setPedagio(e.target.value);
-            // }}
+            onChange={(e) => {
+              // setPedagio(e.target.value);
+              console.log(e.target.value);
+            }}
           >
             <option
               value="0"

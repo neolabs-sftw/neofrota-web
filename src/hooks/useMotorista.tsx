@@ -40,3 +40,35 @@ export function useMotorista(motoristasOperadoraId: any) {
     refetch: refetch || Promise.resolve(),
   };
 }
+
+const GET_MOTORISTA = gql`
+  query Motorista($motoristaId: ID!) {
+    motorista(id: $motoristaId) {
+      id
+      nome
+      email
+      senha
+      fotoMotorista
+      cpf
+      cnh
+      vCnh
+      statusMotorista
+      tipoMotorista
+      dataCriacao
+      statusCnh
+    }
+  }
+`;
+
+export function useMotoristaId(motoristaId: any) {
+  const { data, loading, error, refetch } = useQuery(GET_MOTORISTA, {
+    variables: { motoristaId },
+    fetchPolicy: "cache-and-network",
+  });
+  return {
+    motorista: data?.motorista,
+    loading,
+    error,
+    refetch: refetch || Promise.resolve(),
+  };
+}
