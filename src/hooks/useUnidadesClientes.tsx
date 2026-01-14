@@ -28,7 +28,7 @@ const GET_UNIDADE_CLIENTE = gql`
 export function useUnidadeCliente(listaUnidadesEmpresaClienteId: any) {
   const { data, loading, error, refetch } = useQuery(GET_UNIDADE_CLIENTE, {
     variables: { listaUnidadesEmpresaClienteId },
-    fetchPolicy: "cache-and-network"
+    fetchPolicy: "cache-and-network",
   });
   return {
     listaUnidades: data?.listaUnidadesEmpresaClienteId,

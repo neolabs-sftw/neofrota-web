@@ -3,53 +3,12 @@ import EditPerfil from "../../../componentes/editPerfil";
 import styled from "styled-components";
 import { useTema } from "../../../hooks/temaContext";
 import { useState } from "react";
-import { gql, useQuery } from "@apollo/client";
 import { useAdminLogado } from "../../../hooks/AdminLogado";
 import BtnRota from "./btnRota";
 import CriarRota from "./criarRota";
 import { useListaClientes } from "../../../hooks/useEmpresaCliente";
-
-const GET_ROTAS = gql`
- query RotaEmpresaClienteId($rotaEmpresaClienteId: ID!) {
-  rotaEmpresaClienteId(id: $rotaEmpresaClienteId) {
-    id
-    origem
-    destino
-    operadoraId {
-      id nome
-    }
-    empresaClienteId {
-      id nome
-    }
-    rotaValor {
-      id
-      rotaId{
-        id
-        origem
-        destino
-      }
-      categoria
-      empresaClienteId{
-        id
-      }
-      operadoraId{
-        id
-      }
-      valorViagem
-      valorViagemRepasse
-      valorHoraParada
-      valorHoraParadaRepasse
-      valorDeslocamento
-      valorDeslocamentoRepasse
-      valorPedagio {
-        id
-        nome
-        valor
-      }
-    }
-  }
-}
-`;
+import ModalRotaValores from "./modalRotaValores";
+import { useRotasExtas } from "../../../hooks/useRotasExtras";
 
 function Rotas() {
   return BaseTelas({
@@ -195,16 +154,15 @@ function ConteudoRotas() {
     statusCliente: string;
   } | null>(null);
 
-  const { data: rotasCliente } = useQuery(GET_ROTAS, {
-    skip: !empresaSelecionada,
-    variables: { rotaEmpresaClienteId: empresaSelecionada?.id },
-  });
+  const { listaClientes } = useListaClientes(
+    String(adminLogado?.operadora.id) || "0"
+  );
 
-  const { listaClientes } = useListaClientes(String(adminLogado?.operadora.id) || "0");
+  const { listaRotasExtras } = useRotasExtas(empresaSelecionada?.id || 0);
 
-  const empresas = listaClientes
+  const [modalRota, setModalRota] = useState(false);
 
-  const rotas = rotasCliente?.rotaEmpresaClienteId;
+  const [rotaSelecionada, setRotaSelecionada] = useState<any>(null);
   return (
     <div
       style={{
@@ -215,7 +173,7 @@ function ConteudoRotas() {
       }}
     >
       <MenuSelectEmpresas
-        empresas={empresas}
+        empresas={listaClientes}
         empresaSelecionada={empresaSelecionada}
         setEmpresaSelecionada={setEmpresaSelecionada}
         setModalSelect={setModalSelect}
@@ -253,10 +211,21 @@ function ConteudoRotas() {
           gap: 10,
         }}
       >
-        {rotas?.map((rota: any) => (
-          <BtnRota key={rota.id} rota={rota} />
+        {listaRotasExtras?.map((rota: any) => (
+          <BtnRota
+            key={rota.id}
+            rota={rota}
+            modalRota={modalRota}
+            setModalRota={setModalRota}
+            setRotaSelecionada={setRotaSelecionada}
+          />
         ))}
       </div>
+      <ModalRotaValores
+        rota={rotaSelecionada}
+        modalRota={modalRota}
+        setModalRota={setModalRota}
+      />
     </div>
   );
 }

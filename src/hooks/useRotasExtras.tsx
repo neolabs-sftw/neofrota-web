@@ -1,4 +1,4 @@
-import { gql, useQuery } from "@apollo/client";
+import { gql, useMutation, useQuery } from "@apollo/client";
 
 const GET_ROTAS_EMPRESA_ID = gql`
   query RotaEmpresaClienteId($rotaEmpresaClienteId: ID!) {
@@ -6,9 +6,21 @@ const GET_ROTAS_EMPRESA_ID = gql`
       id
       origem
       destino
+      tributacao
       rotaValor {
         id
         categoria
+        valorViagem
+        valorViagemRepasse
+        valorDeslocamento
+        valorDeslocamentoRepasse
+        valorHoraParada
+        valorHoraParadaRepasse
+        valorPedagio {
+          id
+          nome
+          valor
+        }
       }
     }
   }
@@ -33,6 +45,7 @@ const GET_ROTA_ID = gql`
       id
       origem
       destino
+      tributacao
       rotaValor {
         id
         categoria
@@ -52,42 +65,6 @@ const GET_ROTA_ID = gql`
   }
 `;
 
-// const GET_ROTA_ID_VALORES = gql`
-//   query Rota($rotaId: ID!) {
-//     rota(id: $rotaId) {
-//       id
-//       origem
-//       destino
-//       rotaValor {
-//         id
-//         rotaId {
-//           id
-//           origem
-//           destino
-//         }
-//         categoria
-//         empresaClienteId {
-//           id
-//         }
-//         operadoraId {
-//           id
-//         }
-//         valorViagem
-//         valorViagemRepasse
-//         valorHoraParada
-//         valorHoraParadaRepasse
-//         valorDeslocamento
-//         valorDeslocamentoRepasse
-//         valorPedagio {
-//           id
-//           nome
-//           valor
-//         }
-//       }
-//     }
-//   }
-// `;
-
 export function useRotaId(rotaId: any) {
   const { data, loading, error, refetch } = useQuery(GET_ROTA_ID, {
     variables: { rotaId },
@@ -98,5 +75,31 @@ export function useRotaId(rotaId: any) {
     loading,
     error,
     refetch: refetch || Promise.resolve(),
+  };
+}
+
+const UPDATE_ROTA_VALORES = gql`
+  mutation UpdateRotaComValores($input: UpdateRotaComValoresInput!) {
+    updateRotaComValores(input: $input) {
+      id
+    }
+  }
+`;
+
+export function useUpdateRotaComValores() {
+  const [updateRotaComValores, { data, loading, error }] =
+    useMutation(UPDATE_ROTA_VALORES);
+
+  const atualizarRotaComValores = (input: any) => {
+    return updateRotaComValores({
+      variables: { input },
+    });
+  };
+
+  return {
+    atualizarRotaComValores,
+    data,
+    loading,
+    error,
   };
 }

@@ -10,6 +10,8 @@ import CriarSolicitante from "./btnComponentes/criarSolicitante";
 import ListaSolicitantesEmpresasClientes from "../../../componentes/listaSolicitantesEmpresasClientes";
 import CriarCentroCusto from "./btnComponentes/criarCentroCusto";
 import ListaCentrosCustoEmpresaCliente from "../../../componentes/listaCentrosCustoEmpresaCliente";
+import { useUnidadeCliente } from "../../../hooks/useUnidadesClientes";
+import { useSolicitante } from "../../../hooks/useSolicitantes";
 
 const GET_EMPRESA_CLIENTE = gql`
   query EmpresaClienteId($empresaClienteId: ID!) {
@@ -106,32 +108,14 @@ function VerEmpresaConteudo({
 }
 
 function Cabecalho() {
-  const GET_UNIDADE_MATRIZ = gql`
-    query UnidadeMatrizEmpresaCliente($empresaClienteId: ID!) {
-      unidadeMatrizEmpresaCliente(empresaClienteId: $empresaClienteId) {
-        id
-        nome
-        cnpj
-        endRua
-        endNumero
-        endBairro
-        endCep
-        endCidade
-        endComplemento
-        endUf
-        statusUnidadeCliente
-        matriz
-        empresaClienteId {
-          id
-        }
-        operadoraId {
-          id
-        }
-      }
-    }
-  `;
   const Cor = useTema().Cor;
   const { clienteId } = useParams();
+
+  const { listaUnidades } = useUnidadeCliente(clienteId || "");
+  const { solicitantes } = useSolicitante(clienteId || "");
+
+  const undCabecalho = listaUnidades?.[0] || null;
+  const solicitanteCabecalho = solicitantes?.[0] || null;
 
   const {
     data: empresa,
@@ -143,18 +127,10 @@ function Cabecalho() {
     },
   });
 
-  const { data: unidadeMatriz } = useQuery(GET_UNIDADE_MATRIZ, {
-    variables: {
-      empresaClienteId: clienteId,
-    },
-  });
-
   if (loading) return <p>Carregando...</p>;
   if (error) return <p>Erro ao carregar os dados: {error.message}</p>;
 
   const empresaCliente = empresa.empresaClienteId;
-
-  const unidadeMatrizEmpresa = unidadeMatriz?.unidadeMatrizEmpresaCliente;
 
   return (
     <div
@@ -269,7 +245,7 @@ function Cabecalho() {
           >
             <p style={{ fontSize: 11, color: Cor.texto2 }}>Nome</p>
             <p style={{ fontSize: 16, color: Cor.texto1 }}>
-              {empresaCliente.r_social}
+              {undCabecalho?.nome}
             </p>
           </div>
           <div
@@ -282,7 +258,7 @@ function Cabecalho() {
           >
             <p style={{ fontSize: 11, color: Cor.texto2 }}>CNPJ</p>
             <p style={{ fontSize: 16, color: Cor.texto1 }}>
-              {empresaCliente.cnpj}
+              {undCabecalho?.cnpj}
             </p>
           </div>
           <div
@@ -295,9 +271,8 @@ function Cabecalho() {
           >
             <p style={{ fontSize: 11, color: Cor.texto2 }}>Endereço</p>
             <p style={{ fontSize: 16, color: Cor.texto1 }}>
-              {unidadeMatrizEmpresa?.endRua || "Sem Matriz Cadastrada"},{" "}
-              {unidadeMatrizEmpresa?.endNumero},{" "}
-              {unidadeMatrizEmpresa?.endBairro}
+              {undCabecalho?.endRua || "Sem Matriz Cadastrada"},{" "}
+              {undCabecalho?.endNumero}, {undCabecalho?.endBairro}
             </p>
           </div>
           <div
@@ -310,7 +285,7 @@ function Cabecalho() {
           >
             <p style={{ fontSize: 11, color: Cor.texto2 }}>Complemento</p>
             <p style={{ fontSize: 16, color: Cor.texto1 }}>
-              {unidadeMatrizEmpresa?.endComplemento}
+              {undCabecalho?.endComplemento || "Nenhum Complemento"}
             </p>
           </div>
           <div
@@ -326,19 +301,19 @@ function Cabecalho() {
             <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
               <p style={{ fontSize: 11, color: Cor.texto2 }}>Cidade</p>
               <p style={{ fontSize: 16, color: Cor.texto1 }}>
-                {unidadeMatrizEmpresa?.endCidade}
+                {undCabecalho?.endCidade}
               </p>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
               <p style={{ fontSize: 11, color: Cor.texto2 }}>CEP</p>
               <p style={{ fontSize: 16, color: Cor.texto1 }}>
-                {unidadeMatrizEmpresa?.end_cep}
+                {undCabecalho?.endCep}
               </p>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
               <p style={{ fontSize: 11, color: Cor.texto2 }}>UF</p>
               <p style={{ fontSize: 16, color: Cor.texto1 }}>
-                {unidadeMatrizEmpresa?.endUf}
+                {undCabecalho?.endUf}
               </p>
             </div>
           </div>
@@ -362,7 +337,9 @@ function Cabecalho() {
             }}
           >
             <p style={{ fontSize: 11, color: Cor.texto2 }}>Contato Principal</p>
-            <p style={{ fontSize: 16, color: Cor.texto1 }}>Nome Completo</p>
+            <p style={{ fontSize: 16, color: Cor.texto1 }}>
+              {solicitanteCabecalho?.nome}
+            </p>
           </div>
           <div
             style={{
@@ -373,7 +350,9 @@ function Cabecalho() {
             }}
           >
             <p style={{ fontSize: 11, color: Cor.texto2 }}>E-mail</p>
-            <p style={{ fontSize: 16, color: Cor.texto1 }}>empresa@mail.com</p>
+            <p style={{ fontSize: 16, color: Cor.texto1 }}>
+              {solicitanteCabecalho?.email}
+            </p>
           </div>
           <div
             style={{
@@ -384,7 +363,9 @@ function Cabecalho() {
             }}
           >
             <p style={{ fontSize: 11, color: Cor.texto2 }}>Telefone</p>
-            <p style={{ fontSize: 16, color: Cor.texto1 }}>+55 11 99999-9999</p>
+            <p style={{ fontSize: 16, color: Cor.texto1 }}>
+              {solicitanteCabecalho?.telefone}
+            </p>
           </div>
           <div
             style={{
@@ -397,7 +378,7 @@ function Cabecalho() {
             <CriarUnidades />
             <CriarSolicitante empresaClienteId={clienteId} />
             <CriarCentroCusto />
-            <BtnPassageiros/>
+            <BtnPassageiros />
           </div>
         </div>
         {/*Fim Coluna Lado Direito detalhes Cliente */}
@@ -428,19 +409,22 @@ function BtnPassageiros() {
         boxShadow: Cor.sombra,
       }}
       onClick={() => navigate(`/passageiros/${clienteId}`)}
-    > <p
-          style={{
-            fontFamily: "Icone",
-            fontSize: 30,
-            color: Cor.primaria,
-            fontWeight: "bold",
-          }}
-        >
-         diversity_3
-        </p>
-        <p style={{ textAlign: "center", fontSize: 12, color: Cor.texto1 }}>
-          Passageiros
-        </p></div>
+    >
+      {" "}
+      <p
+        style={{
+          fontFamily: "Icone",
+          fontSize: 30,
+          color: Cor.primaria,
+          fontWeight: "bold",
+        }}
+      >
+        diversity_3
+      </p>
+      <p style={{ textAlign: "center", fontSize: 12, color: Cor.texto1 }}>
+        Passageiros
+      </p>
+    </div>
   );
 }
 
