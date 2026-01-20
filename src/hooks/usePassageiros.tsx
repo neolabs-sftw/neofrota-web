@@ -1,4 +1,4 @@
-import { gql, useQuery } from "@apollo/client";
+import { gql, useMutation, useQuery } from "@apollo/client";
 
 const GET_LIST_PASSAGEIROS_BY_EMPRESA_CLIENTE = gql`
   query PassageirosByEmpresaCliente($empresaClienteId: ID!) {
@@ -67,7 +67,7 @@ export function usePassageiros(empresaClienteId: string) {
     {
       variables: { empresaClienteId },
       fetchPolicy: "cache-and-network",
-    }
+    },
   );
   return {
     listaPassageiro: data?.passageirosByEmpresaCliente,
@@ -116,12 +116,56 @@ export function usePassageiroId(passageiroId: string) {
     {
       variables: { passageiroId },
       fetchPolicy: "cache-and-network",
-    }
+    },
   );
   return {
     passageiro: data?.passageiro,
     loading,
     error,
     refetch: refetch || Promise.resolve(),
+  };
+}
+
+const CREATE_PASSAGEIRO = gql`
+  mutation CreatePassageiro($input: PassageiroInput!) {
+    createPassageiro(input: $input) {
+      id
+      nome
+      matricula
+    }
+  }
+`;
+
+interface CreatePassageiroInput {
+  nome: string;
+  matricula: string;
+  telefone: string;
+  email: string;
+  endRua: string;
+  endNumero: string;
+  endBairro: string;
+  endCidade: string;
+  pontoApanha: string;
+  horarioEmbarque: string;
+  fotoPerfilPassageiro: string;
+  centroCustoClienteId: number;
+  empresaClienteId: number;
+  ativo: Boolean;
+}
+
+export function useCreatePassageiro() {
+  const [criar, { data, loading, error }] = useMutation(CREATE_PASSAGEIRO);
+
+  const criarPassageiro = (input: CreatePassageiroInput) => {
+    return criar({
+      variables: { input },
+    });
+  };
+
+  return {
+    criarPassageiro,
+    data,
+    loading,
+    error,
   };
 }

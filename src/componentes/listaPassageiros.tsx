@@ -106,6 +106,8 @@ function TabelaPassageiros() {
   const Cor = useTema().Cor;
   const clienteId = useParams().clienteId;
   const { listaPassageiro } = usePassageiros(clienteId!);
+
+  console.log(listaPassageiro)
   return (
     <TabelaPassageirosStyled
       $texto1={Cor.texto1}
@@ -124,7 +126,7 @@ function TabelaPassageiros() {
         </tr>
       </thead>
       <tbody>
-        {listaPassageiro?.slice(60).map((passageiro: any) => (
+        {listaPassageiro?.map((passageiro: any) => (
           <VerPassageiro passageiro={passageiro} key={passageiro.id}/>
         ))}
       </tbody>

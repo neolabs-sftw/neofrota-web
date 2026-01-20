@@ -1,6 +1,13 @@
 import { useTema } from "../../../../hooks/temaContext";
 import { useEffect, useState } from "react";
 import styled from "styled-components";
+import { useCentroCustoByEmpresa } from "../../../../hooks/useCentrosDeCusto";
+import { useParams } from "react-router-dom";
+import {
+  useCreatePassageiro,
+  usePassageiroId,
+} from "../../../../hooks/usePassageiros";
+import { supabase } from "../../../../hooks/supabaseClient";
 
 interface BtnCadastrarPassageiroStyledProps {
   $color: string;
@@ -53,32 +60,108 @@ function ModalCriarPassageiro({
   const rs = CxCriarPassageiro;
   const ts = setCxCriarPassageiro;
 
-  const [nome, setNome] = useState<string>("");
-  const [email, setEmail] = useState<string>("");
-  const [telefone, setTelefone] = useState<string>("");
-  const [matricula, setMatricula] = useState<string>("");
   const [centroCusto, setCentroCusto] = useState<string>("");
-  const [endRua, setEndRua] = useState<string>("");
-  const [endNumero, setEndNumero] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const clienteId = useParams().clienteId;
   const [endBairro, setEndBairro] = useState<string>("");
   const [endCidade, setEndCidade] = useState<string>("");
+  const [endNumero, setEndNumero] = useState<string>("");
+  const [endRua, setEndRua] = useState<string>("");
+  const [fotoPerfilPassageiro, setFotoPerfilPassageiro] = useState<any>();
   const [horarioEmbarque, setHorarioEmbarque] = useState<string>("");
+  const [matricula, setMatricula] = useState<string>("");
+  const [nome, setNome] = useState<string>("");
+  const [telefone, setTelefone] = useState<string>("");
   const [pontoApanha, setPontoApanha] = useState<string>("");
-  const [fotoPerfilPassageiro, setFotoPerfilPassageiro] = useState<File>();
+
+  const [statusCarregamento, setStatusCarregamento] = useState("");
 
   const [imgPreview, setImgPreview] = useState<string>("");
+
+  const { listaCentrosCustos } = useCentroCustoByEmpresa(`${clienteId}`);
 
   const carregarImagem = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setImgPreview(URL.createObjectURL(file));
-      setFotoPerfilPassageiro(file);
     }
   };
+
+  const passageiro = {
+    centroCustoClienteId: Number(centroCusto),
+    email: email,
+    empresaClienteId: Number(clienteId),
+    endBairro: endBairro,
+    endCidade: endCidade,
+    endNumero: endNumero,
+    endRua: endRua,
+    fotoPerfilPassageiro: String(fotoPerfilPassageiro),
+    horarioEmbarque: horarioEmbarque,
+    matricula: matricula,
+    nome: nome,
+    pontoApanha: pontoApanha,
+    telefone: telefone,
+    ativo: true,
+  };
+
+  const { criarPassageiro } = useCreatePassageiro();
+
+  const { refetch } = usePassageiroId(`${clienteId}`);
+
+  async function criarP() {
+    try {
+      let fotoUrlFinal = null;
+      if (fotoPerfilPassageiro) {
+        setStatusCarregamento("Fazendo upload da imagem...");
+
+        const nomeImg = `foto_perfil_passageiros/${nome}_${matricula.replace(
+          /\D/g,
+          "",
+        )}-${Date.now()}.png`;
+        const bucket = "neofrotabkt";
+
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from(bucket)
+          .upload(nomeImg, fotoPerfilPassageiro);
+
+        if (uploadError) {
+          console.log(uploadError);
+          throw uploadError;
+        }
+
+        const { data: urlData } = supabase.storage
+          .from(bucket)
+          .getPublicUrl(uploadData.path);
+
+        fotoUrlFinal = urlData.publicUrl;
+
+        console.log(fotoUrlFinal);
+
+        setFotoPerfilPassageiro(fotoUrlFinal);
+      } else {
+        setStatusCarregamento("Registo sem foto...");
+      }
+      setStatusCarregamento("Enviando dados para o servidor...");
+
+      console.log("input:", passageiro);
+
+      const res = await criarPassageiro(passageiro);
+      console.log("resultado:", res.data);
+
+      setCxCriarPassageiro(false);
+      // reset inputs...
+      await refetch();
+    } catch (err: any) {
+      console.log("graphQLErrors:", err?.graphQLErrors);
+      console.log("networkError:", err?.networkError);
+      console.log("message:", err?.message);
+    }
+  }
 
   useEffect(() => {
     fotoPerfilPassageiro;
   }, []);
+
   return (
     <div
       style={{
@@ -134,7 +217,7 @@ function ModalCriarPassageiro({
                   fontWeight: "bold",
                 }}
               >
-                Criar Passageiro
+                Criar Passageiro {statusCarregamento}
               </p>
               <p style={{ fontSize: 12, color: Cor.texto2, marginBottom: 5 }}>
                 Passageiros são os usuários do transporte. Informe os dados
@@ -278,15 +361,39 @@ function ModalCriarPassageiro({
                   }}
                   value={matricula}
                 />
-                <TextoEntrada
-                  placeholder="Centro de Custo"
-                  type="text"
-                  largura="50%"
+                <select
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    width: "50%",
+                    height: 40,
+                    border: "none",
+                    outline: "nome",
+                    backgroundColor: Cor.texto2 + 20,
+                    padding: 10,
+                    borderRadius: 22,
+                    color: Cor.texto2,
+                  }}
                   onChange={(e: { target: { value: any } }) => {
                     setCentroCusto(e.target.value);
                   }}
                   value={centroCusto}
-                />
+                >
+                  <option value="" style={{ backgroundColor: Cor.base }}>
+                    Selecione o Centro de Custo
+                  </option>
+                  {listaCentrosCustos.map((cc: any) => {
+                    return (
+                      <option
+                        key={cc.id}
+                        value={cc.id}
+                        style={{ backgroundColor: Cor.base }}
+                      >
+                        {cc.nome}
+                      </option>
+                    );
+                  })}
+                </select>
               </div>
               <div
                 style={{
@@ -386,20 +493,7 @@ function ModalCriarPassageiro({
               borderRadius: 22,
             }}
             onClick={() => {
-              //   criarUnidadeFunc();
-              setCxCriarPassageiro(false);
-              setNome("");
-              setTelefone("");
-              setEmail("");
-              setMatricula("");
-              setCentroCusto("");
-              setEndRua("");
-              setEndNumero("");
-              setEndBairro("");
-              setEndCidade("");
-              setHorarioEmbarque("");
-              setPontoApanha("");
-              setImgPreview("");
+              criarP();
             }}
           >
             <p

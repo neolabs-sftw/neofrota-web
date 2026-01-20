@@ -37,7 +37,7 @@ function CriarMotoristaConteudo() {
 
   const token = localStorage.getItem("token");
 
-    interface JwtPayload {
+  interface JwtPayload {
     adminUsuarioId?: string;
     operadoraId?: string;
   }
@@ -72,7 +72,7 @@ function CriarMotoristaConteudo() {
 
     if (!operadoraId) {
       setStatus(
-        "Erro: Informações de autenticação não encontradas. Por favor, faça login novamente."
+        "Erro: Informações de autenticação não encontradas. Por favor, faça login novamente.",
       );
       setTimeout(() => setStatusCx(false), 4000);
       return;
@@ -91,7 +91,7 @@ function CriarMotoristaConteudo() {
 
         const nomeImg = `foto_perfil_motorista/${cpf.replace(
           /\D/g,
-          ""
+          "",
         )}-${Date.now()}.png`;
         const bucket = "neofrotabkt";
 
@@ -100,6 +100,7 @@ function CriarMotoristaConteudo() {
           .upload(nomeImg, fotoMotorista);
 
         if (uploadError) {
+          console.log(uploadError);
           throw uploadError;
         }
 
