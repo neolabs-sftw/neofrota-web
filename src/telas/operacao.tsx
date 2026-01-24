@@ -23,13 +23,12 @@ export default Operacao;
 
 function OperacaoConteudo() {
   const [dataHora, setDataHora] = useState("");
-
   const [modalPreveiw, setModalPreview] = useState(false);
   const [voucherPreview, setVoucherPreview] = useState<any>(null);
 
-  const { listaVouchers } = useVouchers();
+  const { listaVouchers, error } = useVouchers();
 
-  console.log("Lista de Vouchers:", listaVouchers);
+  console.log("Lista de Vouchers:", listaVouchers, error);
 
   useEffect(() => {
     const atualizarDataHora = () => {

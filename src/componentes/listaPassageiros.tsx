@@ -179,6 +179,7 @@ function ModalVerPassageiro({
     if (!cxVerPassageiro) return;
 
     if (passageiro) {
+      fotoPerfilPassageiro
       setNome(passageiro.nome ?? "");
       setEmail(passageiro.email ?? "");
       setTelefone(passageiro.telefone ?? "");

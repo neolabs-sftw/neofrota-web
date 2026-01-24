@@ -12,9 +12,8 @@ import {
 
 // Forma nova e oficial (sem warning)
 const httpLink = new HttpLink({
-  uri: 'http://localhost:4000/graphql',
-  // uri: 'https://api.neofrota.com.br/graphql',
-  // uri: "https://neofrotaapi.vercel.app/graphql",
+  // uri: 'http://localhost:4000/graphql',
+  uri: "https://neofrotaapi.vercel.app/graphql",
   credentials: "include", // se você usa cookies/auth
 });
 
