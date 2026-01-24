@@ -29,18 +29,41 @@ const LinhaVoucher = styled.div<LinhaVoucherProps>`
   }
 `;
 
-function ListaProximasViagens({ v }: { v: any }) {
-
+function ListaProximasViagens({
+  v,
+  modalPreveiw,
+  setModalPreview,
+  setVoucherPreview,
+}: {
+  v: any;
+  modalPreveiw: boolean;
+  setModalPreview: (visible: boolean) => void;
+  setVoucherPreview: (voucher: any) => void;
+}) {
   const Cor = useTema().Cor;
 
   return (
     <LinhaVoucher
       $bg={Cor.texto2 + 20}
       $bgHover={
-        v?.natureza === "Fixo" ? Cor.textoFixo + "05" : v?.natureza === "Turno" ? Cor.textoTurno + "05" : Cor.textoExtra + "05"
+        v?.natureza === "Fixo"
+          ? Cor.textoFixo + "05"
+          : v?.natureza === "Turno"
+            ? Cor.textoTurno + "05"
+            : Cor.textoExtra + "05"
       }
       $border={Cor.texto2 + 20}
-      $borderTipo={v?.natureza === "Fixo" ? Cor.fixo : v?.natureza === "Turno" ? Cor.turno : Cor.extra}
+      $borderTipo={
+        v?.natureza === "Fixo"
+          ? Cor.fixo
+          : v?.natureza === "Turno"
+            ? Cor.turno
+            : Cor.extra
+      }
+      onClick={() => {
+        setVoucherPreview(v);
+        setModalPreview(!modalPreveiw);
+      }}
     >
       <Natureza v={v} />
       <DividerH />
@@ -67,10 +90,19 @@ function Natureza({ v }: { v: any }) {
         style={{
           fontSize: 16,
           fontWeight: "bold",
-          color: v.natureza === "Fixo" ? Cor.textoFixo : v?.natureza === "Turno" ? Cor.textoTurno : Cor.textoExtra,
+          color:
+            v.natureza === "Fixo"
+              ? Cor.textoFixo
+              : v?.natureza === "Turno"
+                ? Cor.textoTurno
+                : Cor.textoExtra,
         }}
       >
-        {v.natureza === "Fixo" ? "Fixo" : v?.natureza === "Turno" ? "Turno" : "Extra"}
+        {v.natureza === "Fixo"
+          ? "Fixo"
+          : v?.natureza === "Turno"
+            ? "Turno"
+            : "Extra"}
       </p>
     </div>
   );
@@ -93,7 +125,12 @@ function Tipo({ v }: { v: any }) {
           style={{
             fontSize: 16,
             fontWeight: "bold",
-            color: v.natureza === "Fixo" ? Cor.textoFixo : v?.natureza === "Turno" ? Cor.textoTurno : Cor.textoExtra,
+            color:
+              v.natureza === "Fixo"
+                ? Cor.textoFixo
+                : v?.natureza === "Turno"
+                  ? Cor.textoTurno
+                  : Cor.textoExtra,
           }}
         >
           {v.tipoCorrida === "Entrada" ? "Entrada" : "Saida"}
@@ -114,7 +151,12 @@ function Tipo({ v }: { v: any }) {
           style={{
             fontFamily: "Icone",
             fontWeight: "bold",
-            color: v.natureza === "Fixo" ? Cor.fixo : v?.natureza === "Turno" ? Cor.turno : Cor.extra,
+            color:
+              v.natureza === "Fixo"
+                ? Cor.fixo
+                : v?.natureza === "Turno"
+                  ? Cor.turno
+                  : Cor.extra,
             fontSize: 24,
           }}
         >
@@ -160,7 +202,12 @@ function OrigemDestino({ v }: { v: any }) {
               width: 90,
               fontSize: 14,
               fontWeight: "bold",
-              color: v.natureza === "Fixo" ? Cor.textoFixo : v?.natureza === "Turno" ? Cor.textoTurno : Cor.textoExtra,
+              color:
+                v.natureza === "Fixo"
+                  ? Cor.textoFixo
+                  : v?.natureza === "Turno"
+                    ? Cor.textoTurno
+                    : Cor.textoExtra,
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -175,7 +222,12 @@ function OrigemDestino({ v }: { v: any }) {
         style={{
           fontFamily: "Icone",
           fontWeight: "bold",
-          color: v.natureza === "Fixo" ? Cor.textoFixo : v?.natureza === "Turno" ? Cor.textoTurno : Cor.textoExtra,
+          color:
+            v.natureza === "Fixo"
+              ? Cor.textoFixo
+              : v?.natureza === "Turno"
+                ? Cor.textoTurno
+                : Cor.textoExtra,
           fontSize: 24,
         }}
       >
@@ -214,7 +266,12 @@ function OrigemDestino({ v }: { v: any }) {
               width: 90,
               fontSize: 14,
               fontWeight: "bold",
-              color: v.natureza === "Fixo" ? Cor.textoFixo : v?.natureza === "Turno" ? Cor.textoTurno : Cor.textoExtra,
+              color:
+                v.natureza === "Fixo"
+                  ? Cor.textoFixo
+                  : v?.natureza === "Turno"
+                    ? Cor.textoTurno
+                    : Cor.textoExtra,
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -245,7 +302,12 @@ function Programação({ v }: { v: any }) {
         style={{
           fontFamily: "Icone",
           fontWeight: "bold",
-          color: v.natureza === "Fixo" ? Cor.fixo : v?.natureza === "Turno" ? Cor.turno : Cor.extra,
+          color:
+            v.natureza === "Fixo"
+              ? Cor.fixo
+              : v?.natureza === "Turno"
+                ? Cor.turno
+                : Cor.extra,
           fontSize: 24,
         }}
       >
@@ -257,7 +319,12 @@ function Programação({ v }: { v: any }) {
           style={{
             fontSize: 18,
             fontWeight: "bold",
-            color: v.natureza === "Fixo" ? Cor.textoFixo : v?.natureza === "Turno" ? Cor.textoTurno : Cor.textoExtra,
+            color:
+              v.natureza === "Fixo"
+                ? Cor.textoFixo
+                : v?.natureza === "Turno"
+                  ? Cor.textoTurno
+                  : Cor.textoExtra,
           }}
         >
           {new Date(v.dataHoraProgramado).toLocaleString("pt-BR", {
@@ -282,7 +349,7 @@ function Motorista({ v }: { v: any }) {
       style={{
         display: "flex",
         flexDirection: "column",
-        width: "15%"
+        width: "15%",
       }}
     >
       <p style={{ fontSize: 12, color: Cor.texto2 }}>Motorista</p>

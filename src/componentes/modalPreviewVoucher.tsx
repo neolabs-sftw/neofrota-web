@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useTema } from "../hooks/temaContext";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import assinaturaPNG from "../assets/assinaturaPNG.png";
+import assPadrao from "../assets/image/not_sing.png";
 
 interface CxModalProps {
   $border: string;
@@ -151,8 +151,8 @@ function ModalPreviewVoucher({
                   v?.natureza === "Fixo"
                     ? Cor.textoFixo
                     : v?.natureza === "Turno"
-                    ? Cor.textoTurno
-                    : Cor.textoExtra,
+                      ? Cor.textoTurno
+                      : Cor.textoExtra,
               }}
             >
               ID: <strong>{v?.id}</strong>
@@ -190,7 +190,7 @@ function ModalPreviewVoucher({
           }}
         >
           <ListaPassageirosVoucher v={v} />
-          <Assinatura />
+          <Assinatura v={v} />
         </div>
         <div
           style={{
@@ -357,8 +357,8 @@ function DetalhesDaViagem({ v }: { v: any }) {
               v?.natureza === "Fixo"
                 ? Cor.fixo
                 : v?.natureza === "Turno"
-                ? Cor.turno
-                : Cor.extra,
+                  ? Cor.turno
+                  : Cor.extra,
             borderRadius: 8,
             display: "flex",
             alignItems: "center",
@@ -376,8 +376,8 @@ function DetalhesDaViagem({ v }: { v: any }) {
             {v?.natureza === "Fixo"
               ? "history"
               : v?.natureza === "Turno"
-              ? "cycle"
-              : "car_tag"}
+                ? "cycle"
+                : "car_tag"}
           </p>
         </div>
         <div style={{ display: "flex", flexDirection: "column" }}>
@@ -390,8 +390,8 @@ function DetalhesDaViagem({ v }: { v: any }) {
                 v?.natureza === "Fixo"
                   ? Cor.textoFixo
                   : v?.natureza === "Turno"
-                  ? Cor.textoTurno
-                  : Cor.textoExtra,
+                    ? Cor.textoTurno
+                    : Cor.textoExtra,
             }}
           >
             {v?.natureza}
@@ -414,8 +414,8 @@ function DetalhesDaViagem({ v }: { v: any }) {
               v?.natureza === "Fixo"
                 ? Cor.fixo
                 : v?.natureza === "Turno"
-                ? Cor.turno
-                : Cor.extra,
+                  ? Cor.turno
+                  : Cor.extra,
             borderRadius: 8,
             display: "flex",
             alignItems: "center",
@@ -443,8 +443,8 @@ function DetalhesDaViagem({ v }: { v: any }) {
                 v?.natureza === "Fixo"
                   ? Cor.textoFixo
                   : v?.natureza === "Turno"
-                  ? Cor.textoTurno
-                  : Cor.textoExtra,
+                    ? Cor.textoTurno
+                    : Cor.textoExtra,
             }}
           >
             {v?.tipoCorrida}
@@ -487,8 +487,8 @@ function DetalhesDaViagem({ v }: { v: any }) {
                   v?.natureza === "Fixo"
                     ? Cor.textoFixo
                     : v?.natureza === "Turno"
-                    ? Cor.textoTurno
-                    : Cor.textoExtra,
+                      ? Cor.textoTurno
+                      : Cor.textoExtra,
                 whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
@@ -506,8 +506,8 @@ function DetalhesDaViagem({ v }: { v: any }) {
                 v?.natureza === "Fixo"
                   ? Cor.fixo
                   : v?.natureza === "Turno"
-                  ? Cor.turno
-                  : Cor.extra,
+                    ? Cor.turno
+                    : Cor.extra,
               borderRadius: 8,
               display: "flex",
               alignItems: "center",
@@ -534,8 +534,8 @@ function DetalhesDaViagem({ v }: { v: any }) {
               v?.natureza === "Fixo"
                 ? Cor.textoFixo
                 : v?.natureza === "Turno"
-                ? Cor.textoTurno
-                : Cor.textoExtra,
+                  ? Cor.textoTurno
+                  : Cor.textoExtra,
             fontSize: 24,
           }}
         >
@@ -559,8 +559,8 @@ function DetalhesDaViagem({ v }: { v: any }) {
                 v?.natureza === "Fixo"
                   ? Cor.fixo
                   : v?.natureza === "Turno"
-                  ? Cor.turno
-                  : Cor.extra,
+                    ? Cor.turno
+                    : Cor.extra,
               borderRadius: 8,
               display: "flex",
               alignItems: "center",
@@ -603,8 +603,8 @@ function DetalhesDaViagem({ v }: { v: any }) {
                   v?.natureza === "Fixo"
                     ? Cor.textoFixo
                     : v?.natureza === "Turno"
-                    ? Cor.textoTurno
-                    : Cor.textoExtra,
+                      ? Cor.textoTurno
+                      : Cor.textoExtra,
                 whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
@@ -633,8 +633,8 @@ function DetalhesDaViagem({ v }: { v: any }) {
               v?.natureza === "Fixo"
                 ? Cor.fixo
                 : v?.natureza === "Turno"
-                ? Cor.turno
-                : Cor.extra,
+                  ? Cor.turno
+                  : Cor.extra,
             borderRadius: 8,
             display: "flex",
             alignItems: "center",
@@ -662,8 +662,8 @@ function DetalhesDaViagem({ v }: { v: any }) {
                 v?.natureza === "Fixo"
                   ? Cor.textoFixo
                   : v?.natureza === "Turno"
-                  ? Cor.textoTurno
-                  : Cor.textoExtra,
+                    ? Cor.textoTurno
+                    : Cor.textoExtra,
             }}
           >
             {new Date(v?.dataHoraProgramado).toLocaleString("pt-BR", {
@@ -721,8 +721,8 @@ function DetalhesDaViagem2({ v }: { v: any }) {
                 v?.natureza === "Fixo"
                   ? Cor.fixo
                   : v?.natureza === "Turno"
-                  ? Cor.turno
-                  : Cor.extra,
+                    ? Cor.turno
+                    : Cor.extra,
               fontSize: 24,
             }}
           >
@@ -738,8 +738,8 @@ function DetalhesDaViagem2({ v }: { v: any }) {
                 v?.natureza === "Fixo"
                   ? Cor.textoFixo
                   : v?.natureza === "Turno"
-                  ? Cor.textoTurno
-                  : Cor.textoExtra,
+                    ? Cor.textoTurno
+                    : Cor.textoExtra,
             }}
           >
             R$ <strong>{v?.valorViagem}</strong>
@@ -777,8 +777,8 @@ function DetalhesDaViagem2({ v }: { v: any }) {
                 v?.natureza === "Fixo"
                   ? Cor.fixo
                   : v?.natureza === "Turno"
-                  ? Cor.turno
-                  : Cor.extra,
+                    ? Cor.turno
+                    : Cor.extra,
               fontSize: 24,
             }}
           >
@@ -794,8 +794,8 @@ function DetalhesDaViagem2({ v }: { v: any }) {
                 v?.natureza === "Fixo"
                   ? Cor.textoFixo
                   : v?.natureza === "Turno"
-                  ? Cor.textoTurno
-                  : Cor.textoExtra,
+                    ? Cor.textoTurno
+                    : Cor.textoExtra,
             }}
           >
             R$ <strong>{v?.valorViagemRepasse}</strong>
@@ -833,8 +833,8 @@ function DetalhesDaViagem2({ v }: { v: any }) {
                 v?.natureza === "Fixo"
                   ? Cor.fixo
                   : v?.natureza === "Turno"
-                  ? Cor.turno
-                  : Cor.extra,
+                    ? Cor.turno
+                    : Cor.extra,
               fontSize: 24,
             }}
           >
@@ -850,8 +850,8 @@ function DetalhesDaViagem2({ v }: { v: any }) {
                 v?.natureza === "Fixo"
                   ? Cor.textoFixo
                   : v?.natureza === "Turno"
-                  ? Cor.textoTurno
-                  : Cor.textoExtra,
+                    ? Cor.textoTurno
+                    : Cor.textoExtra,
             }}
           >
             R$ <strong>15,00</strong>
@@ -889,8 +889,8 @@ function DetalhesDaViagem2({ v }: { v: any }) {
                 v?.natureza === "Fixo"
                   ? Cor.fixo
                   : v?.natureza === "Turno"
-                  ? Cor.turno
-                  : Cor.extra,
+                    ? Cor.turno
+                    : Cor.extra,
               fontSize: 24,
             }}
           >
@@ -906,8 +906,8 @@ function DetalhesDaViagem2({ v }: { v: any }) {
                 v?.natureza === "Fixo"
                   ? Cor.textoFixo
                   : v?.natureza === "Turno"
-                  ? Cor.textoTurno
-                  : Cor.textoExtra,
+                    ? Cor.textoTurno
+                    : Cor.textoExtra,
             }}
           >
             R$ <strong>11,00</strong>
@@ -1000,8 +1000,8 @@ function CodigoRoteiro({ v }: { v: any }) {
           v?.natureza === "Fixo"
             ? Cor.fixo
             : v?.natureza === "Turno"
-            ? Cor.turno
-            : Cor.extra
+              ? Cor.turno
+              : Cor.extra
         }`,
         borderTop: `1px solid ${Cor.texto2 + 20}`,
         borderRight: `1px solid ${Cor.texto2 + 20}`,
@@ -1018,8 +1018,8 @@ function CodigoRoteiro({ v }: { v: any }) {
             v?.natureza === "Fixo"
               ? Cor.fixo
               : v?.natureza === "Turno"
-              ? Cor.turno
-              : Cor.extra,
+                ? Cor.turno
+                : Cor.extra,
           fontSize: 28,
         }}
       >
@@ -1040,8 +1040,8 @@ function CodigoRoteiro({ v }: { v: any }) {
               v?.natureza === "Fixo"
                 ? Cor.textoFixo
                 : v?.natureza === "Turno"
-                ? Cor.textoTurno
-                : Cor.textoExtra,
+                  ? Cor.textoTurno
+                  : Cor.textoExtra,
           }}
         >
           ADM 02
@@ -1221,8 +1221,9 @@ function CardPassageiroVoucher({ p }: { p: any }) {
   );
 }
 
-function Assinatura() {
+function Assinatura({ v }: { v: any }) {
   const Cor = useTema().Cor;
+
   return (
     <div
       style={{
@@ -1257,12 +1258,10 @@ function Assinatura() {
             width: "100%",
             height: "100%",
             backgroundColor: Cor.secundaria,
-            // maskImage: `url(data:image/png;base64,${assinaturaBase64})`,
-            maskImage: `url(${assinaturaPNG})`,
+            maskImage: `url(${v?.assinatura || assPadrao})`,
             maskRepeat: "no-repeat",
             maskSize: "contain",
-            // WebkitMaskImage: `url(data:image/png;base64,${assinaturaBase64})`,
-            WebkitMaskImage: assinaturaPNG,
+            WebkitMaskImage: v?.assinatura || assPadrao,
             WebkitMaskRepeat: "no-repeat",
             WebkitMaskSize: "contain",
           }}
@@ -1274,8 +1273,12 @@ function Assinatura() {
 
 function ResultadoVoucher({ v }: { v: any }) {
   console.log(v);
-  const totalCobranca = v?.valorViagem + v?.valorDeslocamento + v?.valorHoraParada;
-  const totalRepasse = v?.valorViagemRepasse + v?.valorDeslocamentoRepasse + v?.valorHoraParadaRepasse;
+  const totalCobranca =
+    v?.valorViagem + v?.valorDeslocamento + v?.tempoParado * v?.valorHoraParada;
+  const totalRepasse =
+    v?.valorViagemRepasse +
+    v?.valorDeslocamentoRepasse +
+    v?.valorHoraParadaRepasse;
   const Cor = useTema().Cor;
   return (
     <div
@@ -1299,7 +1302,12 @@ function ResultadoVoucher({ v }: { v: any }) {
           style={{
             fontSize: 24,
             fontWeight: "bold",
-            color: v?.natureza === "Fixo" ? Cor.textoFixo : v?.natureza === "Turno" ? Cor.textoTurno : Cor.textoExtra,
+            color:
+              v?.natureza === "Fixo"
+                ? Cor.textoFixo
+                : v?.natureza === "Turno"
+                  ? Cor.textoTurno
+                  : Cor.textoExtra,
           }}
         >
           R$<strong>{totalCobranca}</strong>
@@ -1323,7 +1331,12 @@ function ResultadoVoucher({ v }: { v: any }) {
           style={{
             fontSize: 24,
             fontWeight: "bold",
-            color: v?.natureza === "Fixo" ? Cor.textoFixo : v?.natureza === "Turno" ? Cor.textoTurno : Cor.textoExtra,
+            color:
+              v?.natureza === "Fixo"
+                ? Cor.textoFixo
+                : v?.natureza === "Turno"
+                  ? Cor.textoTurno
+                  : Cor.textoExtra,
           }}
         >
           R$ <strong>{totalRepasse}</strong>

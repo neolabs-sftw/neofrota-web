@@ -36,7 +36,7 @@ function OperacaoConteudo() {
       setDataHora(
         new Date().toLocaleString("pt-BR", {
           timeZone: "America/Sao_Paulo",
-        })
+        }),
       );
     };
 
@@ -389,7 +389,13 @@ function OperacaoConteudo() {
           <p>Área de Consultas</p>{" "}
         </div>
         {listaVouchers.map((v: any) => (
-          <ListaProximasViagens key={v.id} v={v} />
+          <ListaProximasViagens
+            v={v}
+            key={v.id}
+            modalPreveiw={modalPreveiw}
+            setModalPreview={setModalPreview}
+            setVoucherPreview={setVoucherPreview}
+          />
         ))}
       </div>
     </div>
