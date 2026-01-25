@@ -5,8 +5,9 @@ import { useEffect, useState } from "react";
 import BtnProximaViagem from "../componentes/btnProximaViagem";
 import ListaProximasViagens from "../componentes/listaProximasViagens";
 import { useNavigate } from "react-router-dom";
-import { useVouchers } from "../hooks/useVouchers";
+import { useVouchers, useVouchersData } from "../hooks/useVouchers";
 import ModalPreviewVoucher from "../componentes/modalPreviewVoucher";
+import { jwtDecode } from "jwt-decode";
 
 function Operacao() {
   return BaseTelas({
@@ -22,16 +23,44 @@ function Operacao() {
 export default Operacao;
 
 function OperacaoConteudo() {
+  const token = localStorage.getItem("token");
+
+  interface JwtPayload {
+    adminUsuarioId?: string;
+    operadoraId?: string;
+  }
+
+  const decoded = token ? jwtDecode<JwtPayload>(token) : null;
+  const operadoraId = decoded?.operadoraId || "";
+
   const [dataHora, setDataHora] = useState("");
   const [modalPreveiw, setModalPreview] = useState(false);
   const [voucherPreview, setVoucherPreview] = useState<any>(null);
 
-  const { listaVouchers, error } = useVouchers();
+  const { listaVouchers } = useVouchers();
 
-  console.log("Lista de Vouchers:", listaVouchers, error);
+  const formatarData = (isoOrDate: string | Date) => {
+    const d = new Date(isoOrDate);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  };
+
+  const hoje = formatarData(new Date());
+
+  const { listaVoucherData, refetch: refetchVouchers } = useVouchersData(
+    operadoraId,
+    hoje,
+  );
+
+  const listaVoucherDataFiltro = listaVoucherData.filter((v: any) => {
+    return v.status == "Aberto";
+  });
 
   useEffect(() => {
     const atualizarDataHora = () => {
+      refetchVouchers();
       setDataHora(
         new Date().toLocaleString("pt-BR", {
           timeZone: "America/Sao_Paulo",
@@ -41,7 +70,7 @@ function OperacaoConteudo() {
 
     atualizarDataHora(); // chama na montagem
 
-    const intervalId = setInterval(atualizarDataHora, 30000); // a cada 30s
+    const intervalId = setInterval(atualizarDataHora, 30); // a cada 30s
 
     return () => clearInterval(intervalId); // limpa ao desmontar
   }, []);
@@ -157,7 +186,7 @@ function OperacaoConteudo() {
             gap: 5,
           }}
         >
-          {listaVouchers.slice(-8).map((v: any) => (
+          {listaVoucherDataFiltro.slice(-8).map((v: any) => (
             <BtnProximaViagem
               v={v}
               key={v.id}

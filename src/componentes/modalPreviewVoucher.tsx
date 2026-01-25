@@ -1272,9 +1272,10 @@ function Assinatura({ v }: { v: any }) {
 }
 
 function ResultadoVoucher({ v }: { v: any }) {
-  console.log(v);
   const totalCobranca =
-    v?.valorViagem + v?.valorDeslocamento + v?.tempoParado * v?.valorHoraParada;
+    Number(v?.valorViagem || 0) +
+    Number(v?.valorDeslocamento || 0) +
+    Number(v?.valorHoraParada || 0);
   const totalRepasse =
     v?.valorViagemRepasse +
     v?.valorDeslocamentoRepasse +
@@ -1310,7 +1311,7 @@ function ResultadoVoucher({ v }: { v: any }) {
                   : Cor.textoExtra,
           }}
         >
-          R$<strong>{totalCobranca}</strong>
+          R$<strong>{String(totalCobranca) || ""}</strong>
         </p>
       </div>
       <div

@@ -67,117 +67,244 @@ export function useCreateVoucher() {
 
 const GET_VOUCHERS = gql`
   query Vouchers {
-  vouchers {
-    id
-    origem
-    destino
-    dataHoraProgramado
-    dataHoraConclusao
-    dataHoraCriacao
-    qntTempoParado
-    assinatura
-    observacaoMotorista
-    observacao
-    valorViagem
-    valorViagemRepasse
-    valorDeslocamento
-    valorDeslocamentoRepasse
-    valorHoraParada
-    valorHoraParadaRepasse
-    valorPedagio
-    valorEstacionamento
-    natureza
-    tipoCorrida
-    status
-    empresaCliente {
+    vouchers {
       id
-      nome
-      rSocial
-      fotoLogoCliente
-      cnpj
-
-    }
-    unidadeCliente {
-      id
-      nome
-      endBairro
-      endCep
-      endCidade
-      endComplemento
-      endNumero
-      endRua
-      endUf
-    }
-    motorista {
-      id
-      nome
-      fotoMotorista
-      vCnh
-    }
-    carro {
-      cor
-      marca
-      modelo
-      id
-      placa
-      
-    }
-    adminUsuario {
-      id
-      nome
-    }
-    solicitante {
-      id
-      nome
-      funcao
-      fotoUrlSolicitante
-    }
-    operadora {
-      id
-      nome
-    }
-    
-    rota {
-      tributacao
-      
-    }
-    passageiros {
-      id
-      statusPresenca
-      horarioEmbarqueReal
-      rateio
-      passageiroId {
+      origem
+      destino
+      dataHoraProgramado
+      dataHoraConclusao
+      dataHoraCriacao
+      qntTempoParado
+      assinatura
+      observacaoMotorista
+      observacao
+      valorViagem
+      valorViagemRepasse
+      valorDeslocamento
+      valorDeslocamentoRepasse
+      valorHoraParada
+      valorHoraParadaRepasse
+      valorPedagio
+      valorEstacionamento
+      natureza
+      tipoCorrida
+      status
+      empresaCliente {
         id
         nome
-        matricula
-        telefone
-        email
-        ativo
-        fotoPerfilPassageiro
-        endRua
-        endNumero
+        rSocial
+        fotoLogoCliente
+        cnpj
+      }
+      unidadeCliente {
+        id
+        nome
         endBairro
+        endCep
         endCidade
-        pontoApanha
-        horarioEmbarque
-        centroCustoClienteId {
-          codigo
-          nome
+        endComplemento
+        endNumero
+        endRua
+        endUf
+      }
+      motorista {
+        id
+        nome
+        fotoMotorista
+        vCnh
+      }
+      carro {
+        cor
+        marca
+        modelo
+        id
+        placa
+      }
+      adminUsuario {
+        id
+        nome
+      }
+      solicitante {
+        id
+        nome
+        funcao
+        fotoUrlSolicitante
+      }
+      operadora {
+        id
+        nome
+      }
+
+      rota {
+        tributacao
+      }
+      passageiros {
+        id
+        statusPresenca
+        horarioEmbarqueReal
+        rateio
+        passageiroId {
           id
+          nome
+          matricula
+          telefone
+          email
+          ativo
+          fotoPerfilPassageiro
+          endRua
+          endNumero
+          endBairro
+          endCidade
+          pontoApanha
+          horarioEmbarque
+          centroCustoClienteId {
+            codigo
+            nome
+            id
+          }
         }
-        
       }
     }
   }
-}
 `;
 
 export function useVouchers() {
-  const { data, loading, error } = useQuery(GET_VOUCHERS);
+  const { data, loading, error, refetch } = useQuery(GET_VOUCHERS, {
+    fetchPolicy: "cache-and-network",
+  });
 
   return {
     listaVouchers: data ? data.vouchers : [],
     loading,
     error,
+    refetch: refetch || Promise.resolve(),
+  };
+}
+
+const GET_VOUCHERS_DATA = gql`
+  query VoucherOperadoraData($operadoraId: ID!, $diaSelecionado: String!) {
+    voucherOperadoraData(
+      operadoraId: $operadoraId
+      diaSelecionado: $diaSelecionado
+    ) {
+      id
+      origem
+      destino
+      dataHoraProgramado
+      dataHoraConclusao
+      dataHoraCriacao
+      qntTempoParado
+      assinatura
+      observacaoMotorista
+      observacao
+      valorViagem
+      valorViagemRepasse
+      valorDeslocamento
+      valorDeslocamentoRepasse
+      valorHoraParada
+      valorHoraParadaRepasse
+      valorPedagio
+      valorEstacionamento
+      natureza
+      tipoCorrida
+      status
+      empresaCliente {
+        id
+        nome
+        fotoLogoCliente
+        rSocial
+        statusCliente
+      }
+      unidadeCliente {
+        endBairro
+        endCep
+        endCidade
+        endComplemento
+        endNumero
+        endRua
+        endUf
+        id
+        statusUnidadeCliente
+        cnpj
+        nome
+      }
+      motorista {
+        id
+        cnh
+        cpf
+        nome
+        fotoMotorista
+        email
+        statusCnh
+        statusMotorista
+        tipoMotorista
+        vCnh
+      }
+
+      carro {
+        id
+        placa
+        marca
+        modelo
+        cor
+        crlv
+        vCrlv
+        chassi
+        ano
+      }
+      adminUsuario {
+        id
+        nome
+      }
+      solicitante {
+        funcao
+        fotoUrlSolicitante
+        nome
+        telefone
+      }
+      passageiros {
+        horarioEmbarqueReal
+        id
+        rateio
+        statusPresenca
+        passageiroId {
+          ativo
+          email
+          endBairro
+          endCidade
+          endNumero
+          endRua
+          fotoPerfilPassageiro
+          horarioEmbarque
+          id
+          matricula
+          nome
+          pontoApanha
+          telefone
+          centroCustoClienteId {
+            id
+            nome
+            codigo
+          }
+        }
+      }
+    }
+  }
+`;
+
+export function useVouchersData(operadoraId: any, diaSelecionado: string) {
+  const { data, loading, error, refetch } = useQuery<any>(GET_VOUCHERS_DATA, {
+    variables: {
+      operadoraId,
+      diaSelecionado,
+    },
+    fetchPolicy: "cache-and-network",
+  });
+
+  return {
+    listaVoucherData: data ? data.voucherOperadoraData : [],
+    loading,
+    error,
+    refetch: refetch || Promise.resolve(),
   };
 }

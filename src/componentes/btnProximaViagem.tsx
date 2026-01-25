@@ -61,7 +61,6 @@ function BtnProximaViagem({
       ? Cor.turno + 90
       : Cor.extra + 90;
   const { motorista } = useMotoristaId(v?.motorista?.id || 0);
-
   return (
     <>
       <BtnProximaViagemStyled
@@ -230,21 +229,6 @@ function BtnProximaViagem({
             {v.destino}
           </p>
         </div>
-        <p
-          style={{
-            textAlign: "center",
-            fontWeight: "400",
-            fontSize: 18,
-            color: Cor.texto1,
-          }}
-        >
-          {new Date(v.dataHoraProgramado).toLocaleDateString("pt-BR", {
-            timeZone: "UTC",
-            day: "2-digit",
-            month: "2-digit",
-            year: "2-digit",
-          })}
-        </p>
         <div
           style={{ width: "100%", height: 1, backgroundColor: Cor.texto2 + 90 }}
         >
