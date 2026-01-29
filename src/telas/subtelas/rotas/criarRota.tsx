@@ -318,12 +318,6 @@ function CriarRota(empresaSelecionada: { empresaSelecionada: any }) {
                 if (origem == "" && destino == "") {
                   alert("Preencha os campos obrigatórios");
                 }
-                console.log(
-                  origem,
-                  destino,
-                  cliente.id,
-                  cliente.operadoraId.id
-                );
                 CriarRotaFunc();
                 setModalCriarRotaView(false);
               }}

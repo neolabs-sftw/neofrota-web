@@ -9,6 +9,7 @@ import CriarRota from "./criarRota";
 import { useListaClientes } from "../../../hooks/useEmpresaCliente";
 import ModalRotaValores from "./modalRotaValores";
 import { useRotasExtas } from "../../../hooks/useRotasExtras";
+import { usePedagios } from "../../../hooks/usePedagios";
 
 function Rotas() {
   return BaseTelas({
@@ -154,15 +155,44 @@ function ConteudoRotas() {
     statusCliente: string;
   } | null>(null);
 
-  const { listaClientes } = useListaClientes(
-    String(adminLogado?.operadora.id) || "0"
+  const { listaClientes } = useListaClientes(adminLogado?.operadora.id || "0");
+  const { listaPedagios } = usePedagios(adminLogado?.operadora.id || "0");
+  const { listaRotasExtras } = useRotasExtas(
+    empresaSelecionada?.id || "0",
   );
 
-  const { listaRotasExtras } = useRotasExtas(empresaSelecionada?.id || 0);
+  // const [listaRotasExtras, setListaRotasExtras] = useState([]);
+
+  // useEffect(() => {
+  //   async function setar() {
+  //     setListaRotasExtras(listaCompleta);
+  //   }
+  // }, [empresaSelecionada]);
 
   const [modalRota, setModalRota] = useState(false);
 
-  const [rotaSelecionada, setRotaSelecionada] = useState<any>(null);
+  const [rotaSelecionada, setRotaSelecionada] = useState<{
+    id: string;
+    destino: string;
+    origem: string;
+    tributacao: string;
+    empresaClienteId: { id: string };
+    operadoraId: { id: string };
+    rotaValor: [
+      {
+        id: string;
+        categoria: string;
+        valorDeslocamento: number;
+        valorDeslocamentoRepasse: number;
+        valorHoraParada: number;
+        valorHoraParadaRepasse: number;
+        valorPedagio: string;
+        valorViagem: number;
+        valorViagemRepasse: number;
+      },
+    ];
+  } | null>(null);
+
   return (
     <div
       style={{
@@ -225,6 +255,7 @@ function ConteudoRotas() {
         rota={rotaSelecionada}
         modalRota={modalRota}
         setModalRota={setModalRota}
+        listaPedagios={listaPedagios}
       />
     </div>
   );

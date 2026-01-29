@@ -89,9 +89,11 @@ function BtnRota({
           <p style={{ fontSize: 14, color: Cor.secundaria }}>
             Rota ID: {rota?.id}
           </p>
+
           <div
-            style={{ width: "70%", height: 1, backgroundColor: Cor.secundaria }}
+            style={{ width: "20%", height: 1, backgroundColor: Cor.secundaria }}
           />
+          <p style={{ fontSize: 14, color: Cor.secundaria }}>Tributação: {rota?.tributacao}</p>
           <div
             className="abrirModal"
             onClick={() => {

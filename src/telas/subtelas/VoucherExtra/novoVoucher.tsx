@@ -41,6 +41,7 @@ function NovoVoucherConteudo() {
   const [carregandoEmpresa, setCarregandoEmpresa] = useState<boolean>(false);
   const [carro, setCarro] = useState<any>();
   const [carroSaida, setCarroSaida] = useState<any>();
+  const [qntDeslocamento, setQntDeslocamento] = useState<any>();
 
   const [passageirosVoucher, setPassageirosVoucher] = useState<any[]>([]);
 
@@ -67,18 +68,6 @@ function NovoVoucherConteudo() {
 
   const { listaCarros: listaCarrosEntrada } = useCarros(motorista || "");
   const { listaCarros: listaCarrosSaida } = useCarros(motoristaSaida || "");
-
-  const { lancar, error } = useCreateVoucher();
-
-  async function revisado() {
-    const lancados = await lancar(lancamentos[0]);
-
-    if(error){
-      console.log("Erro ao lançar voucher: " + error);
-    }
-
-    return lancados.data;
-  }
 
   // Atualizações de estado baseadas em efeitos colaterais
 
@@ -127,7 +116,9 @@ function NovoVoucherConteudo() {
       valorViagemRepasse: tipoCarro?.valorViagemRepasse || 0,
       valorHoraParada: tipoCarro?.valorHoraParada || 0,
       valorHoraParadaRepasse: tipoCarro?.valorHoraParadaRepasse || 0,
-      valorDeslocamento: tipoCarro?.valorDeslocamento || 0,
+      valorDeslocamento: tipoCarro
+        ? tipoCarro?.valorDeslocamento * qntDeslocamento
+        : 0,
       valorDeslocamentoRepasse: tipoCarro?.valorDeslocamentoRepasse || 0,
       valorPedagio: tipoCarro?.valorPedagio?.valor || 0,
       valorEstacionamento: 0,
@@ -141,8 +132,8 @@ function NovoVoucherConteudo() {
         ...baseVoucher,
         carroId: carro?.id,
         dataHoraProgramado: dataHoraEntrada,
-        destino: rota.origem,
-        origem: rota.destino,
+        destino: rota.destino,
+        origem: rota.origem,
         motoristaId: motorista,
         tipoCorrida: "Entrada",
       });
@@ -151,18 +142,18 @@ function NovoVoucherConteudo() {
         ...baseVoucher,
         carroId: carroSaida?.id,
         dataHoraProgramado: dataHoraSaida,
-        destino: rota.destino,
-        origem: rota.origem,
+        destino: rota.origem,
+        origem: rota.destino,
         motoristaId: motoristaSaida,
-        tipoCorrida: "Saída",
+        tipoCorrida: "Saida",
       });
     } else if (tipo === "Entrada e Saída") {
       vouchers.push({
         ...baseVoucher,
         carroId: carro?.id,
         dataHoraProgramado: dataHoraEntrada,
-        destino: rota.origem,
-        origem: rota.destino,
+        destino: rota.destino,
+        origem: rota.origem,
         motoristaId: motorista,
         tipoCorrida: "Entrada",
       });
@@ -170,10 +161,10 @@ function NovoVoucherConteudo() {
         ...baseVoucher,
         carroId: carroSaida?.id,
         dataHoraProgramado: dataHoraSaida,
-        destino: rota.destino,
-        origem: rota.origem,
+        destino: rota.origem,
+        origem: rota.destino,
         motoristaId: motoristaSaida,
-        tipoCorrida: "Saída",
+        tipoCorrida: "Saida",
       });
     } else {
       // Caso o tipo não seja reconhecido (opcional, mas recomendado)
@@ -182,8 +173,8 @@ function NovoVoucherConteudo() {
     }
 
     // Continua o processo só se estiver tudo validado
-    console.log(`Vouchers a serem lançados: ${vouchers.length}`);
-    console.log(vouchers);
+    // console.log(`Vouchers a serem lançados: ${vouchers.length}`);
+    // console.log(vouchers);
 
     setLancamentos(vouchers);
     setCxConfirmarVoucher(true);
@@ -199,7 +190,7 @@ function NovoVoucherConteudo() {
     setMotoristaSaida("");
     setDataHoraEntrada("");
     setDataHoraSaida("");
-  }, [empresaCliente]);
+  }, [empresaCliente?.id]);
 
   useEffect(() => {
     setPassageirosVoucher([]);
@@ -260,6 +251,7 @@ function NovoVoucherConteudo() {
         setDataHoraSaida={setDataHoraSaida}
         carregandoEmpresa={carregandoEmpresa}
         setMotoristaSaida={setMotoristaSaida}
+        setQntDeslocamento={setQntDeslocamento}
       />
       <IncluirPassageiros
         empresaCliente={empresaCliente}
@@ -279,7 +271,6 @@ function NovoVoucherConteudo() {
         lancamentos={lancamentos}
         cxConfirmarVoucher={cxConfirmarVoucher}
         setCxConfirmarVoucher={setCxConfirmarVoucher}
-        revisado={revisado}
       />
     </div>
   );
@@ -294,7 +285,7 @@ const BtnLançarVoucherStyle = styled.button<BtnLançarVoucherProps>`
   border-radius: 18px;
   outline: none;
   border: 1px solid ${({ $cor }) => $cor};
-  background-color: ${({ $cor }) => $cor + 50};
+  background-color: ${({ $cor }) => $cor + "BB"};
   position: absolute;
   bottom: 15px;
   right: 15px;
@@ -418,8 +409,7 @@ function DadosGerais({
             >
               <option
                 value={""}
-                disabled
-                style={{ backgroundColor: Cor.base2 }}
+                style={{ backgroundColor: Cor.base2, color: Cor.texto2 + 70 }}
               >
                 Selecione uma Empresa
               </option>
@@ -476,8 +466,7 @@ function DadosGerais({
             >
               <option
                 value={""}
-                disabled
-                style={{ backgroundColor: Cor.base2 }}
+                style={{ backgroundColor: Cor.base2, color: Cor.texto2 + 70 }}
               >
                 Selecione uma Unidade
               </option>
@@ -533,8 +522,7 @@ function DadosGerais({
             >
               <option
                 value={""}
-                disabled
-                style={{ backgroundColor: Cor.base2 }}
+                style={{ backgroundColor: Cor.base2, color: Cor.texto2 + 70 }}
               >
                 Selecione o Solicitante
               </option>
@@ -573,6 +561,7 @@ function DetalhesDoVoucher({
   setDataHoraEntrada,
   setMotoristaSaida,
   setDataHoraSaida,
+  setQntDeslocamento,
 }: {
   tipo: any;
   empresaCliente: any;
@@ -585,6 +574,7 @@ function DetalhesDoVoucher({
   setDataHoraEntrada: any;
   setMotoristaSaida: any;
   setDataHoraSaida: any;
+  setQntDeslocamento: any;
 }) {
   const Cor = useTema().Cor;
 
@@ -667,7 +657,10 @@ function DetalhesDoVoucher({
               defaultValue={""}
               disabled={carregandoEmpresa}
             >
-              <option value="" disabled style={{ backgroundColor: Cor.base2 }}>
+              <option
+                value=""
+                style={{ backgroundColor: Cor.base2, color: Cor.texto2 + 70 }}
+              >
                 Selecione uma Rota
               </option>
               {listaRotasExtras?.map((rota: any) => {
@@ -721,7 +714,10 @@ function DetalhesDoVoucher({
               defaultValue={""}
               disabled={carregandoRota}
             >
-              <option value="" disabled style={{ backgroundColor: Cor.base2 }}>
+              <option
+                value={""}
+                style={{ backgroundColor: Cor.base2, color: Cor.texto2 + 70 }}
+              >
                 Defina tipo de Carro
               </option>
               {rota?.rotaValor.map((tipo: any) => {
@@ -771,7 +767,10 @@ function DetalhesDoVoucher({
               onChange={(e) => setTipo(e.target.value)}
               defaultValue={""}
             >
-              <option value="" disabled style={{ backgroundColor: Cor.base2 }}>
+              <option
+                value={""}
+                style={{ backgroundColor: Cor.base2, color: Cor.texto2 + 70 }}
+              >
                 Defina tipo de Rota
               </option>
               <option value="Entrada" style={{ backgroundColor: Cor.base2 }}>
@@ -810,12 +809,14 @@ function DetalhesDoVoucher({
           >
             <input
               type="number"
+              defaultValue={0}
               style={{
                 outline: "none",
                 border: "none",
                 color: Cor.texto1,
                 backgroundColor: "transparent",
               }}
+              onChange={(e) => setQntDeslocamento(e.target.value)}
             />
           </div>
         </div>
@@ -867,7 +868,10 @@ function DetalhesDoVoucher({
               defaultValue={""}
               disabled={carregandoMotoristas || tipo === "" || tipo === "Saída"}
             >
-              <option value="" disabled style={{ backgroundColor: Cor.base2 }}>
+              <option
+                value=""
+                style={{ backgroundColor: Cor.base2, color: Cor.texto2 + 70 }}
+              >
                 Selecione um Motorista
               </option>
               {listaMotoristas?.map((motorista: any) => {
@@ -998,7 +1002,10 @@ function DetalhesDoVoucher({
                 carregandoMotoristas || tipo === "" || tipo === "Entrada"
               }
             >
-              <option value="" disabled style={{ backgroundColor: Cor.base2 }}>
+              <option
+                value=""
+                style={{ backgroundColor: Cor.base2, color: Cor.texto2 + 70 }}
+              >
                 Selecione um Motorista
               </option>
               {listaMotoristas?.map((motorista: any) => {
@@ -1187,7 +1194,7 @@ function IncluirPassageiros({
       >
         {passageirosVoucher.map((passageiro: any) => {
           const selecionado = passageirosVoucher.some(
-            (p: any) => p.id === passageiro.id
+            (p: any) => p.id === passageiro.id,
           );
           return (
             <LinhaPassageiro
@@ -1378,7 +1385,7 @@ function ModalSeletorPassageiro({
               }) || []
             ).map((passageiro) => {
               const selecionado = passageirosVoucher.some(
-                (p: any) => p.id === passageiro.id
+                (p: any) => p.id === passageiro.id,
               );
               return (
                 <LinhaPassageiro
@@ -1646,15 +1653,34 @@ function BaseModalConfirmacao({
   lancamentos,
   cxConfirmarVoucher,
   setCxConfirmarVoucher,
-  revisado,
 }: {
   lancamentos: any;
   cxConfirmarVoucher: any;
   setCxConfirmarVoucher: any;
-  revisado: any;
 }) {
   const Cor = useTema().Cor;
 
+  const { lancar } = useCreateVoucher();
+
+  async function confirmado() {
+    try {
+      const resultados = await Promise.all(
+        lancamentos.map(async (v: any) => {
+          console.log("Enviando:", v);
+
+          const lancado = await lancar(v); // <- AGORA você espera de verdade
+
+          console.log("Retorno:", lancado);
+          return { ok: true, v, lancado };
+        }),
+      );
+
+      return resultados;
+    } catch (e) {
+      console.log("Erro ao lançar voucher:", e);
+      throw e;
+    }
+  }
   return (
     <div
       style={{
@@ -1681,25 +1707,26 @@ function BaseModalConfirmacao({
         return (
           <ModalConfirmacao
             v={v}
-            key={v.tipo}
+            key={v.dataHoraProgramado}
             cxModal={cxConfirmarVoucher}
-            revisado={revisado}
-          ></ModalConfirmacao>
+          />
         );
       })}
+      <div>
+        <BtnLançarVoucherStyle
+          $cor={Cor.primariaTxt}
+          onClick={() => {
+            confirmado();
+          }}
+        >
+          <h3 style={{ color: Cor.base2 }}>Confirmar</h3>
+        </BtnLançarVoucherStyle>
+      </div>
     </div>
   );
 }
 
-function ModalConfirmacao({
-  v,
-  cxModal,
-  revisado,
-}: {
-  v: any;
-  cxModal: boolean;
-  revisado: any;
-}) {
+function ModalConfirmacao({ v, cxModal }: { v: any; cxModal: boolean }) {
   const Cor = useTema().Cor;
 
   return (
@@ -1716,6 +1743,7 @@ function ModalConfirmacao({
         flexDirection: "column",
         transition: "all ease-in-out 0.3s",
       }}
+      onClick={(e) => e.stopPropagation()}
     >
       <div
         style={{
@@ -1734,7 +1762,7 @@ function ModalConfirmacao({
           <p
             style={{ fontSize: 14, fontWeight: "bold", color: Cor.primariaTxt }}
           >
-            {v.tipo} - {v.dataHoraProgramado}
+            {v.tipoCorrida} - {v.dataHoraProgramado}
           </p>
           <p style={{ fontSize: 12, color: Cor.texto2 }}>
             Confirme todas as informações antes de lançar.
@@ -1767,9 +1795,6 @@ function ModalConfirmacao({
           <p>{v.dataHoraProgramado}</p>
           <p>{v.motoristaId}</p>
         </div>
-        <button onClick={() => revisado(v)} style={{ marginTop: "auto" }}>
-          <p>Confirmar {v.tipo}</p>
-        </button>
       </div>
     </div>
   );

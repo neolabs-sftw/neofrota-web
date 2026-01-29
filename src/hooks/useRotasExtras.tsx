@@ -1,29 +1,40 @@
 import { gql, useMutation, useQuery } from "@apollo/client";
 
 const GET_ROTAS_EMPRESA_ID = gql`
-  query RotaEmpresaClienteId($rotaEmpresaClienteId: ID!) {
-    rotaEmpresaClienteId(id: $rotaEmpresaClienteId) {
+ query RotaEmpresaClienteId($rotaEmpresaClienteId: ID!) {
+  rotaEmpresaClienteId(id: $rotaEmpresaClienteId) {
+    id
+    destino
+    empresaClienteId {
       id
-      origem
-      destino
-      tributacao
-      rotaValor {
+      nome
+    }
+    operadoraId {
+      id
+      nome
+    }
+    origem
+    tributacao
+    rotaValor {
+      id
+      rotaId {
         id
-        categoria
-        valorViagem
-        valorViagemRepasse
-        valorDeslocamento
-        valorDeslocamentoRepasse
-        valorHoraParada
-        valorHoraParadaRepasse
-        valorPedagio {
-          id
-          nome
-          valor
-        }
+      }
+      categoria
+      valorViagem
+      valorViagemRepasse
+      valorHoraParada
+      valorHoraParadaRepasse
+      valorDeslocamento
+      valorDeslocamentoRepasse
+      valorPedagio {
+        id
+        nome
+        valor
       }
     }
   }
+}
 `;
 
 export function useRotasExtas(rotaEmpresaClienteId: any) {

@@ -1115,7 +1115,8 @@ function CardPassageiroVoucher({ p }: { p: any }) {
       style={{
         height: 45,
         width: "100%",
-        backgroundColor: Cor.base,
+        backgroundColor:
+          p.statusPresenca === "Ausente" ? Cor.atencao + 50 : Cor.base,
         borderRadius: 10,
         border: `1px solid ${Cor.texto2 + 40}`,
         padding: 5,
@@ -1277,9 +1278,9 @@ function ResultadoVoucher({ v }: { v: any }) {
     Number(v?.valorDeslocamento || 0) +
     Number(v?.valorHoraParada || 0);
   const totalRepasse =
-    v?.valorViagemRepasse +
-    v?.valorDeslocamentoRepasse +
-    v?.valorHoraParadaRepasse;
+    Number(v?.valorViagemRepasse || 0) +
+    Number(v?.valorDeslocamentoRepasse || 0) +
+    Number(v?.valorHoraParadaRepasse || 0);
   const Cor = useTema().Cor;
   return (
     <div

@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useTema } from "../../../hooks/temaContext";
+import {
+  useRotasExtas,
+  useUpdateRotaComValores,
+} from "../../../hooks/useRotasExtras";
+import CircularProgress from "@mui/material/CircularProgress";
 
 interface OverlayRotaProps {
   $bg: string;
@@ -58,19 +63,66 @@ const DividerH = styled.div<DividerHProps>`
   height: 1px;
   background-color: ${({ $color }) => $color};
 `;
+
+function JanelaSalvando() {
+  const Cor = useTema().Cor;
+  return (
+    <div
+      style={{
+        width: "100vw",
+        height: "100vh",
+        backgroundColor: Cor.base2 + 50,
+        backdropFilter: "blur(5px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        position: "absolute",
+        zIndex: 12,
+        top: 0,
+        left: 0,
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 20,
+          width: "10%",
+          height: "25%",
+          padding: 22,
+          backgroundColor: Cor.base,
+          borderRadius: 22,
+          boxShadow: Cor.sombra,
+          border: "1px solid" + Cor.texto1 + 50,
+        }}
+      >
+        <CircularProgress sx={{ color: Cor.primaria }} thickness={5} />
+        <p style={{ color: Cor.texto1 }}>Salvando...</p>
+      </div>
+    </div>
+  );
+}
+
 function ModalRotaValores({
   rota,
   modalRota,
   setModalRota,
+  listaPedagios,
 }: {
   rota: any;
   modalRota: boolean;
   setModalRota: any;
+  listaPedagios: any;
 }) {
   const [rotaOrigem, setRotaOrigem] = useState<string>("");
   const [rotaDestino, setRotaDestino] = useState<string>("");
+  const [tributacao, setTributacao] = useState<string>("");
 
-  //   const { atualizarRotaComValores, loading } = useUpdateRotaComValores();
+  const { refetch: refetchRotas } = useRotasExtas(
+    rota?.empresaClienteId.id || "",
+  );
 
   const rotaValor = rota?.rotaValor;
 
@@ -81,444 +133,570 @@ function ModalRotaValores({
   const [rotaValorOnibus, setRotaValorOnibus] = useState<any>();
   const [rotaValorMaterial, setRotaValorMaterial] = useState<any>();
 
+  const [rotaTempOrigem, setRotaTempOrigem] = useState<string>("");
+  const [rotaTempDestino, setRotaTempDestino] = useState<string>("");
+  const [rotaTempTributacao, setRotaTempTributacao] = useState<string>("");
+  const [rotaTempValorSedan, setRotaTempValorSedan] = useState<any>();
+  const [rotaTempValorMiniVan, setRotaTempValorMiniVan] = useState<any>();
+  const [rotaTempValorVan, setRotaTempValorVan] = useState<any>();
+  const [rotaTempValorMicro, setRotaTempValorMicro] = useState<any>();
+  const [rotaTempValorOnibus, setRotaTempValorOnibus] = useState<any>();
+  const [rotaTempValorMaterial, setRotaTempValorMaterial] = useState<any>();
+
   useEffect(() => {
     setRotaOrigem(rota?.origem ?? "");
     setRotaDestino(rota?.destino ?? "");
+    setTributacao(rota?.tributacao ?? "");
     setRotaValorSedan(rotaValor?.find((rV: any) => rV?.categoria === "Sedan"));
     setRotaValorMiniVan(
-      rotaValor?.find((rV: any) => rV?.categoria === "MiniVan")
+      rotaValor?.find((rV: any) => rV?.categoria === "MiniVan"),
     );
     setRotaValorVan(rotaValor?.find((rV: any) => rV?.categoria === "Van"));
     setRotaValorMicro(rotaValor?.find((rV: any) => rV?.categoria === "Micro"));
     setRotaValorOnibus(
-      rotaValor?.find((rV: any) => rV?.categoria === "Onibus")
+      rotaValor?.find((rV: any) => rV?.categoria === "Onibus"),
     );
     setRotaValorMaterial(
-      rotaValor?.find((rV: any) => rV?.categoria === "Material")
+      rotaValor?.find((rV: any) => rV?.categoria === "Material"),
     );
-  }, [
-    rota,
-    rotaValorSedan,
-    rotaValorMiniVan,
-    rotaValorVan,
-    rotaValorMicro,
-    rotaValorOnibus,
-    rotaValorMaterial,
-  ]);
+  }, [modalRota]);
 
-  const linhasValores = [
-    rotaValorSedan,
-    rotaValorMiniVan,
-    rotaValorVan,
-    rotaValorMicro,
-    rotaValorOnibus,
-    rotaValorMaterial,
-  ];
-
-  console.log("linhasValores", linhasValores);
+  const { atualizarRotaComValores, loading } = useUpdateRotaComValores();
 
   async function salvarValores() {
-    // Aqui eu salvo todas as categorias em "LinhaValores" de uma vez só
-    console.log("Salvando valores...", linhasValores);
+    await atualizarRotaComValores({
+      destino: rotaTempDestino ? rotaTempDestino : rotaDestino,
+      origem: rotaTempOrigem ? rotaTempOrigem : rotaOrigem,
+      empresaClienteId: rota?.empresaClienteId?.id,
+      id: rota?.id,
+      operadoraId: rota?.operadoraId?.id,
+      rotaValores: [
+        rotaTempValorMaterial,
+        rotaTempValorMicro,
+        rotaTempValorMiniVan,
+        rotaTempValorOnibus,
+        rotaTempValorSedan,
+        rotaTempValorVan,
+      ],
+      tributacao: rotaTempTributacao,
+    });
+    refetchRotas();
+    setModalRota(false);
+    window.location.reload();
   }
 
   const Cor = useTema().Cor;
 
   return (
-    <OverlayModalRota
-      $bg={Cor.base2}
-      $modal={modalRota}
-      onClick={() => setModalRota(false)}
-    >
-      <ModalRota
+    <>
+      {loading ? <JanelaSalvando /> : null}
+      <OverlayModalRota
         $bg={Cor.base2}
         $modal={modalRota}
-        $sombra={Cor.sombra}
-        $borda={Cor.texto2 + 50}
-        onClick={(e) => e.stopPropagation()}
+        onClick={() => {
+          setModalRota(false);
+        }}
       >
-        <div
-          style={{
-            padding: 10,
-            width: "100%",
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            backgroundColor: Cor.texto2 + 10,
-            borderRadius: "22px 22px 0px 0px",
-          }}
+        <ModalRota
+          $bg={Cor.base2}
+          $modal={modalRota}
+          $sombra={Cor.sombra}
+          $borda={Cor.texto2 + 50}
+          onClick={(e) => e.stopPropagation()}
         >
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 5,
-            }}
-          >
-            <p style={{ fontSize: 14, color: Cor.primariaTxt }}>Rota: </p>
-            <p
-              style={{
-                fontSize: 16,
-                color: Cor.secundaria,
-                fontWeight: "bold",
-              }}
-            >
-              ID: {rota?.id}
-            </p>
-          </div>
-          <p
-            style={{
-              fontSize: 24,
-              color: Cor.primaria,
-              fontWeight: "bold",
-              fontFamily: "Icone",
-              cursor: "pointer",
-            }}
-            onClick={() => setModalRota(false)}
-          >
-            close
-          </p>
-        </div>
-        <DividerH $color={Cor.secundaria + 50} />
-        <div
-          style={{
-            padding: 10,
-            width: "100%",
-            height: "80px",
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: Cor.base + 80,
-            gap: 10,
-          }}
-        >
-          <div
-            style={{
-              width: "35%",
-              height: "100%",
-              backgroundColor: Cor.texto2 + 25,
-              borderRadius: 12,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: 8,
-            }}
-          >
-            <div
-              style={{
-                width: "100%",
-                height: "30%",
-              }}
-            >
-              <p style={{ fontSize: 11, color: Cor.primariaTxt }}>Origem:</p>
-            </div>
-            <div
-              style={{
-                width: "100%",
-                height: "70%",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <input
-                type="text"
-                style={{
-                  appearance: "none",
-                  outline: "none",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  textAlign: "center",
-                  width: "100%",
-                  height: "100%",
-                  backgroundColor: Cor.base,
-                  border: "1px solid " + Cor.texto2 + 50,
-                  borderRadius: 8,
-                  fontSize: 18,
-                  color: Cor.secundaria,
-                  fontWeight: "400",
-                }}
-                value={rotaOrigem}
-                onChange={(e) => setRotaOrigem(e.target.value)}
-              />
-            </div>
-          </div>
-          <p
-            style={{
-              fontSize: 32,
-              color: Cor.secundaria,
-              fontWeight: "bold",
-              fontFamily: "Icone",
-            }}
-          >
-            start
-          </p>
-          <div
-            style={{
-              width: "35%",
-              height: "100%",
-              backgroundColor: Cor.texto2 + 25,
-              borderRadius: 12,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: 8,
-            }}
-          >
-            <div
-              style={{
-                width: "100%",
-                height: "30%",
-              }}
-            >
-              <p style={{ fontSize: 11, color: Cor.primariaTxt }}>Destino:</p>
-            </div>
-            <div
-              style={{
-                width: "100%",
-                height: "70%",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <input
-                type="text"
-                style={{
-                  appearance: "none",
-                  outline: "none",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  textAlign: "center",
-                  width: "100%",
-                  height: "100%",
-                  backgroundColor: Cor.base,
-                  border: "1px solid " + Cor.texto2 + 50,
-                  borderRadius: 8,
-                  fontSize: 18,
-                  color: Cor.secundaria,
-                  fontWeight: "400",
-                }}
-                value={rotaDestino}
-                onChange={(e) => setRotaDestino(e.target.value)}
-              />
-            </div>
-          </div>
-        </div>
-        <DividerH $color={Cor.secundaria + 50} />
-        <div style={{ display: "flex", flexDirection: "row", width: "100%" }}>
           <div
             style={{
               padding: 10,
               width: "100%",
-              marginLeft: "10%",
               display: "flex",
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "space-between",
               backgroundColor: Cor.texto2 + 10,
+              borderRadius: "22px 22px 0px 0px",
             }}
           >
             <div
               style={{
-                width: "25%",
                 display: "flex",
+                flexDirection: "row",
                 alignItems: "center",
-                justifyContent: "center",
+                gap: 5,
               }}
             >
+              <p style={{ fontSize: 14, color: Cor.primariaTxt }}>Rota: </p>
               <p
                 style={{
-                  fontSize: 12,
+                  fontSize: 16,
                   color: Cor.secundaria,
-                  textAlign: "center",
+                  fontWeight: "bold",
                 }}
               >
-                Valor Principal
-              </p>
-            </div>
-
-            <div
-              style={{
-                width: "25%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <p
-                style={{
-                  fontSize: 12,
-                  color: Cor.secundaria,
-                  textAlign: "center",
-                }}
-              >
-                Valor Desloc.
-              </p>
-            </div>
-            <div
-              style={{
-                width: "25%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <p
-                style={{
-                  fontSize: 12,
-                  color: Cor.secundaria,
-                  textAlign: "center",
-                }}
-              >
-                Valor H. Parada
+                ID: {rota?.id}
               </p>
             </div>
             <p
               style={{
-                width: "20%",
-                fontSize: 12,
-                color: Cor.secundaria,
-                textAlign: "center",
+                fontSize: 24,
+                color: Cor.primaria,
+                fontWeight: "bold",
+                fontFamily: "Icone",
+                cursor: "pointer",
+              }}
+              onClick={() => {
+                setModalRota(false);
               }}
             >
-              Pedágio
+              close
             </p>
           </div>
-        </div>
-        <LinhaValores
-          tipoCarro="Hatch/Sedan"
-          rotaValor={rotaValorSedan}
-          setRotaValor={setRotaValorSedan}
-        />
-        <LinhaValores
-          tipoCarro="Minivan/7"
-          rotaValor={rotaValorMiniVan}
-          setRotaValor={setRotaValorMiniVan}
-        />
-        <LinhaValores
-          tipoCarro="Van"
-          rotaValor={rotaValorVan}
-          setRotaValor={setRotaValorVan}
-        />
-        <LinhaValores
-          tipoCarro="Micro"
-          rotaValor={rotaValorMicro}
-          setRotaValor={setRotaValorMicro}
-        />
-        <LinhaValores
-          tipoCarro="Ônibus"
-          rotaValor={rotaValorOnibus}
-          setRotaValor={setRotaValorOnibus}
-        />
-        <LinhaValores
-          tipoCarro="Material"
-          rotaValor={rotaValorMaterial}
-          setRotaValor={setRotaValorMaterial}
-        />
-        <DividerH $color={Cor.secundaria + 50} />
-        <div
-          style={{
-            width: "100%",
-            padding: "10px 15px 15px 15px",
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "flex-end",
-            gap: 10,
-          }}
-        >
+          <DividerH $color={Cor.secundaria + 50} />
           <div
             style={{
-              cursor: "pointer",
-              backgroundColor: Cor.primaria,
-              padding: "10px 50px",
-              borderRadius: 22,
-            }}
-            onClick={() => {
-              setModalRota(false);
-              salvarValores();
-              // Aqui eu salvo todas as categorias em "LinhaValores" de uma vez só
+              padding: 10,
+              width: "100%",
+              height: "80px",
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: Cor.base + 80,
+              gap: 10,
             }}
           >
-            <p
+            <div
               style={{
-                fontSize: 14,
-                color: Cor.primariaTxt,
-                fontWeight: "bold",
+                width: "35%",
+                height: "100%",
+                backgroundColor: Cor.texto2 + 25,
+                borderRadius: 12,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: 8,
               }}
             >
-              Salvar
+              <div
+                style={{
+                  width: "100%",
+                  height: "30%",
+                }}
+              >
+                <p style={{ fontSize: 11, color: Cor.primariaTxt }}>Origem:</p>
+              </div>
+              <div
+                style={{
+                  width: "100%",
+                  height: "70%",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <input
+                  type="text"
+                  style={{
+                    appearance: "none",
+                    outline: "none",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    textAlign: "center",
+                    width: "100%",
+                    height: "100%",
+                    backgroundColor: Cor.base,
+                    border: "1px solid " + Cor.texto2 + 50,
+                    borderRadius: 8,
+                    fontSize: 18,
+                    color: Cor.secundaria,
+                    fontWeight: "400",
+                  }}
+                  value={rotaOrigem}
+                  onChange={(e) => {
+                    setRotaOrigem(e.target.value);
+                    setRotaTempOrigem(e.target.value);
+                  }}
+                />
+              </div>
+            </div>
+            <p
+              style={{
+                fontSize: 32,
+                color: Cor.secundaria,
+                fontWeight: "bold",
+                fontFamily: "Icone",
+              }}
+            >
+              start
             </p>
+            <div
+              style={{
+                width: "35%",
+                height: "100%",
+                backgroundColor: Cor.texto2 + 25,
+                borderRadius: 12,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: 8,
+              }}
+            >
+              <div
+                style={{
+                  width: "100%",
+                  height: "30%",
+                }}
+              >
+                <p style={{ fontSize: 11, color: Cor.primariaTxt }}>Destino:</p>
+              </div>
+              <div
+                style={{
+                  width: "100%",
+                  height: "70%",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <input
+                  type="text"
+                  style={{
+                    appearance: "none",
+                    outline: "none",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    textAlign: "center",
+                    width: "100%",
+                    height: "100%",
+                    backgroundColor: Cor.base,
+                    border: "1px solid " + Cor.texto2 + 50,
+                    borderRadius: 8,
+                    fontSize: 18,
+                    color: Cor.secundaria,
+                    fontWeight: "400",
+                  }}
+                  value={rotaDestino}
+                  onChange={(e) => {
+                    setRotaDestino(e.target.value);
+                    setRotaTempDestino(e.target.value);
+                  }}
+                />
+              </div>
+            </div>
+            <select
+              style={{
+                padding: 10,
+                borderRadius: 22,
+                border: "none",
+                outline: "none",
+                backgroundColor: Cor.texto2 + 20,
+                color: Cor.texto1,
+              }}
+              value={tributacao}
+              onChange={(e) => {
+                setTributacao(e.target.value);
+                setRotaTempTributacao(e.target.value);
+              }}
+            >
+              <option
+                value=""
+                disabled
+                style={{ backgroundColor: Cor.base, color: Cor.texto1 }}
+              >
+                Tributação
+              </option>
+              <option
+                value="ISS"
+                style={{ backgroundColor: Cor.base, color: Cor.texto1 }}
+              >
+                ISS
+              </option>
+              <option
+                value="ISCM"
+                style={{ backgroundColor: Cor.base, color: Cor.texto1 }}
+              >
+                ISCM
+              </option>
+            </select>
           </div>
-        </div>
-      </ModalRota>
-    </OverlayModalRota>
+          <DividerH $color={Cor.secundaria + 50} />
+          <div style={{ display: "flex", flexDirection: "row", width: "100%" }}>
+            <div
+              style={{
+                padding: 10,
+                width: "100%",
+                marginLeft: "10%",
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                backgroundColor: Cor.texto2 + 10,
+              }}
+            >
+              <div
+                style={{
+                  width: "25%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: 12,
+                    color: Cor.secundaria,
+                    textAlign: "center",
+                  }}
+                >
+                  Valor Principal
+                </p>
+              </div>
+
+              <div
+                style={{
+                  width: "25%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: 12,
+                    color: Cor.secundaria,
+                    textAlign: "center",
+                  }}
+                >
+                  Valor Desloc.
+                </p>
+              </div>
+              <div
+                style={{
+                  width: "25%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: 12,
+                    color: Cor.secundaria,
+                    textAlign: "center",
+                  }}
+                >
+                  Valor H. Parada
+                </p>
+              </div>
+              <p
+                style={{
+                  width: "20%",
+                  fontSize: 12,
+                  color: Cor.secundaria,
+                  textAlign: "center",
+                }}
+              >
+                Pedágio
+              </p>
+            </div>
+          </div>
+          <LinhaValores
+            tipoCarro="Hatch/Sedan"
+            rotaValor={rotaValorSedan}
+            // setRotaValor={setRotaValorSedan}
+            setRotaValorTemp={setRotaTempValorSedan}
+            listaPedagios={listaPedagios}
+          />
+          <LinhaValores
+            tipoCarro="Minivan/7"
+            rotaValor={rotaValorMiniVan}
+            // setRotaValor={setRotaValorMiniVan}
+            setRotaValorTemp={setRotaTempValorMiniVan}
+            listaPedagios={listaPedagios}
+          />
+          <LinhaValores
+            tipoCarro="Van"
+            rotaValor={rotaValorVan}
+            // setRotaValor={setRotaValorVan}
+            setRotaValorTemp={setRotaTempValorVan}
+            listaPedagios={listaPedagios}
+          />
+          <LinhaValores
+            tipoCarro="Micro"
+            rotaValor={rotaValorMicro}
+            // setRotaValor={setRotaValorMicro}
+            setRotaValorTemp={setRotaTempValorMicro}
+            listaPedagios={listaPedagios}
+          />
+          <LinhaValores
+            tipoCarro="Ônibus"
+            rotaValor={rotaValorOnibus}
+            // setRotaValor={setRotaValorOnibus}
+            setRotaValorTemp={setRotaTempValorOnibus}
+            listaPedagios={listaPedagios}
+          />
+          <LinhaValores
+            tipoCarro="Material"
+            rotaValor={rotaValorMaterial}
+            // setRotaValor={setRotaValorMaterial}
+            setRotaValorTemp={setRotaTempValorMaterial}
+            listaPedagios={listaPedagios}
+          />
+          <DividerH $color={Cor.secundaria + 50} />
+          <div
+            style={{
+              width: "100%",
+              padding: "10px 15px 15px 15px",
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "flex-end",
+              gap: 10,
+            }}
+          >
+            <div
+              style={{
+                cursor: "pointer",
+                backgroundColor: Cor.primaria,
+                padding: "10px 50px",
+                borderRadius: 22,
+              }}
+              onClick={() => {
+                // setModalRota(false);
+                salvarValores();
+                // Aqui eu salvo todas as categorias em "LinhaValores" de uma vez só
+              }}
+            >
+              <p
+                style={{
+                  fontSize: 14,
+                  color: Cor.primariaTxt,
+                  fontWeight: "bold",
+                }}
+              >
+                Salvar
+              </p>
+            </div>
+          </div>
+        </ModalRota>
+      </OverlayModalRota>
+    </>
   );
 }
-
 function LinhaValores({
   tipoCarro,
   rotaValor,
-  setRotaValor,
-}: // setRotaValor,
-{
+  // setRotaValor,
+  setRotaValorTemp,
+  listaPedagios,
+}: {
   tipoCarro: string;
   rotaValor: any;
-  setRotaValor: any;
+  // setRotaValor: (updater: any) => void;
+  setRotaValorTemp: (_: any) => void;
+  listaPedagios: any[];
 }) {
-  //   const logado = useAdminLogado();
+  const Cor = useTema().Cor;
 
-  const [valorViagem, setValorViagem] = useState(rotaValor?.valorViagem || "");
+  // estados locais (inputs)
+  const [valorViagem, setValorViagem] = useState<string>("");
+  const [valorDeslocamento, setValorDeslocamento] = useState<string>("");
+  const [valorHoraParada, setValorHoraParada] = useState<string>("");
+  const [valorViagemRepasse, setValorViagemRepasse] = useState<string>("");
+  const [valorDeslocamentoRepasse, setValorDeslocamentoRepasse] =
+    useState<string>("");
+  const [valorHoraParadaRepasse, setValorHoraParadaRepasse] =
+    useState<string>("");
+  const [valorPedagio, setValorPedagio] = useState<string>("");
 
-  const [valorDeslocamento, setValorDeslocamento] = useState(
-    rotaValor?.valorDeslocamento || ""
-  );
-  const [valorHoraParada, setValorHoraParada] = useState(
-    rotaValor?.valorHoraParada || ""
-  );
+  const [valorTempViagem, setValorTempViagem] = useState<string>("");
+  const [valorTempDeslocamento, setValorTempDeslocamento] =
+    useState<string>("");
+  const [valorTempHoraParada, setValorTempHoraParada] = useState<string>("");
+  const [valorTempViagemRepasse, setValorTempViagemRepasse] =
+    useState<string>("");
+  const [valorTempDeslocamentoRepasse, setValorTempDeslocamentoRepasse] =
+    useState<string>("");
+  const [valorTempHoraParadaRepasse, setValorTempHoraParadaRepasse] =
+    useState<string>("");
+  const [valorTempPedagio, setValorTempPedagio] = useState<string>("");
 
-  const [valorViagemRepasse, setValorViagemRepasse] = useState(
-    rotaValor?.valorViagemRepasse || ""
-  );
-  const [valorDeslocamentoRepasse, setValorDeslocamentoRepasse] = useState(
-    rotaValor?.valorDeslocamentoRepasse || ""
-  );
-  const [valorHoraParadaRepasse, setValorHoraParadaRepasse] = useState(
-    rotaValor?.valorHoraParadaRepasse || ""
-  );
+  // 1) ✅ quando rotaValor (do banco) muda, preenche os campos
+  useEffect(() => {
+    setValorViagem(rotaValor?.valorViagem ?? "");
+    setValorDeslocamento(rotaValor?.valorDeslocamento ?? "");
+    setValorHoraParada(rotaValor?.valorHoraParada ?? "");
+    setValorViagemRepasse(rotaValor?.valorViagemRepasse ?? "");
+    setValorDeslocamentoRepasse(rotaValor?.valorDeslocamentoRepasse ?? "");
+    setValorHoraParadaRepasse(rotaValor?.valorHoraParadaRepasse ?? "");
 
-  // const [pedagio, setPedagio] = useState(rotaValor?.valorPedagio || "0");
+    // aqui escolha o campo certo: valorPedagio OU pedagioId (depende do seu schema)
+    setValorPedagio(
+      rotaValor?.valorPedagio?.id != null
+        ? String(rotaValor?.valorPedagio?.id)
+        : "",
+    );
+    // ou, se no seu caso é "valorPedagio" e não "pedagioId":
+    // setPedagioId(rotaValor?.valorPedagio != null ? String(rotaValor.valorPedagio) : "");
+  }, [rotaValor?.id]); // use um identificador estável
 
-  //   const pegadioSelecionado = listaPedagios?.find(
-  //     (pedagio: any) => pedagio.id === rotaValor?.pedagioId
-  //   );
+  const toPedagioFk = (v: any) => {
+    const n = Number(v);
+    return n > 0 ? n : null; // ✅ null em vez de 0
+  };
 
   useEffect(() => {
-    setValorViagem(rotaValor?.valorViagem || "");
-    setValorDeslocamento(rotaValor?.valorDeslocamento || "");
-    setValorHoraParada(rotaValor?.valorHoraParada || "");
-    setValorViagemRepasse(rotaValor?.valorViagemRepasse || "");
-    setValorDeslocamentoRepasse(rotaValor?.valorDeslocamentoRepasse || "");
-    setValorHoraParadaRepasse(rotaValor?.valorHoraParadaRepasse || "");
-  }, [rotaValor]);
-
-  setRotaValor({
-    valorViagem: Number(valorViagem),
-    valorViagemRepasse: Number(valorViagemRepasse),
-    valorDeslocamento: Number(valorDeslocamento),
-    valorDeslocamentoRepasse: Number(valorDeslocamentoRepasse),
-    valorHoraParada: Number(valorHoraParada),
-    valorHoraParadaRepasse: Number(valorHoraParadaRepasse),
-  });
-
-  const Cor = useTema().Cor;
+    setRotaValorTemp({
+      categoria: rotaValor?.categoria,
+      valorPedagio: toPedagioFk(
+        Number(valorTempPedagio !== "" ? valorTempPedagio : valorPedagio),
+      ),
+      valorDeslocamento: Number(
+        valorTempDeslocamento !== ""
+          ? valorTempDeslocamento
+          : valorDeslocamento,
+      ),
+      valorDeslocamentoRepasse: Number(
+        valorTempDeslocamentoRepasse !== ""
+          ? valorTempDeslocamentoRepasse
+          : valorDeslocamentoRepasse,
+      ),
+      valorHoraParada: Number(
+        valorTempHoraParada !== "" ? valorTempHoraParada : valorHoraParada,
+      ),
+      valorHoraParadaRepasse: Number(
+        valorTempHoraParadaRepasse !== ""
+          ? valorTempHoraParadaRepasse
+          : valorHoraParada,
+      ),
+      valorViagem: Number(
+        valorTempViagem !== "" ? valorTempViagem : valorViagem,
+      ),
+      valorViagemRepasse: Number(
+        valorTempViagemRepasse !== ""
+          ? valorTempViagemRepasse
+          : valorViagemRepasse,
+      ),
+    });
+  }, [
+    rotaValor?.categoria,
+    valorPedagio,
+    valorDeslocamento,
+    valorDeslocamentoRepasse,
+    valorHoraParada,
+    valorHoraParadaRepasse,
+    valorViagem,
+    valorViagemRepasse,
+    valorTempPedagio,
+    valorTempDeslocamento,
+    valorTempDeslocamentoRepasse,
+    valorTempHoraParada,
+    valorTempHoraParadaRepasse,
+    valorTempViagem,
+    valorTempViagemRepasse,
+  ]);
 
   return (
     <div
@@ -535,6 +713,7 @@ function LinhaValores({
       <p style={{ fontSize: 14, color: Cor.primariaTxt, width: "10%" }}>
         {tipoCarro} :
       </p>
+
       <div
         style={{
           display: "flex",
@@ -546,23 +725,30 @@ function LinhaValores({
         }}
       >
         <PilulaValores
-          cobrança={valorViagem}
-          setCobrança={setValorViagem}
+          cobranca={valorViagem}
+          setCobranca={setValorViagem}
+          setTempCobranca={setValorTempViagem}
           repasse={valorViagemRepasse}
           setRepasse={setValorViagemRepasse}
+          setTempRepasse={setValorTempViagemRepasse}
         />
         <PilulaValores
-          cobrança={valorDeslocamento}
-          setCobrança={setValorDeslocamento}
+          cobranca={valorDeslocamento}
+          setCobranca={setValorDeslocamento}
+          setTempCobranca={setValorTempDeslocamento}
           repasse={valorDeslocamentoRepasse}
           setRepasse={setValorDeslocamentoRepasse}
+          setTempRepasse={setValorTempDeslocamentoRepasse}
         />
         <PilulaValores
-          cobrança={valorHoraParada}
-          setCobrança={setValorHoraParada}
+          cobranca={valorHoraParada}
+          setCobranca={setValorHoraParada}
+          setTempCobranca={setValorTempHoraParada}
           repasse={valorHoraParadaRepasse}
           setRepasse={setValorHoraParadaRepasse}
+          setTempRepasse={setValorTempHoraParadaRepasse}
         />
+
         <div
           style={{
             width: "15%",
@@ -585,30 +771,38 @@ function LinhaValores({
               color: Cor.texto1,
               backgroundColor: "transparent",
             }}
-            // value={pegadioSelecionado?.id || "0"}
-            value={"0"}
+            value={valorPedagio}
             onChange={(e) => {
-              // setPedagio(e.target.value);
-              console.log(e.target.value);
+              setValorPedagio(e.target.value);
+              setValorTempPedagio(e.target.value);
             }}
           >
             <option
-              value="0"
+              value=""
               style={{
                 color: Cor.texto1,
-                appearance: "none",
                 backgroundColor: Cor.secundaria + 50,
                 padding: 8,
               }}
             >
               Sem Pedágio
             </option>
-            {/* {listaPedagios?.map((p: any) => (
-              <option key={p.id} value={p.id}>
+
+            {listaPedagios?.map((p: any) => (
+              <option
+                key={p.id}
+                value={String(p.id)}
+                style={{
+                  color: Cor.texto1,
+                  backgroundColor: Cor.secundaria + 50,
+                  padding: 8,
+                }}
+              >
                 {p.nome}
               </option>
-            ))} */}
+            ))}
           </select>
+
           <p
             style={{
               fontSize: 20,
@@ -655,15 +849,19 @@ const InputValores = styled.input.attrs<InputValoresProps>({ type: "number" })`
 `;
 
 function PilulaValores({
-  cobrança,
-  setCobrança,
+  cobranca,
+  setCobranca,
+  setTempCobranca,
   repasse,
   setRepasse,
+  setTempRepasse,
 }: {
-  cobrança: any;
-  setCobrança: any;
+  cobranca: any;
+  setCobranca: any;
+  setTempCobranca: any;
   repasse: any;
   setRepasse: any;
+  setTempRepasse: any;
 }) {
   const Cor = useTema().Cor;
   return (
@@ -707,9 +905,10 @@ function PilulaValores({
         <InputValores
           $corTexto={Cor.secundaria}
           placeholder="Cobrança"
-          value={cobrança}
+          value={cobranca}
           onChange={(e) => {
-            setCobrança(e.target.value);
+            setCobranca(e.target.value);
+            setTempCobranca(e.target.value);
           }}
         />
       </div>
@@ -746,6 +945,7 @@ function PilulaValores({
           value={repasse}
           onChange={(e) => {
             setRepasse(e.target.value);
+            setTempRepasse(e.target.value);
           }}
         />
       </div>

@@ -37,7 +37,17 @@ function OperacaoConteudo() {
   const [modalPreveiw, setModalPreview] = useState(false);
   const [voucherPreview, setVoucherPreview] = useState<any>(null);
 
-  const { listaVouchers } = useVouchers();
+  const { listaVouchers, refetch: refetchTotal } = useVouchers();
+
+  const voucherAbertos = listaVouchers.filter((v: any) => {
+    return v.status == "Aberto";
+  });
+
+  const ordenada = [...voucherAbertos].sort(
+    (a, b) =>
+      new Date(a.dataHoraProgramado).getTime() -
+      new Date(b.dataHoraProgramado).getTime(),
+  );
 
   const formatarData = (isoOrDate: string | Date) => {
     const d = new Date(isoOrDate);
@@ -61,6 +71,7 @@ function OperacaoConteudo() {
   useEffect(() => {
     const atualizarDataHora = () => {
       refetchVouchers();
+      refetchTotal();
       setDataHora(
         new Date().toLocaleString("pt-BR", {
           timeZone: "America/Sao_Paulo",
@@ -416,7 +427,7 @@ function OperacaoConteudo() {
           {" "}
           <p>Área de Consultas</p>{" "}
         </div>
-        {listaVouchers.map((v: any) => (
+        {ordenada.map((v: any) => (
           <ListaProximasViagens
             v={v}
             key={v.id}
