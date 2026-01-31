@@ -39,11 +39,11 @@ function OperacaoConteudo() {
 
   const { listaVouchers, refetch: refetchTotal } = useVouchers();
 
-  const voucherAbertos = listaVouchers.filter((v: any) => {
+  const vouchersAbertos = listaVouchers.filter((v: any) => {
     return v.status == "Aberto";
   });
 
-  const ordenada = [...voucherAbertos].sort(
+  const ordenada = [...vouchersAbertos].sort(
     (a, b) =>
       new Date(a.dataHoraProgramado).getTime() -
       new Date(b.dataHoraProgramado).getTime(),
@@ -68,6 +68,12 @@ function OperacaoConteudo() {
     return v.status == "Aberto";
   });
 
+  const ordenadaDia = [...listaVoucherDataFiltro].sort(
+    (a, b) =>
+      new Date(a.dataHoraProgramado).getTime() -
+      new Date(b.dataHoraProgramado).getTime(),
+  );
+
   useEffect(() => {
     const atualizarDataHora = () => {
       refetchVouchers();
@@ -81,7 +87,7 @@ function OperacaoConteudo() {
 
     atualizarDataHora(); // chama na montagem
 
-    const intervalId = setInterval(atualizarDataHora, 30); // a cada 30s
+    const intervalId = setInterval(atualizarDataHora, 60000); // a cada 30s
 
     return () => clearInterval(intervalId); // limpa ao desmontar
   }, []);
@@ -197,7 +203,7 @@ function OperacaoConteudo() {
             gap: 5,
           }}
         >
-          {listaVoucherDataFiltro.slice(-8).map((v: any) => (
+          {ordenadaDia.slice(0, 8).map((v: any) => (
             <BtnProximaViagem
               v={v}
               key={v.id}

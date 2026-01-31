@@ -14,6 +14,7 @@ import { validarVoucher } from "../../../hooks/validarVoucher";
 import { useAdminLogado } from "../../../hooks/AdminLogado";
 import { useCarros } from "../../../hooks/useCarros";
 import { useCreateVoucher } from "../../../hooks/useVouchers";
+import { useNavigate } from "react-router-dom";
 
 function NovoVoucher() {
   return BaseTelas({
@@ -1662,19 +1663,27 @@ function BaseModalConfirmacao({
 
   const { lancar } = useCreateVoucher();
 
+  const navigate = useNavigate();
+
   async function confirmado() {
     try {
-      const resultados = await Promise.all(
+      const resultados = await Promise.all(      
         lancamentos.map(async (v: any) => {
+
+          if(v.carroId === undefined || null){
+            alert("Esse motorista não tem um carro atrelado a conta dele.")
+            return null
+          }
           console.log("Enviando:", v);
 
-          const lancado = await lancar(v); // <- AGORA você espera de verdade
+          const lancado = await lancar(v);
 
           console.log("Retorno:", lancado);
           return { ok: true, v, lancado };
         }),
       );
 
+      navigate("/operacao");
       return resultados;
     } catch (e) {
       console.log("Erro ao lançar voucher:", e);
