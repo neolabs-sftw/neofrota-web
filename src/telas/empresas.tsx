@@ -2,7 +2,7 @@ import BaseTelas from "../componentes/baseTelas";
 import EditPerfil from "../componentes/editPerfil";
 import { useTema } from "../hooks/temaContext";
 import ListaEmpresasCadastradas from "../componentes/listaEmpresasCadastradas";
-import CardInfosMenor from "../componentes/cardInfosMenor";
+import CardInfosMenor from "../componentes/cardInfosMenorExtras";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { gql, useQuery } from "@apollo/client";

@@ -87,7 +87,7 @@ function OperacaoConteudo() {
 
     atualizarDataHora(); // chama na montagem
 
-    const intervalId = setInterval(atualizarDataHora, 60000); // a cada 30s
+    const intervalId = setInterval(atualizarDataHora, 300000); // a cada 30s
 
     return () => clearInterval(intervalId); // limpa ao desmontar
   }, []);

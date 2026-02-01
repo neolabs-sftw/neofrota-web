@@ -1,12 +1,15 @@
 import { useEffect } from "react";
 import BaseTelas from "../componentes/baseTelas";
 import CardHistFaturamento from "../componentes/cardHistFaturamento";
-import CardInfosMenor from "../componentes/cardInfosMenor";
 import CardRankingMotoristas from "../componentes/cardRankingMotoristas";
 import EditPerfil from "../componentes/editPerfil";
 import { useTema } from "../hooks/temaContext";
 import { gql, useQuery } from "@apollo/client";
 import { jwtDecode } from "jwt-decode";
+import CardInfosMenorExtras from "../componentes/cardInfosMenorExtras";
+import CardInfosMenorFixos from "../componentes/cardInfosMenorFIxos";
+import CardInfosMenorTotal from "../componentes/cardInfosMenorTotal";
+import CardInfosMenorTurnos from "../componentes/cardInfosMenorTurnos";
 
 const GET_USUARIO = gql`
   query Query($adminUsuarioId: ID!) {
@@ -42,7 +45,7 @@ const GET_USUARIO = gql`
 function Home() {
   const token = localStorage.getItem("token");
 
-    interface JwtPayload {
+  interface JwtPayload {
     adminUsuarioId?: string;
     operadoraId?: string;
   }
@@ -142,30 +145,10 @@ function HomeConteudo() {
                 gap: "10px",
               }}
             >
-              <CardInfosMenor
-                tipo={false}
-                tipoVoucher="Fixo"
-                valor={10500}
-                valorAnterior={25}
-              />
-              <CardInfosMenor
-                tipo={false}
-                tipoVoucher="Extra"
-                valor={850}
-                valorAnterior={-14}
-              />
-              <CardInfosMenor
-                tipo={true}
-                tipoVoucher="Bruto"
-                valor={1324765}
-                valorAnterior={2.5}
-              />
-              <CardInfosMenor
-                tipo={true}
-                tipoVoucher="Líquido"
-                valor={386715}
-                valorAnterior={-1.25}
-              />
+              <CardInfosMenorExtras />
+              <CardInfosMenorFixos />
+              <CardInfosMenorTurnos />
+              <CardInfosMenorTotal />
             </div>
             {/* Fim da Primeira linha Lado Esquedo do Main */}
             {/* Segunda linha Lado Esquedo do Main */}

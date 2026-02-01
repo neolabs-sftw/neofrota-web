@@ -203,6 +203,7 @@ function BaseTelas({ conteudo }: { conteudo: any }) {
                 transition: "left 0.4s ease-in-out",
                 backdropFilter: "blur(3px)",
                 left: aberto ? "calc(200px - 15px)" : "calc(60px - 15px)",
+                zIndex: 999
               }}
               onClick={() => setAberto(!aberto)}
             >
