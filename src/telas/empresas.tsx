@@ -2,11 +2,14 @@ import BaseTelas from "../componentes/baseTelas";
 import EditPerfil from "../componentes/editPerfil";
 import { useTema } from "../hooks/temaContext";
 import ListaEmpresasCadastradas from "../componentes/listaEmpresasCadastradas";
-import CardInfosMenor from "../componentes/cardInfosMenorExtras";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { gql, useQuery } from "@apollo/client";
 import { jwtDecode } from "jwt-decode";
+import CardInfosMenorExtras from "../componentes/cardInfosMenorExtras";
+import CardInfosMenorFixos from "../componentes/cardInfosMenorFIxos";
+import CardInfosMenorTurnos from "../componentes/cardInfosMenorTurnos";
+import CardInfosMenorTotal from "../componentes/cardInfosMenorTotal";
 
 const GET_USUARIO = gql`
   query Query($adminUsuarioId: ID!) {
@@ -118,30 +121,10 @@ function EmpresasConteudo() {
           gap: "10px",
         }}
       >
-        <CardInfosMenor
-          tipo={false}
-          tipoVoucher="Fixo"
-          valor={10500}
-          valorAnterior={25}
-        />
-        <CardInfosMenor
-          tipo={false}
-          tipoVoucher="Extra"
-          valor={850}
-          valorAnterior={-14}
-        />
-        <CardInfosMenor
-          tipo={true}
-          tipoVoucher="Bruto"
-          valor={1324765}
-          valorAnterior={2.5}
-        />
-        <CardInfosMenor
-          tipo={true}
-          tipoVoucher="Líquido"
-          valor={386715}
-          valorAnterior={-1.25}
-        />
+        <CardInfosMenorExtras />
+        <CardInfosMenorFixos />
+        <CardInfosMenorTurnos />
+        <CardInfosMenorTotal />
       </div>
       <CadastrarNovoCliente />
       <ListaEmpresasCadastradas />
