@@ -51,10 +51,10 @@ function CardInfosMenorExtras({}: {}) {
         justifyContent: "space-between",
         gap: "5px",
         padding: "15px",
-        borderBottom: `2px solid ${Cor.extra + 15}`,
-        borderRight: `2px solid ${Cor.extra + 15}`,
+        borderBottom: `1px solid ${Cor.extra + 35}`,
+        borderRight: `1px solid ${Cor.extra + 35}`,
         backgroundColor: Cor.base2,
-        boxShadow: Cor.sombra,
+        boxShadow: `2px 2px 4px ${Cor.textoExtra + 10}`,
       }}
     >
       <div

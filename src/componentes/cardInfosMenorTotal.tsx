@@ -40,8 +40,6 @@ function CardInfosMenorTotal({}: {}) {
       "1",
       "Concluido",
     );
-
-  console.log(faturamentoTotalAberto, faturamentoTotalConcluido);
   return (
     <div
       style={{
@@ -54,9 +52,9 @@ function CardInfosMenorTotal({}: {}) {
         gap: "5px",
         padding: "15px",
         backgroundColor: Cor.base2,
-        boxShadow: Cor.sombra,
-        borderBottom: `2px solid ${Cor.primaria + 15}`,
-        borderRight: `2px solid ${Cor.primaria + 15}`,
+        boxShadow: `2px 2px 4px ${Cor.primaria + 10}`,
+        borderBottom: `1px solid ${Cor.primaria + 35}`,
+        borderRight: `1px solid ${Cor.primaria + 35}`,
       }}
     >
       <div

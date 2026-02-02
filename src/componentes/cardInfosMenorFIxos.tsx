@@ -53,9 +53,9 @@ function CardInfosMenorFixos({}: {}) {
         gap: "5px",
         padding: "15px",
         backgroundColor: Cor.base2,
-        boxShadow: Cor.sombra,
-        borderBottom: `2px solid ${Cor.fixo + 15}`,
-        borderRight: `2px solid ${Cor.fixo + 15}`,
+        boxShadow: `2px 2px 4px ${Cor.textoFixo + 10}`,
+        borderBottom: `1px solid ${Cor.fixo + 35}`,
+        borderRight: `1px solid ${Cor.fixo + 35}`,
       }}
     >
       <div

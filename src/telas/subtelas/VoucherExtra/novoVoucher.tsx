@@ -42,7 +42,7 @@ function NovoVoucherConteudo() {
   const [carregandoEmpresa, setCarregandoEmpresa] = useState<boolean>(false);
   const [carro, setCarro] = useState<any>();
   const [carroSaida, setCarroSaida] = useState<any>();
-  const [qntDeslocamento, setQntDeslocamento] = useState<any>();
+  const [qntDeslocamento, setQntDeslocamento] = useState<number>(0);
 
   const [passageirosVoucher, setPassageirosVoucher] = useState<any[]>([]);
 
@@ -117,9 +117,7 @@ function NovoVoucherConteudo() {
       valorViagemRepasse: tipoCarro?.valorViagemRepasse || 0,
       valorHoraParada: tipoCarro?.valorHoraParada || 0,
       valorHoraParadaRepasse: tipoCarro?.valorHoraParadaRepasse || 0,
-      valorDeslocamento: tipoCarro
-        ? tipoCarro?.valorDeslocamento * qntDeslocamento
-        : 0,
+      valorDeslocamento: tipoCarro?.valorDeslocamento * qntDeslocamento,
       valorDeslocamentoRepasse: tipoCarro?.valorDeslocamentoRepasse || 0,
       valorPedagio: tipoCarro?.valorPedagio?.valor || 0,
       valorEstacionamento: 0,
@@ -253,6 +251,7 @@ function NovoVoucherConteudo() {
         carregandoEmpresa={carregandoEmpresa}
         setMotoristaSaida={setMotoristaSaida}
         setQntDeslocamento={setQntDeslocamento}
+        qntDeslocamento={qntDeslocamento}
       />
       <IncluirPassageiros
         empresaCliente={empresaCliente}
@@ -563,6 +562,7 @@ function DetalhesDoVoucher({
   setMotoristaSaida,
   setDataHoraSaida,
   setQntDeslocamento,
+  qntDeslocamento
 }: {
   tipo: any;
   empresaCliente: any;
@@ -576,6 +576,7 @@ function DetalhesDoVoucher({
   setMotoristaSaida: any;
   setDataHoraSaida: any;
   setQntDeslocamento: any;
+  qntDeslocamento: number
 }) {
   const Cor = useTema().Cor;
 
@@ -810,14 +811,15 @@ function DetalhesDoVoucher({
           >
             <input
               type="number"
-              defaultValue={0}
+              value={qntDeslocamento}
+              min={0}
               style={{
                 outline: "none",
                 border: "none",
                 color: Cor.texto1,
                 backgroundColor: "transparent",
               }}
-              onChange={(e) => setQntDeslocamento(e.target.value)}
+              onChange={(e) => setQntDeslocamento(e.target.value) || 0}
             />
           </div>
         </div>
@@ -1667,12 +1669,11 @@ function BaseModalConfirmacao({
 
   async function confirmado() {
     try {
-      const resultados = await Promise.all(      
+      const resultados = await Promise.all(
         lancamentos.map(async (v: any) => {
-
-          if(v.carroId === undefined || null){
-            alert("Esse motorista não tem um carro atrelado a conta dele.")
-            return null
+          if (v.carroId === undefined || null) {
+            alert("Esse motorista não tem um carro atrelado a conta dele.");
+            return null;
           }
           console.log("Enviando:", v);
 

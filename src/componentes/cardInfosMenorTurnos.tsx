@@ -53,9 +53,9 @@ function CardInfosMenorTurnos({}: {}) {
         gap: "5px",
         padding: "15px",
         backgroundColor: Cor.base2,
-        boxShadow: Cor.sombra,
-        borderBottom: `2px solid ${Cor.turno + 15}`,
-        borderRight: `2px solid ${Cor.turno + 15}`,
+         boxShadow: `2px 2px 4px ${Cor.textoTurno + 10}`,
+        borderBottom: `1px solid ${Cor.turno + 35}`,
+        borderRight: `1px solid ${Cor.turno + 35}`,
       }}
     >
       <div
