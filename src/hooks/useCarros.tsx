@@ -43,15 +43,12 @@ interface CarroResponse {
 }
 
 export function useCarros(idMotorista: string) {
-  const { data, loading, error, refetch } = useQuery<CarroResponse>(
-    GET_CARRO,
-    {
-      variables: {
-        idMotorista,
-      },
-      fetchPolicy: "cache-and-network",
-    }
-  );
+  const { data, loading, error, refetch } = useQuery<CarroResponse>(GET_CARRO, {
+    variables: {
+      idMotorista,
+    },
+    fetchPolicy: "cache-and-network",
+  });
 
   return {
     listaCarros: data?.carroMotoristaId,
@@ -61,6 +58,31 @@ export function useCarros(idMotorista: string) {
   };
 }
 
-// const GET_LISTA_CARROS = gql`
+const GET_CARRO_ID = gql`
+  query CarroId($carroId: ID!) {
+    carroId(id: $carroId) {
+      id
+      placa
+      marca
+      modelo
+      cor
+      crlv
+      vCrlv
+      chassi
+      ano
+    }
+  }
+`;
 
-// `;
+export function useCarroId(carroId: string) {
+  const { data, loading, error } = useQuery(GET_CARRO_ID, {
+    variables: {
+      carroId,
+    },
+  });
+  return {
+    carro: data?.carroId || "",
+    loading,
+    error,
+  };
+}

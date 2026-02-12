@@ -153,6 +153,8 @@ function VerMotoristaConteudo() {
 function Cabecalho() {
   const Cor = useTema().Cor;
   const { motoristaId } = useParams();
+  
+  const navigate = useNavigate();
 
   const { data } = useQuery(GET_MOTORISTA_ID, {
     variables: { motoristaId: motoristaId },
@@ -239,6 +241,7 @@ function Cabecalho() {
             color: Cor.base,
             cursor: "pointer",
           }}
+          onClick={() => navigate(`/editarmotorista/${motoristaId}`)}
         >
           Editar Informações
         </button>
@@ -462,12 +465,12 @@ function ListaMotoristasFuncionarios({ motorista }: { motorista: any }) {
 
   async function adicionarFuncionario() {
     if (!funcionarioID) {
-      console.log("funcionarioID não informado");
+      alert("funcionarioID não informado");
       return;
     }
 
     try {
-      const { data } = await createRelacaoAgrdFunc({
+      await createRelacaoAgrdFunc({
         variables: {
           input: {
             agregadoId: parseInt(agregadoID),
@@ -476,8 +479,6 @@ function ListaMotoristasFuncionarios({ motorista }: { motorista: any }) {
           },
         },
       });
-
-      console.log("Relação criada:", data);
       setFuncionarioID("");
       window.location.reload();
     } catch (err) {
@@ -633,33 +634,41 @@ function ListaMotoristasFuncionarios({ motorista }: { motorista: any }) {
           </tr>
         </thead>
         <tbody>
-          {funcionarios == undefined ? null : funcionarios.map((funcionario: any) => {
-            return (
-              <tr key={funcionario.motoristaComoFuncionario.id}>
-                <td>{funcionario.motoristaComoFuncionario.nome}</td>
-                <td>{funcionario.motoristaComoFuncionario.email}</td>
-                <td style={{ width: 150, textAlign: "center" }}>
-                  <p>ssad</p>
-                </td>
-                <td style={{ width: 150, textAlign: "center" }}>Placa</td>
-                <td style={{ width: 150, textAlign: "center" }}>Modelo Carro</td>
-                <td style={{ width: 80, textAlign: "center" }}>
-                  <p
-                    style={{
-                      fontFamily: "Icone",
-                      fontSize: "24px",
-                      color: Cor.texto2,
-                      fontWeight: "bold",
-                      cursor: "pointer",
-                    }}
-                     onClick={() => navigate(`/motorista/${funcionario.motoristaComoFuncionario.id}`)}
-                  >
-                    visibility
-                  </p>
-                </td>
-              </tr>
-            );
-          })}
+          {funcionarios == undefined
+            ? null
+            : funcionarios.map((funcionario: any) => {
+                return (
+                  <tr key={funcionario.motoristaComoFuncionario.id}>
+                    <td>{funcionario.motoristaComoFuncionario.nome}</td>
+                    <td>{funcionario.motoristaComoFuncionario.email}</td>
+                    <td style={{ width: 150, textAlign: "center" }}>
+                      <p>ssad</p>
+                    </td>
+                    <td style={{ width: 150, textAlign: "center" }}>Placa</td>
+                    <td style={{ width: 150, textAlign: "center" }}>
+                      Modelo Carro
+                    </td>
+                    <td style={{ width: 80, textAlign: "center" }}>
+                      <p
+                        style={{
+                          fontFamily: "Icone",
+                          fontSize: "24px",
+                          color: Cor.texto2,
+                          fontWeight: "bold",
+                          cursor: "pointer",
+                        }}
+                        onClick={() =>
+                          navigate(
+                            `/motorista/${funcionario.motoristaComoFuncionario.id}`,
+                          )
+                        }
+                      >
+                        visibility
+                      </p>
+                    </td>
+                  </tr>
+                );
+              })}
         </tbody>
       </table>
       <div

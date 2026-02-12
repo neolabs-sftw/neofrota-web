@@ -10,7 +10,7 @@ interface BtnProximaViagemProps {
 
 const BtnProximaViagemStyled = styled.div<BtnProximaViagemProps>`
   width: 24.5%;
-  height: 49.4%;
+  height: 32%;
   border-radius: 18px;
   background-color: ${({ $bg }) => $bg};
   padding: 10px;

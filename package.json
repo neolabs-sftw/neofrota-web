@@ -25,6 +25,7 @@
     "react-router-dom": "^7.6.2",
     "react-select": "^5.10.2",
     "react-spinners": "^0.17.0",
+    "recharts": "^3.7.0",
     "styled-components": "^6.1.19",
     "xlsx": "^0.18.5"
   },

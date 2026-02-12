@@ -37,3 +37,35 @@ export function useUnidadeCliente(listaUnidadesEmpresaClienteId: any) {
     refetch: refetch || Promise.resolve(),
   };
 }
+
+const GET_UNIDADE_CLIENTE_ID = gql`
+  query UnidadeEmpresaClienteId($unidadeEmpresaClienteId: ID!) {
+    unidadeEmpresaClienteId(id: $unidadeEmpresaClienteId) {
+      id
+      nome
+      cnpj
+      endRua
+      endNumero
+      endBairro
+      endCep
+      endCidade
+      endComplemento
+      endUf
+      statusUnidadeCliente
+      matriz
+    }
+  }
+`;
+
+export function useUnidadeId(unidadeEmpresaClienteId: string) {
+  const { data, loading, error } = useQuery(GET_UNIDADE_CLIENTE_ID, {
+    variables: {
+      unidadeEmpresaClienteId,
+    },
+  });
+  return {
+    unidade: data?.unidadeEmpresaClienteId || "",
+    loading,
+    error,
+  };
+}

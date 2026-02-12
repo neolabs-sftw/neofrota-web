@@ -1,4 +1,4 @@
-import { gql, useQuery } from "@apollo/client";
+import { gql, useMutation, useQuery } from "@apollo/client";
 
 const GET_MOTORISTAS = gql`
   query MotoristasOperadora(
@@ -70,5 +70,22 @@ export function useMotoristaId(motoristaId: any) {
     loading,
     error,
     refetch: refetch || Promise.resolve(),
+  };
+}
+
+const UPDATE_MOTORISTA = gql`
+  mutation UpdateMotorista($updateMotoristaId: ID!, $input: MotoristaInput!) {
+    updateMotorista(id: $updateMotoristaId, input: $input) {
+      id
+    }
+  }
+`;
+
+export function useUpdateMotorista() {
+  const [updateMotorista, { loading, error }] = useMutation(UPDATE_MOTORISTA);
+  return {
+    updateMotorista,
+    loading,
+    error,
   };
 }

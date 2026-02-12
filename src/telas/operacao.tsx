@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useVouchers, useVouchersData } from "../hooks/useVouchers";
 import ModalPreviewVoucher from "../componentes/modalPreviewVoucher";
 import { jwtDecode } from "jwt-decode";
+import styled from "styled-components";
 
 function Operacao() {
   return BaseTelas({
@@ -22,6 +23,46 @@ function Operacao() {
 
 export default Operacao;
 
+interface BtnProps {
+  $cor: string;
+}
+
+const BtnAtualizarStyle = styled.button<BtnProps>`
+  padding: 6px 10px;
+  border-radius: 60px;
+  outline: none;
+  border: 1px solid ${({ $cor }) => $cor};
+  background-color: ${({ $cor }) => $cor + "BB"};
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+  backdrop-filter: blur(3px);
+  cursor: pointer;
+  transition: all ease-in-out 0.2s;
+
+  &:hover {
+    background-color: ${({ $cor }) => $cor + 90};
+  }
+`;
+
+const BtnNovoVoucher = styled.div<BtnProps>`
+  height: 90px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid ${({ $cor }) => $cor}50;
+  background-color: ${({ $cor }) => $cor}10;
+  cursor: pointer;
+  border-radius: 18px;
+  transition: all ease-in-out 0.2s;
+  &:hover {
+    background-color: ${({ $cor }) => $cor}30;
+  }
+  &:active {
+    background-color: ${({ $cor }) => $cor}60;
+  }
+`;
 function OperacaoConteudo() {
   const token = localStorage.getItem("token");
 
@@ -33,7 +74,6 @@ function OperacaoConteudo() {
   const decoded = token ? jwtDecode<JwtPayload>(token) : null;
   const operadoraId = decoded?.operadoraId || "";
 
-  const [dataHora, setDataHora] = useState("");
   const [modalPreveiw, setModalPreview] = useState(false);
   const [voucherPreview, setVoucherPreview] = useState<any>(null);
 
@@ -75,19 +115,14 @@ function OperacaoConteudo() {
   );
 
   useEffect(() => {
-    const atualizarDataHora = () => {
+    const atualizarOperacao = () => {
       refetchVouchers();
       refetchTotal();
-      setDataHora(
-        new Date().toLocaleString("pt-BR", {
-          timeZone: "America/Sao_Paulo",
-        }),
-      );
     };
 
-    atualizarDataHora(); // chama na montagem
+    atualizarOperacao(); // chama na montagem
 
-    const intervalId = setInterval(atualizarDataHora, 300000); // a cada 30s
+    const intervalId = setInterval(atualizarOperacao, 300000); // a cada 5min
 
     return () => clearInterval(intervalId); // limpa ao desmontar
   }, []);
@@ -113,6 +148,25 @@ function OperacaoConteudo() {
         visivel={modalPreveiw}
         v={voucherPreview}
       />
+      <BtnAtualizarStyle
+        $cor={Cor.primaria}
+        onClick={() => {
+          refetchVouchers();
+          refetchTotal();
+          console.log("Foi...");
+        }}
+      >
+        <p
+          style={{
+            fontFamily: "Icone",
+            fontWeight: "bold",
+            fontSize: 40,
+            color: Cor.primariaTxt,
+          }}
+        >
+          refresh
+        </p>
+      </BtnAtualizarStyle>
       <div
         style={{
           width: "100%",
@@ -135,53 +189,7 @@ function OperacaoConteudo() {
       <div
         style={{
           width: "100%",
-          display: "flex",
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "flex-start",
-            alignItems: "center",
-            gap: 15,
-          }}
-        >
-          <div
-            style={{
-              width: 30,
-              height: 30,
-              borderRadius: 8,
-              backgroundColor: Cor.texto2,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <p
-              style={{
-                fontFamily: "Icone",
-                color: Cor.base,
-                fontWeight: "bold",
-                fontSize: 24,
-              }}
-            >
-              next_week
-            </p>
-          </div>
-          <p style={{ color: Cor.texto1, fontSize: 14 }}>Próximas Viagens</p>
-        </div>
-        <p style={{ color: Cor.texto1 }}>
-          Data e Hora: <strong>{dataHora}</strong>
-        </p>
-      </div>
-
-      <div
-        style={{
-          width: "100%",
+          height: "70vh",
           display: "flex",
           flexDirection: "row",
           justifyContent: "space-between",
@@ -194,7 +202,7 @@ function OperacaoConteudo() {
         <div
           style={{
             width: "80%",
-            height: "50vh",
+            height: "100%",
             display: "flex",
             flexDirection: "row",
             flexWrap: "wrap",
@@ -203,7 +211,7 @@ function OperacaoConteudo() {
             gap: 5,
           }}
         >
-          {ordenadaDia.slice(0, 8).map((v: any) => (
+          {ordenadaDia.slice(0, 12).map((v: any) => (
             <BtnProximaViagem
               v={v}
               key={v.id}
@@ -216,44 +224,19 @@ function OperacaoConteudo() {
         <div
           style={{
             width: "20%",
-            height: "50vh",
+            height: "100%",
             display: "flex",
             flexDirection: "column",
-            justifyContent: "space-between",
+            justifyContent: "space-around",
             gap: 5,
           }}
         >
-          <div
-            className="btn-novo-voucher"
-            style={{
-              width: "100%",
-              height: 100,
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center",
-              border: "1px solid" + Cor.primaria + 50,
-              borderRadius: 18,
-              cursor: "pointer",
-            }}
-          >
-            <style>{`
-          .btn-novo-voucher {              
-              background-color: ${Cor.primaria + 10};
-              transition: all 0.1s ease-in-out;
-          }
-          .btn-novo-voucher:hover {
-            background-color: ${Cor.primaria + 30};
-          }
-          .btn-novo-voucher:active{
-              background-color: ${Cor.primaria + 60};
-          }
-         `}</style>
+          <BtnNovoVoucher $cor={Cor.primaria}>
             <p
               style={{
                 fontFamily: "Icone",
                 fontWeight: "bold",
-                fontSize: 48,
+                fontSize: 40,
                 color: Cor.primaria,
               }}
             >
@@ -262,47 +245,45 @@ function OperacaoConteudo() {
             <p
               style={{
                 textAlign: "center",
-                fontSize: 18,
+                fontSize: 16,
                 color: Cor.secundaria,
               }}
             >
               Roteiros Fixos
             </p>
-          </div>
-          <div
-            className="btn-novo-voucher"
-            style={{
-              width: "100%",
-              height: 100,
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center",
-              border: "1px solid" + Cor.primaria + 50,
-              borderRadius: 18,
-              cursor: "pointer",
-            }}
-            onClick={() => {
-              navigate("/novovoucher");
-            }}
-          >
-            <style>{`
-          .btn-novo-voucher {              
-              background-color: ${Cor.primaria + 10};
-              transition: all 0.1s ease-in-out;
-          }
-          .btn-novo-voucher:hover {
-            background-color: ${Cor.primaria + 30};
-          }
-          .btn-novo-voucher:active{
-              background-color: ${Cor.primaria + 60};
-          }
-         `}</style>
+          </BtnNovoVoucher>
+          <BtnNovoVoucher $cor={Cor.primaria}>
             <p
               style={{
                 fontFamily: "Icone",
                 fontWeight: "bold",
-                fontSize: 48,
+                fontSize: 40,
+                color: Cor.primaria,
+              }}
+            >
+              cycle
+            </p>
+            <p
+              style={{
+                textAlign: "center",
+                fontSize: 16,
+                color: Cor.secundaria,
+              }}
+            >
+              Roteiros Turno
+            </p>
+          </BtnNovoVoucher>
+          <BtnNovoVoucher
+            $cor={Cor.primaria}
+            onClick={() => {
+              navigate("/novovoucher");
+            }}
+          >
+            <p
+              style={{
+                fontFamily: "Icone",
+                fontWeight: "bold",
+                fontSize: 40,
                 color: Cor.primaria,
               }}
             >
@@ -311,103 +292,13 @@ function OperacaoConteudo() {
             <p
               style={{
                 textAlign: "center",
-                fontSize: 18,
+                fontSize: 16,
                 color: Cor.secundaria,
               }}
             >
               Novo Voucher
             </p>
-          </div>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              padding: "5px 15px",
-              backgroundColor: Cor.texto2 + 20,
-              borderRadius: 22,
-              gap: 5,
-            }}
-          >
-            <p
-              style={{
-                fontFamily: "Icone",
-                fontWeight: "bold",
-                fontSize: "24px",
-                color: Cor.primaria,
-              }}
-            >
-              search
-            </p>
-            <input
-              type="text"
-              style={{
-                border: "none",
-                backgroundColor: "transparent",
-                width: "100%",
-                outline: "none",
-                color: Cor.texto1,
-              }}
-              placeholder="Filtrar Motorista"
-              // value={busca}
-              // onChange={(e) => setBusca(e.target.value)}
-            />
-            <p
-              style={{
-                fontFamily: "Icone",
-                fontWeight: "bold",
-                fontSize: "24px",
-                color: Cor.primaria,
-                cursor: "pointer",
-              }}
-            >
-              close
-            </p>
-          </div>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              padding: "5px 15px",
-              backgroundColor: Cor.texto2 + 20,
-              borderRadius: 22,
-              gap: 5,
-            }}
-          >
-            <p
-              style={{
-                fontFamily: "Icone",
-                fontWeight: "bold",
-                fontSize: "24px",
-                color: Cor.primaria,
-              }}
-            >
-              search
-            </p>
-            <input
-              type="text"
-              style={{
-                border: "none",
-                backgroundColor: "transparent",
-                width: "100%",
-                outline: "none",
-                color: Cor.texto1,
-              }}
-              placeholder="Filtrar Empresa"
-              // value={busca}
-              // onChange={(e) => setBusca(e.target.value)}
-            />
-            <p
-              style={{
-                fontFamily: "Icone",
-                fontWeight: "bold",
-                fontSize: "24px",
-                color: Cor.primaria,
-                cursor: "pointer",
-              }}
-            >
-              close
-            </p>
-          </div>
+          </BtnNovoVoucher>
         </div>
       </div>
       <div
@@ -431,7 +322,7 @@ function OperacaoConteudo() {
           }}
         >
           {" "}
-          <p>Área de Consultas</p>{" "}
+          <p>Próximos Vouchers</p>{" "}
         </div>
         {ordenada.map((v: any) => (
           <ListaProximasViagens

@@ -2,17 +2,23 @@ import { jwtDecode } from "jwt-decode";
 import BaseTelas from "../../../componentes/baseTelas";
 import EditPerfil from "../../../componentes/editPerfil";
 import { useTema } from "../../../hooks/temaContext";
-import { useListaClientes } from "../../../hooks/useEmpresaCliente";
+import {
+  useEmpresaCliente,
+  useListaClientes,
+} from "../../../hooks/useEmpresaCliente";
 import { useEffect, useState } from "react";
 import styled from "styled-components";
-import { useUnidadeCliente } from "../../../hooks/useUnidadesClientes";
+import {
+  useUnidadeCliente,
+  useUnidadeId,
+} from "../../../hooks/useUnidadesClientes";
 import { useSolicitante } from "../../../hooks/useSolicitantes";
 import { useRotaId, useRotasExtas } from "../../../hooks/useRotasExtras";
-import { useMotorista } from "../../../hooks/useMotorista";
+import { useMotorista, useMotoristaId } from "../../../hooks/useMotorista";
 import { usePassageiros } from "../../../hooks/usePassageiros";
 import { validarVoucher } from "../../../hooks/validarVoucher";
 import { useAdminLogado } from "../../../hooks/AdminLogado";
-import { useCarros } from "../../../hooks/useCarros";
+import { useCarroId, useCarros } from "../../../hooks/useCarros";
 import { useCreateVoucher } from "../../../hooks/useVouchers";
 import { useNavigate } from "react-router-dom";
 
@@ -118,7 +124,8 @@ function NovoVoucherConteudo() {
       valorHoraParada: tipoCarro?.valorHoraParada || 0,
       valorHoraParadaRepasse: tipoCarro?.valorHoraParadaRepasse || 0,
       valorDeslocamento: tipoCarro?.valorDeslocamento * qntDeslocamento,
-      valorDeslocamentoRepasse: tipoCarro?.valorDeslocamentoRepasse || 0,
+      valorDeslocamentoRepasse:
+        tipoCarro?.valorDeslocamentoRepasse * qntDeslocamento,
       valorPedagio: tipoCarro?.valorPedagio?.valor || 0,
       valorEstacionamento: 0,
       passageiros: passageiros,
@@ -562,7 +569,7 @@ function DetalhesDoVoucher({
   setMotoristaSaida,
   setDataHoraSaida,
   setQntDeslocamento,
-  qntDeslocamento
+  qntDeslocamento,
 }: {
   tipo: any;
   empresaCliente: any;
@@ -576,7 +583,7 @@ function DetalhesDoVoucher({
   setMotoristaSaida: any;
   setDataHoraSaida: any;
   setQntDeslocamento: any;
-  qntDeslocamento: number
+  qntDeslocamento: number;
 }) {
   const Cor = useTema().Cor;
 
@@ -1739,11 +1746,22 @@ function BaseModalConfirmacao({
 function ModalConfirmacao({ v, cxModal }: { v: any; cxModal: boolean }) {
   const Cor = useTema().Cor;
 
+  console.log(v);
+
+  const { empresaCliente } = useEmpresaCliente(v?.empresaClienteId);
+  const { motorista } = useMotoristaId(v?.motoristaId);
+  const { unidade } = useUnidadeId(v?.unidadeClienteId);
+  const { carro } = useCarroId(v?.carroId);
+
+  console.log("Empresa: ", empresaCliente);
+  console.log("Motorista: ", motorista);
+  console.log("Unidade: ", unidade);
+  console.log("Carro: ", carro);
+
   return (
     <div
       style={{
         width: "40%",
-        height: "75%",
         scale: cxModal ? 1 : 0.6,
         backgroundColor: Cor.base2,
         borderRadius: 22,
@@ -1769,10 +1787,17 @@ function ModalConfirmacao({ v, cxModal }: { v: any; cxModal: boolean }) {
         }}
       >
         <div style={{ display: "flex", flexDirection: "column" }}>
-          <p
-            style={{ fontSize: 14, fontWeight: "bold", color: Cor.primariaTxt }}
-          >
-            {v.tipoCorrida} - {v.dataHoraProgramado}
+          <p style={{ fontSize: 18, color: Cor.primariaTxt }}>
+            <strong>{v.tipoCorrida} -</strong>{" "}
+            {new Date(v?.dataHoraProgramado).toLocaleString("pt-BR", {
+              timeZone: "UTC",
+              weekday: "long",
+              hour: "2-digit",
+              minute: "2-digit",
+              day: "2-digit",
+              month: "2-digit",
+              year: "2-digit",
+            })}
           </p>
           <p style={{ fontSize: 12, color: Cor.texto2 }}>
             Confirme todas as informações antes de lançar.
@@ -1792,18 +1817,260 @@ function ModalConfirmacao({ v, cxModal }: { v: any; cxModal: boolean }) {
         <div
           style={{
             width: "100%",
-            height: "20%",
-            backgroundColor: "#FF9000",
+            height: "15%",
             display: "flex",
-            flexDirection: "column",
-            padding: 10,
+            flexDirection: "row",
+            alignItems: "center",
+            padding: 5,
+            gap: 5,
+          }}
+        >
+          <div
+            style={{
+              width: "50%",
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              padding: 5,
+              gap: 10,
+              backgroundColor: Cor.texto2 + 10,
+              borderRadius: 12,
+            }}
+          >
+            <img
+              src={
+                empresaCliente?.fotoLogoCliente ||
+                "https://iyqleanlhzcnndzuugkg.supabase.co/storage/v1/object/public/neofrotabkt/img_perfis/default.png"
+              }
+              style={{
+                height: 50,
+                aspectRatio: 1,
+                backgroundColor: Cor.texto1,
+                borderRadius: 10,
+              }}
+            />
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <p style={{ fontWeight: "bold", color: Cor.primariaTxt }}>
+                {unidade?.nome}
+              </p>
+              <p style={{ color: Cor.texto2, fontSize: 14 }}>
+                {empresaCliente?.rSocial}
+              </p>
+            </div>
+          </div>
+          <div
+            style={{
+              width: "50%",
+              height: "100%",
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 10,
+              padding: 5,
+              backgroundColor: Cor.texto2 + 30,
+              borderRadius: 12,
+            }}
+          >
+            <img
+              src={
+                motorista?.fotoMotorista ||
+                "https://iyqleanlhzcnndzuugkg.supabase.co/storage/v1/object/public/neofrotabkt/img_perfis/default.png"
+              }
+              style={{
+                height: 50,
+                aspectRatio: 1,
+                backgroundColor: Cor.texto1,
+                borderRadius: 10,
+                objectFit: "cover",
+              }}
+            />
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <p style={{ fontWeight: "bold", color: Cor.primariaTxt }}>
+                {motorista?.nome}
+              </p>
+              <p style={{ color: Cor.texto2, fontSize: 14 }}>
+                {carro?.placa} - {carro?.marca} {carro?.modelo}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div
+          style={{
+            width: "100%",
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            padding: 5,
+            gap: 5,
             borderRadius: 12,
           }}
         >
-          <p>{v.adminUsuarioId}</p>
-          <p>{v.carroId || "Sem Carro"}</p>
-          <p>{v.dataHoraProgramado}</p>
-          <p>{v.motoristaId}</p>
+          <div
+            style={{
+              width: "50%",
+              backgroundColor: Cor.texto2 + 10,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-start",
+              padding: 10,
+              borderRadius: 12,
+              gap: 5,
+            }}
+          >
+            <p
+              style={{ fontSize: 12, fontWeight: "bold", color: Cor.primaria }}
+            >
+              Cobrança:
+            </p>
+            <p style={{ fontSize: 12, color: Cor.texto2 }}>
+              Valor:{" "}
+              <strong style={{ fontSize: 16, color: Cor.primariaTxt }}>
+                {Intl.NumberFormat("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
+                }).format(Number(v?.valorViagem))}
+              </strong>
+            </p>
+            <p style={{ fontSize: 12, color: Cor.texto2 }}>
+              Deslocamento:{" "}
+              <strong style={{ fontSize: 16, color: Cor.primariaTxt }}>
+                {Intl.NumberFormat("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
+                }).format(Number(v?.valorDeslocamento))}
+              </strong>
+            </p>
+            <p style={{ fontSize: 12, color: Cor.texto2 }}>
+              Pedágio:{" "}
+              <strong style={{ fontSize: 16, color: Cor.primariaTxt }}>
+                {Intl.NumberFormat("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
+                }).format(Number(v?.valorPedagio))}
+              </strong>
+            </p>
+          </div>
+          <div
+            style={{
+              width: "50%",
+              backgroundColor: Cor.texto2 + 30,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-start",
+              padding: 10,
+              borderRadius: 12,
+              gap: 5,
+            }}
+          >
+            <p
+              style={{ fontSize: 12, fontWeight: "bold", color: Cor.primaria }}
+            >
+              Repasse:
+            </p>
+            <p style={{ fontSize: 12, color: Cor.texto2 }}>
+              Valor:{" "}
+              <strong style={{ fontSize: 16, color: Cor.primariaTxt }}>
+                {Intl.NumberFormat("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
+                }).format(Number(v?.valorViagemRepasse))}
+              </strong>
+            </p>
+            <p style={{ fontSize: 12, color: Cor.texto2 }}>
+              Deslocamento:{" "}
+              <strong style={{ fontSize: 16, color: Cor.primariaTxt }}>
+                {Intl.NumberFormat("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
+                }).format(Number(v?.valorDeslocamentoRepasse))}
+              </strong>
+            </p>
+            <p style={{ fontSize: 12, color: Cor.texto2 }}>
+              Pedágio:{" "}
+              <strong style={{ fontSize: 16, color: Cor.primariaTxt }}>
+                {Intl.NumberFormat("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
+                }).format(Number(v?.valorPedagio))}
+              </strong>
+            </p>
+          </div>
+        </div>
+        <div
+          style={{
+            width: "100%",
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            padding: 5,
+            gap: 5,
+            borderRadius: 12,
+          }}
+        >
+          <div
+            style={{
+              width: "50%",
+              backgroundColor: Cor.texto2 + 10,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-start",
+              padding: 10,
+              borderRadius: 12,
+              gap: 5,
+            }}
+          >
+            <p
+              style={{ fontSize: 12, fontWeight: "bold", color: Cor.primaria }}
+            >
+              Total:
+            </p>
+            <div style={{ display: "flex", flexDirection: "row",  gap: 10, alignItems:"center"}}>
+              <p style={{ fontSize: 12, color: Cor.texto2 }}>Valor: </p>
+              <strong style={{ fontSize: 18, color: Cor.secundaria }}>
+                {Intl.NumberFormat("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
+                }).format(
+                  Number(
+                    v?.valorViagem + v?.valorDeslocamento + v?.valorPedagio,
+                  ),
+                )}
+              </strong>
+            </div>
+          </div>
+          <div
+            style={{
+              width: "50%",
+              backgroundColor: Cor.texto2 + 30,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-start",
+              padding: 10,
+              borderRadius: 12,
+              gap: 5,
+            }}
+          >
+            <p
+              style={{ fontSize: 12, fontWeight: "bold", color: Cor.primaria }}
+            >
+              Total:
+            </p>
+            <p style={{ fontSize: 12, color: Cor.texto2 }}>
+              Valor:{" "}
+              <strong style={{ fontSize: 16, color: Cor.secundaria }}>
+                {Intl.NumberFormat("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
+                }).format(
+                  Number(
+                    v?.valorViagemRepasse +
+                      v?.valorDeslocamentoRepasse +
+                      v?.valorPedagio,
+                  ),
+                )}
+              </strong>
+            </p>
+          </div>
         </div>
       </div>
     </div>
