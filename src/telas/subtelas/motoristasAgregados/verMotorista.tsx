@@ -8,6 +8,11 @@ import icativo from "../../../assets/animations/icativo.json";
 import icinativo from "../../../assets/animations/icinativo.json";
 import CardDetalhesVeiculo from "./btnComponentes/cardDetalhesVeículo";
 import { useState } from "react";
+import {
+  useMotoristaId,
+  useUpdateMotorista,
+} from "../../../hooks/useMotorista";
+import CircularProgress from "@mui/material/CircularProgress";
 
 function VerMotorista() {
   return BaseTelas({
@@ -144,7 +149,7 @@ function VerMotoristaConteudo() {
         {motorista?.tipoMotorista === "Agregado" ? (
           <ListaMotoristasFuncionarios motorista={motorista} />
         ) : null}
-        <ExcluirMotorista />
+        <ExcluirMotorista motorista={motorista} />
       </div>
     </>
   );
@@ -153,7 +158,7 @@ function VerMotoristaConteudo() {
 function Cabecalho() {
   const Cor = useTema().Cor;
   const { motoristaId } = useParams();
-  
+
   const navigate = useNavigate();
 
   const { data } = useQuery(GET_MOTORISTA_ID, {
@@ -253,6 +258,7 @@ function Cabecalho() {
           width: "80%",
           display: "flex",
           flexDirection: "row",
+          justifyContent: "space-between",
           gap: 10,
         }}
       >
@@ -266,8 +272,6 @@ function Cabecalho() {
 function DetalhesMotorista({ motorista }: { motorista: any }) {
   const Cor = useTema().Cor;
 
-  const [tipoMotorista, setTipoMotorista] = useState(motorista?.tipoMotorista);
-
   return (
     <div
       style={{
@@ -275,6 +279,7 @@ function DetalhesMotorista({ motorista }: { motorista: any }) {
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
+        // border: "2px solid red",
       }}
     >
       <div
@@ -366,7 +371,13 @@ function DetalhesMotorista({ motorista }: { motorista: any }) {
           }}
         >
           <p style={{ color: Cor.secundaria, fontSize: 11 }}>Validade CNH</p>
-          <p style={{ color: Cor.texto1, fontSize: 14 }}>{motorista?.vCnh}</p>
+          <p style={{ color: Cor.texto1, fontSize: 14 }}>
+            {new Date(motorista?.vCnh).toLocaleDateString("pt-BR", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+            })}
+          </p>
           <div
             style={{
               width: "100%",
@@ -415,30 +426,37 @@ function DetalhesMotorista({ motorista }: { motorista: any }) {
           justifyContent: "space-between",
         }}
       >
-        <p style={{ color: Cor.secundaria, fontSize: 11 }}>Tipo de Motorista</p>
-        <select
+        <p style={{ color: Cor.secundaria, fontSize: 11 }}>Tipo Motorista</p>
+        <div
           style={{
             width: "75%",
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
             appearance: "none",
             outline: "none",
             border: "none",
-            padding: 10,
+            padding: 5,
             backgroundColor:
-              tipoMotorista !== "Funcionario"
-                ? Cor.primaria + 20
-                : Cor.secundaria + 20,
+              motorista?.tipoMotorista === "Excluido"
+                ? Cor.atencao + 20
+                : motorista?.tipoMotorista !== "Funcionario"
+                  ? Cor.primaria + 20
+                  : Cor.secundaria + 20,
             borderRadius: 22,
             color:
-              tipoMotorista !== "Funcionario" ? Cor.primaria : Cor.secundaria,
+              motorista?.tipoMotorista === "Excluido"
+                ? Cor.atencao
+                : motorista?.tipoMotorista !== "Funcionario"
+                  ? Cor.primaria
+                  : Cor.secundaria,
             fontWeight: "bold",
-            fontSize: 16,
+            fontSize: 20,
           }}
-          onChange={(e) => setTipoMotorista(e.target.value)}
-          value={tipoMotorista}
         >
-          <option value="Agregado">Agregado</option>
-          <option value="Funcionario">Funcionário</option>
-        </select>
+          <p>{motorista?.tipoMotorista}</p>
+        </div>
       </div>
     </div>
   );
@@ -758,7 +776,46 @@ function ListaMotoristasFuncionarios({ motorista }: { motorista: any }) {
   );
 }
 
-function ExcluirMotorista() {
+function ExcluirMotorista({ motorista }: { motorista: any }) {
+  const { motoristaId } = useParams();
+
+  const statusMot = motorista?.statusMotorista;
+
+  const { refetch } = useMotoristaId(String(motoristaId));
+
+  const { updateMotorista, loading } = useUpdateMotorista();
+
+  async function editarStatusMotorista() {
+    await updateMotorista({
+      variables: {
+        updateMotoristaId: motoristaId,
+        input: {
+          statusMotorista: !statusMot,
+        },
+      },
+    });
+    refetch();
+  }
+
+  const [statusDeletar, setStatusDeletar] = useState<boolean>(false);
+
+  async function deletarMotoristaFunc() {
+    setStatusDeletar(true);
+    await updateMotorista({
+      variables: {
+        updateMotoristaId: motoristaId,
+        input: {
+          tipoMotorista: "Excluido",
+          statusMotorista: false,
+          email: `(deletado)${motorista?.email}`,
+        },
+      },
+    });
+    alert("Motorista excluído com sucesso!");
+    setStatusDeletar(false);
+    refetch();
+  }
+
   const Cor = useTema().Cor;
   return (
     <div
@@ -840,10 +897,27 @@ function ExcluirMotorista() {
       >
         <button
           style={{
-            backgroundColor: Cor.primaria + 30,
-            color: Cor.primaria,
+            backgroundColor:
+              motorista?.tipoMotorista === "Excluido"
+                ? Cor.texto2 + 80
+                : statusMot
+                  ? Cor.primaria + 30
+                  : Cor.atencao + 30,
+            color:
+              motorista?.tipoMotorista === "Excluido"
+                ? Cor.texto1 + 90
+                : statusMot
+                  ? Cor.primaria
+                  : Cor.atencao,
+            border:
+              motorista?.tipoMotorista === "Excluido"
+                ? "none"
+                : statusMot
+                  ? "none"
+                  : `2px solid ${Cor.atencao}`,
+            boxSizing: "border-box",
             width: "50%",
-            border: "none",
+            height: 50,
             borderRadius: 14,
             padding: "10px 0px",
             display: "flex",
@@ -851,50 +925,119 @@ function ExcluirMotorista() {
             alignItems: "center",
             justifyContent: "center",
             gap: 10,
-            cursor: "pointer",
+            pointerEvents:
+              motorista?.tipoMotorista === "Excluido" ? "none" : "auto",
+            cursor:
+              motorista?.tipoMotorista === "Excluido" ? "unset" : "pointer",
+          }}
+          onClick={() => {
+            editarStatusMotorista();
           }}
         >
-          <p
-            style={{
-              fontFamily: "Icone",
-              color: Cor.primaria,
-              fontSize: 24,
-              fontWeight: "bold",
-            }}
-          >
-            block
+          {loading ? (
+            <CircularProgress size={20} color="inherit" />
+          ) : (
+            <p
+              style={{
+                fontFamily: "Icone",
+                color:
+                  motorista?.tipoMotorista === "Excluido"
+                    ? Cor.texto1 + 80
+                    : statusMot
+                      ? Cor.primaria
+                      : Cor.atencao,
+                fontSize: 24,
+                fontWeight: "bold",
+              }}
+            >
+              block
+            </p>
+          )}
+          <p style={{ fontWeight: "bold" }}>
+            {statusMot ? "Bloquear" : "BLOQUEADO"}
           </p>
-          <p style={{ fontWeight: "bold" }}>Bloquear</p>
         </button>
-        <button
-          style={{
-            backgroundColor: Cor.atencao + 30,
-            width: "50%",
-            color: Cor.atencao,
-            border: "none",
-            borderRadius: 14,
-            padding: "10px 0px",
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 10,
-            cursor: "pointer",
-          }}
-          onClick={() => {}}
-        >
-          <p
+        {motorista?.tipoMotorista === "Excluido" ? (
+          <button
             style={{
-              fontFamily: "Icone",
+              backgroundColor: Cor.atencao + 30,
+              width: "50%",
+              height: 50,
               color: Cor.atencao,
-              fontSize: 24,
-              fontWeight: "bold",
+              border: "none",
+              borderRadius: 14,
+              padding: "10px 0px",
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 10,
+              cursor: "pointer",
+            }}
+            onClick={() => {
+              alert("Esse motorista não pode ser excluido definitivamente!");
             }}
           >
-            delete
-          </p>
-          <p style={{ fontWeight: "bold" }}>Excluir</p>
-        </button>
+            {statusDeletar ? (
+              <CircularProgress size={20} color="inherit" />
+            ) : (
+              <p
+                style={{
+                  fontFamily: "Icone",
+                  color: Cor.atencao,
+                  fontSize: 24,
+                  fontWeight: "bold",
+                }}
+              >
+                delete
+              </p>
+            )}
+
+            <p style={{ fontWeight: "bold" }}>
+              {statusDeletar ? "Deletando" : " Excluir Definitivo"}
+            </p>
+          </button>
+        ) : (
+          <button
+            style={{
+              backgroundColor: Cor.atencao + 30,
+              width: "50%",
+              height: 50,
+              color: Cor.atencao,
+              border: "none",
+              borderRadius: 14,
+              padding: "10px 0px",
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 10,
+              cursor: "pointer",
+            }}
+            onClick={() => {
+              deletarMotoristaFunc();
+            }}
+          >
+            {statusDeletar ? (
+              <CircularProgress size={20} color="inherit" />
+            ) : (
+              <p
+                style={{
+                  fontFamily: "Icone",
+                  color: Cor.atencao,
+                  fontSize: 24,
+                  fontWeight: "bold",
+                }}
+              >
+                delete
+              </p>
+            )}
+
+            <p style={{ fontWeight: "bold" }}>
+              {statusDeletar ? "Deletando" : " Excluir "}
+            </p>
+          </button>
+        )}
       </div>
     </div>
   );

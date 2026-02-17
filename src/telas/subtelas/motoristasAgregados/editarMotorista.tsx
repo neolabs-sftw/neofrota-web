@@ -27,8 +27,6 @@ function EditarMotoristaConteudo() {
 
   const navigate = useNavigate();
 
-  console.log("Motorista para edição:", motorista);
-
   const token = localStorage.getItem("token");
 
   interface JwtPayload {
@@ -44,6 +42,7 @@ function EditarMotoristaConteudo() {
   const [cpf, setCpf] = useState(motorista ? motorista.cpf : "");
   const [cnh, setCnh] = useState(motorista ? motorista.cnh : "");
   const [vCnh, setV_cnh] = useState(motorista ? motorista.vCnh : "");
+  const [senha, setSenha] = useState(motorista ? motorista.senha : "");
   const [tipoMotorista, setTipo_motorista] = useState(
     motorista ? motorista.tipoMotorista : "",
   );
@@ -62,12 +61,15 @@ function EditarMotoristaConteudo() {
       setCpf(motorista.cpf);
       setCnh(motorista.cnh);
       setV_cnh(motorista.vCnh);
+      setSenha(motorista.senha)
       setTipo_motorista(motorista.tipoMotorista);
       setImgPreview(motorista.fotoMotorista);
     }
   }, [motorista]);
 
-  const { updateMotorista, loading } = useUpdateMotorista();
+  const { updateMotorista, loading, error } = useUpdateMotorista();
+
+  const { refetch } = useMotoristaId(String(motoristaId));
 
   const carregarImagem = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -101,7 +103,8 @@ function EditarMotoristaConteudo() {
     }
 
     try {
-      let fotoUrlFinal = null;
+      let fotoUrlFinal = motorista?.fotoMotorista || null;
+
       if (fotoMotorista) {
         setStatus("Fazendo upload da imagem...");
 
@@ -125,8 +128,10 @@ function EditarMotoristaConteudo() {
           .getPublicUrl(uploadData.path);
 
         fotoUrlFinal = urlData.publicUrl;
-      } else {
+      } else if (!imgPreview) {
         fotoUrlFinal = null;
+        setStatus("Removendo foto...");
+      } else {
         setStatus("Registo sem foto...");
       }
       setStatus("Enviando dados para o servidor...");
@@ -136,6 +141,7 @@ function EditarMotoristaConteudo() {
           input: {
             nome,
             email,
+            senha,
             fotoMotorista: fotoUrlFinal,
             cpf,
             cnh,
@@ -147,8 +153,8 @@ function EditarMotoristaConteudo() {
       setStatus("Motorista atualizado com sucesso!");
       setTimeout(() => {
         setStatusCx(false);
+        refetch();
         navigate("/motorista/" + motoristaId);
-        window.location.reload();
       }, 2000);
     } catch (err) {
       console.error("Erro ao atualizar motorista:", err);
@@ -207,11 +213,11 @@ function EditarMotoristaConteudo() {
               <CircularProgress sx={{ color: Cor.primaria }} thickness={5} />
               <p style={{ color: Cor.texto1 }}>Salvando...</p>
               {status && <p style={{ color: Cor.texto1 }}>{status}</p>}
-              {/* {error && (
+              {error && (
                 <p style={{ color: "red" }}>
                   Erro na mutation: {error.message}
                 </p>
-              )} */}
+              )}
             </div>
           </div>
         )}
@@ -315,6 +321,15 @@ function EditarMotoristaConteudo() {
                   largura="100%"
                 />
                 <TextoEntrada
+                  placeholder="Senha"
+                  onChange={(e: any) =>
+                    setSenha(e.target.value)
+                  }
+                  value={senha}
+                  type="text"
+                  largura="100%"
+                />
+                <TextoEntrada
                   placeholder="CPF"
                   onChange={(e: { target: { value: any } }) => {
                     setCpf(formatCPF(e.target.value));
@@ -345,10 +360,8 @@ function EditarMotoristaConteudo() {
                     <p style={{ color: Cor.texto1, fontSize: 12 }}>Válidade</p>
                     <TextoEntrada
                       placeholder="Validade CNH"
-                      onChange={(e: { target: { value: any } }) =>
-                        setV_cnh(e.target.value)
-                      }
-                      value={vCnh}
+                      onChange={(e: any) => setV_cnh(e.target.value)}
+                      value={vCnh ? vCnh.slice(0, 10) : ""}
                       type="date"
                       largura="100%"
                     />
@@ -379,6 +392,7 @@ function EditarMotoristaConteudo() {
                       fontSize: 12,
                     }}
                     onChange={(e) => setTipo_motorista(e.target.value)}
+                    value={tipoMotorista}
                   >
                     <option value="">Escolha</option>
                     <option value="Agregado">Agredado</option>
@@ -497,7 +511,6 @@ function EditarMotoristaConteudo() {
                 }}
               >
                 {loading ? "Salvando..." : "Salvar"}
-                
               </button>
             </div>
           </div>

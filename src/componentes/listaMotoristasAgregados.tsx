@@ -46,11 +46,20 @@ function ListaMotoristasAgregados() {
     variables: { motoristasOperadoraId: operadoraId },
   });
 
-  const listaMotoristas = data?.motoristasOperadora;
+  const listaMotoristasTotal = data?.motoristasOperadora;
+
+  const listaMotoristas = listaMotoristasTotal?.filter((motorista:any)=> motorista?.tipoMotorista !== "Excluido")
 
   const listaMotoristasFiltrada = listaMotoristas?.filter((motorista: any) => {
-    if (!busca) return listaMotoristas;
-    return motorista.nome.toLowerCase().includes(busca.toLowerCase());
+
+    const isAtivo = motorista.tipoMorista !== "Excluido";
+
+    console.log(motorista.tipoMotorista)
+
+    if (!busca) return isAtivo;
+    return (
+      isAtivo && motorista.nome.toLowerCase().includes(busca.toLowerCase())
+    );
   });
 
   return (

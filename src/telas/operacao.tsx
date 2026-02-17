@@ -79,9 +79,10 @@ function OperacaoConteudo() {
 
   const { listaVouchers, refetch: refetchTotal } = useVouchers();
 
-  const vouchersAbertos = listaVouchers.filter((v: any) => {
-    return v.status == "Aberto";
-  });
+  const vouchersAbertos = listaVouchers
+  // .filter((v: any) => {
+  //   return v.status == "Aberto"; 
+  // });
 
   const ordenada = [...vouchersAbertos].sort(
     (a, b) =>
