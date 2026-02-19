@@ -11,7 +11,7 @@ import {
 import { useParams } from "react-router-dom";
 import { useAdminLogado } from "../../../../hooks/AdminLogado";
 import CircularProgress from "@mui/material/CircularProgress";
-import { useListaRelacao } from "../../../../hooks/useRelacaoMotoristas";
+import { useListaRelacaoByFunc } from "../../../../hooks/useRelacaoMotoristas";
 
 interface BtnOptCarrosProps {
   $cor: string;
@@ -93,10 +93,9 @@ function ModalCarros({ open, setOpen }: { open: boolean; setOpen: any }) {
   const [placaBusca, setPlacaBusca] = useState<string>("");
   const [addOpen, setAddOpen] = useState<boolean>(false);
   const Cor = useTema().Cor;
-  console.log(placaBusca);
   const [proprietario, setProprietario] = useState<String>("");
 
-  const { listaRelacao, loading } = useListaRelacao(String(motoristaId));
+  const { listaRelacao, loading } = useListaRelacaoByFunc(String(motoristaId));
 
   const { listaCarrosAgregado, refetch } = useListaCarrosAgregado(
     String(proprietario),
@@ -168,7 +167,7 @@ function ModalCarros({ open, setOpen }: { open: boolean; setOpen: any }) {
             largura="80%"
             placeholder="Buscar por Placa"
             type="Text"
-            value=""
+            value={placaBusca}
             onChange={(e) => setPlacaBusca(e.target.value)}
           />
 
@@ -309,7 +308,7 @@ function ModalAddNovoCarro({
     operadoraId: operadoraId ? Number(operadoraId) : null,
   };
 
-  const { refetch: RefreshLista } = useListaRelacao(String(proprietario));
+  const { refetch: RefreshLista } = useListaRelacaoByFunc(String(proprietario));
 
   async function CriarNovoCarro() {
     await criar(NovoCarro as any);
@@ -633,19 +632,28 @@ function LinhaCarro({ c, setOpen }: { c: any; setOpen: any }) {
   const { motoristaId } = useParams();
   const Cor = useTema().Cor;
 
-  const linkImg = `https://iyqleanlhzcnndzuugkg.supabase.co/storage/v1/object/public/neofrotabkt/carros/${c.marca.toLowerCase()}/${c.modelo.toLowerCase()}/${c.cor.toLowerCase()}.png`;
+  const normalize = (text: string) => {
+    if (!text) return "";
+    return text
+      .normalize("NFD") // separa acento
+      .replace(/[\u0300-\u036f]/g, "") // remove acento
+      .toLowerCase()
+      .replace(/\s+/g, "_"); // troca espaços por _
+  };
+
+  const linkImg = c
+    ? `https://iyqleanlhzcnndzuugkg.supabase.co/storage/v1/object/public/neofrotabkt/carros/${normalize(c.marca)}/${normalize(c.modelo)}/${normalize(c.cor)}.png`
+    : "";
 
   const { vincularMotorista } = useDefinirMotorista();
 
-   const { refetch: refetchCarroAtrelado } = useCarroAtrelado(
+  const { refetch: refetchCarroAtrelado } = useCarroAtrelado(
     String(motoristaId),
   );
 
-
   async function vincularMotoristafunc() {
     await vincularMotorista(c.id, Number(motoristaId));
-    console.log(c.id, Number(motoristaId));
-    refetchCarroAtrelado()
+    refetchCarroAtrelado();
     setOpen(false);
   }
 

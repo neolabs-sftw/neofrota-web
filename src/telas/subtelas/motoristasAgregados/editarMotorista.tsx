@@ -61,7 +61,7 @@ function EditarMotoristaConteudo() {
       setCpf(motorista.cpf);
       setCnh(motorista.cnh);
       setV_cnh(motorista.vCnh);
-      setSenha(motorista.senha)
+      setSenha(motorista.senha);
       setTipo_motorista(motorista.tipoMotorista);
       setImgPreview(motorista.fotoMotorista);
     }
@@ -322,9 +322,7 @@ function EditarMotoristaConteudo() {
                 />
                 <TextoEntrada
                   placeholder="Senha"
-                  onChange={(e: any) =>
-                    setSenha(e.target.value)
-                  }
+                  onChange={(e: any) => setSenha(e.target.value)}
                   value={senha}
                   type="text"
                   largura="100%"
@@ -357,7 +355,6 @@ function EditarMotoristaConteudo() {
                       gap: 5,
                     }}
                   >
-                    <p style={{ color: Cor.texto1, fontSize: 12 }}>Válidade</p>
                     <TextoEntrada
                       placeholder="Validade CNH"
                       onChange={(e: any) => setV_cnh(e.target.value)}
@@ -538,13 +535,14 @@ function TextoEntrada({
     <div
       style={{
         display: "flex",
-        flexDirection: "row",
+        flexDirection: "column",
         width: largura,
         backgroundColor: Cor.texto2 + 20,
         padding: 10,
         borderRadius: 22,
       }}
     >
+      <p style={{ fontSize: 11, color: Cor.texto2 }}>{placeholder}</p>
       <input
         type={type}
         placeholder={placeholder}

@@ -52,6 +52,10 @@ const GET_MOTORISTA = gql`
       cpf
       cnh
       vCnh
+      operadoraId{
+        id
+        nome
+      }
       statusMotorista
       tipoMotorista
       dataCriacao

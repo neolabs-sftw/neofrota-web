@@ -1,4 +1,4 @@
-import { gql, useMutation, useQuery } from "@apollo/client";
+import { gql, useMutation } from "@apollo/client";
 import BaseTelas from "../../../componentes/baseTelas";
 import EditPerfil from "../../../componentes/editPerfil";
 import { useTema } from "../../../hooks/temaContext";
@@ -13,6 +13,12 @@ import {
   useUpdateMotorista,
 } from "../../../hooks/useMotorista";
 import CircularProgress from "@mui/material/CircularProgress";
+import {
+  useDeleteRelacao,
+  useListaRelacaoByAgrd,
+} from "../../../hooks/useRelacaoMotoristas";
+import { useCarroAtrelado } from "../../../hooks/useCarros";
+import styled from "styled-components";
 
 function VerMotorista() {
   return BaseTelas({
@@ -27,29 +33,6 @@ function VerMotorista() {
 
 export default VerMotorista;
 
-const GET_MOTORISTA_ID = gql`
-  query Motorista($motoristaId: ID!) {
-    motorista(id: $motoristaId) {
-      id
-      nome
-      email
-      senha
-      fotoMotorista
-      cpf
-      cnh
-      vCnh
-      statusMotorista
-      tipoMotorista
-      dataCriacao
-      statusCnh
-      operadoraId {
-        id
-        nome
-      }
-    }
-  }
-`;
-
 const CREATE_RELACAO = gql`
   mutation CreateRelacaoAgrdFunc($input: RelacaoAgrdFuncInput!) {
     createRelacaoAgrdFunc(input: $input) {
@@ -58,32 +41,12 @@ const CREATE_RELACAO = gql`
   }
 `;
 
-const GET_LISTA_FUNCIONARIOS = gql`
-  query ListaFuncionariosAgregadoId($listaFuncionariosAgregadoId: ID!) {
-    listaFuncionariosAgregadoId(id: $listaFuncionariosAgregadoId) {
-      id
-      motoristaComoFuncionario {
-        id
-        nome
-        statusCnh
-        email
-      }
-    }
-  }
-`;
-
 function VerMotoristaConteudo() {
   const navigate = useNavigate();
 
-  const Cor = useTema().Cor;
+  const { Cor } = useTema();
 
-  const { motoristaId } = useParams();
-
-  const { data } = useQuery(GET_MOTORISTA_ID, {
-    variables: { motoristaId: motoristaId },
-  });
-
-  const motorista = data?.motorista;
+  const { motorista } = useMotoristaId(useParams().motoristaId);
 
   return (
     <>
@@ -145,7 +108,7 @@ function VerMotoristaConteudo() {
             }}
           />
         </div>
-        <Cabecalho />
+        <Cabecalho motorista={motorista} />
         {motorista?.tipoMotorista === "Agregado" ? (
           <ListaMotoristasFuncionarios motorista={motorista} />
         ) : null}
@@ -155,17 +118,10 @@ function VerMotoristaConteudo() {
   );
 }
 
-function Cabecalho() {
-  const Cor = useTema().Cor;
-  const { motoristaId } = useParams();
+function Cabecalho({ motorista }: { motorista: any }) {
+  const { Cor } = useTema();
 
   const navigate = useNavigate();
-
-  const { data } = useQuery(GET_MOTORISTA_ID, {
-    variables: { motoristaId: motoristaId },
-  });
-
-  const motorista = data?.motorista;
 
   const FALLBACK_IMAGE_URL =
     "https://iyqleanlhzcnndzuugkg.supabase.co/storage/v1/object/public/neofrotabkt/foto_perfil_motorista/default.png";
@@ -246,7 +202,7 @@ function Cabecalho() {
             color: Cor.base,
             cursor: "pointer",
           }}
-          onClick={() => navigate(`/editarmotorista/${motoristaId}`)}
+          onClick={() => navigate(`/editarmotorista/${motorista?.id}`)}
         >
           Editar Informações
         </button>
@@ -470,14 +426,7 @@ function ListaMotoristasFuncionarios({ motorista }: { motorista: any }) {
   const agregadoID = motorista?.id;
   const [funcionarioID, setFuncionarioID] = useState("");
 
-  const navigate = useNavigate();
-
-  const { data } = useQuery(GET_LISTA_FUNCIONARIOS, {
-    variables: { listaFuncionariosAgregadoId: motorista?.id },
-    skip: !motorista?.id,
-  });
-
-  const funcionarios = data?.listaFuncionariosAgregadoId;
+  const funcionarios = useListaRelacaoByAgrd(motorista?.id).listaRelacaoFunc;
 
   const [createRelacaoAgrdFunc] = useMutation(CREATE_RELACAO);
 
@@ -654,37 +603,14 @@ function ListaMotoristasFuncionarios({ motorista }: { motorista: any }) {
         <tbody>
           {funcionarios == undefined
             ? null
-            : funcionarios.map((funcionario: any) => {
+            : funcionarios.map((f: any) => {
+                console.log(f);
                 return (
-                  <tr key={funcionario.motoristaComoFuncionario.id}>
-                    <td>{funcionario.motoristaComoFuncionario.nome}</td>
-                    <td>{funcionario.motoristaComoFuncionario.email}</td>
-                    <td style={{ width: 150, textAlign: "center" }}>
-                      <p>ssad</p>
-                    </td>
-                    <td style={{ width: 150, textAlign: "center" }}>Placa</td>
-                    <td style={{ width: 150, textAlign: "center" }}>
-                      Modelo Carro
-                    </td>
-                    <td style={{ width: 80, textAlign: "center" }}>
-                      <p
-                        style={{
-                          fontFamily: "Icone",
-                          fontSize: "24px",
-                          color: Cor.texto2,
-                          fontWeight: "bold",
-                          cursor: "pointer",
-                        }}
-                        onClick={() =>
-                          navigate(
-                            `/motorista/${funcionario.motoristaComoFuncionario.id}`,
-                          )
-                        }
-                      >
-                        visibility
-                      </p>
-                    </td>
-                  </tr>
+                  <LinhaFuncionario
+                    f={f.motoristaComoFuncionario}
+                    key={f.id}
+                    rId={f.id}
+                  />
                 );
               })}
         </tbody>
@@ -775,6 +701,128 @@ function ListaMotoristasFuncionarios({ motorista }: { motorista: any }) {
     </div>
   );
 }
+
+function LinhaFuncionario({ f, rId }: { f: any; rId: any }) {
+  console.log(f.id); //f.id === "2"
+
+  const { carroAtrelado } = useCarroAtrelado(String(f.id));
+
+  console.log(carroAtrelado);
+
+  const carro = carroAtrelado?.[0] || null;
+  const { Cor } = useTema();
+  const navigate = useNavigate();
+
+  const atualizar = useListaRelacaoByAgrd(
+    String(useParams().motoristaId),
+  ).refetch;
+
+  console.log("Atualizar: ", atualizar);
+
+  const { deletarRelacao, loading } = useDeleteRelacao();
+  return (
+    <tr
+      style={{ cursor: "pointer" }}
+      onClick={() => navigate(`/motorista/${f.id}`)}
+    >
+      <td>{f.nome}</td>
+      <td>{f.email}</td>
+      <td style={{ width: 150, textAlign: "center" }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: 22,
+            padding: 5,
+            gap: 10,
+            backgroundColor: f.statusCnh ? Cor.ativo + 20 : Cor.inativo + 20,
+          }}
+        >
+          <Lottie
+            animationData={f.statusCnh ? icativo : icinativo}
+            loop={true}
+            style={{ width: 15, height: 15 }}
+            autoPlay
+          />
+          <p
+            style={{
+              fontSize: 11,
+              color: f.statusCnh ? Cor.ativo : Cor.inativo,
+              fontWeight: "bold",
+            }}
+          >
+            {f.statusCnh ? "CNH VÁLIDA" : "CNH VENCIDA"}
+          </p>
+        </div>
+      </td>
+      <td style={{ width: 150, textAlign: "center" }}>
+        <p>{carro?.placa || "-"}</p>
+      </td>
+      <td style={{ width: 150, textAlign: "center" }}>
+        {carro?.marca || ""} - {carro?.modelo || ""}
+      </td>
+      <td style={{ width: 80, textAlign: "center" }}>
+        <BtnDeleteRelacaoStyled
+          $cor={Cor.atencao}
+          onClick={(e) => {
+            e.stopPropagation();
+            deletarRelacao(String(rId));
+            atualizar();
+          }}
+        >
+          {loading ? (
+            <CircularProgress
+              size={18}
+              thickness={8}
+              color="inherit"
+              sx={{ color: Cor.atencao }}
+            />
+          ) : (
+            <p
+              style={{
+                fontFamily: "Icone",
+                fontSize: "24px",
+                color: Cor.atencao,
+                fontWeight: "bold",
+                cursor: "pointer",
+              }}
+            >
+              delete
+            </p>
+          )}
+        </BtnDeleteRelacaoStyled>
+      </td>
+    </tr>
+  );
+}
+
+interface BtnDeleteRelacaoProps {
+  $cor: string;
+}
+
+const BtnDeleteRelacaoStyled = styled.div<BtnDeleteRelacaoProps>`
+  width: 100%;
+  height: 30px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background-color: ${({ $cor }) => $cor}50;
+  transition: ease-in-out all 0.1s;
+
+  &:hover {
+    scale: 1.05;
+    background-color: ${({ $cor }) => $cor}75;
+  }
+
+  &:active {
+    scale: 0.98;
+    background-color: ${({ $cor }) => $cor}90;
+  }
+`;
 
 function ExcluirMotorista({ motorista }: { motorista: any }) {
   const { motoristaId } = useParams();

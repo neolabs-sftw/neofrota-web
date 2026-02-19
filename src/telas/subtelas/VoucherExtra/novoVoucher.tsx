@@ -229,7 +229,9 @@ function NovoVoucherConteudo() {
           gap: 10,
         }}
       >
-        <h3 style={{ color: Cor.secundaria, fontSize: "20px" }}>Passageiros</h3>
+        <h3 style={{ color: Cor.secundaria, fontSize: "20px" }}>
+          Novo Voucher
+        </h3>
         <div
           style={{
             width: "75%",
@@ -353,6 +355,7 @@ function DadosGerais({
       style={{
         width: "100%",
         padding: 15,
+        marginTop: 10,
         backgroundColor: Cor.base2,
         borderRadius: 22,
         boxShadow: Cor.sombra,
@@ -2024,7 +2027,14 @@ function ModalConfirmacao({ v, cxModal }: { v: any; cxModal: boolean }) {
             >
               Total:
             </p>
-            <div style={{ display: "flex", flexDirection: "row",  gap: 10, alignItems:"center"}}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                gap: 10,
+                alignItems: "center",
+              }}
+            >
               <p style={{ fontSize: 12, color: Cor.texto2 }}>Valor: </p>
               <strong style={{ fontSize: 18, color: Cor.secundaria }}>
                 {Intl.NumberFormat("pt-BR", {
