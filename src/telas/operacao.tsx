@@ -9,6 +9,7 @@ import { useVouchers, useVouchersData } from "../hooks/useVouchers";
 import ModalPreviewVoucher from "../componentes/modalPreviewVoucher";
 import { jwtDecode } from "jwt-decode";
 import styled from "styled-components";
+import CircularProgress from "@mui/material/CircularProgress";
 
 function Operacao() {
   return BaseTelas({
@@ -38,15 +39,19 @@ const BtnAtualizarStyle = styled.button<BtnProps>`
   right: 15px;
   backdrop-filter: blur(3px);
   cursor: pointer;
-  transition: all ease-in-out 0.2s;
+  transition: all ease-in-out 0.1s;
 
   &:hover {
     background-color: ${({ $cor }) => $cor + 90};
+    scale: 1.01;
+  }
+  &:active {
+    scale: 0.9;
   }
 `;
 
 const BtnNovoVoucher = styled.div<BtnProps>`
-  height: 90px;
+  height: 30%;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -55,14 +60,17 @@ const BtnNovoVoucher = styled.div<BtnProps>`
   background-color: ${({ $cor }) => $cor}10;
   cursor: pointer;
   border-radius: 18px;
-  transition: all ease-in-out 0.2s;
+  transition: all ease-in-out 0.1s;
   &:hover {
     background-color: ${({ $cor }) => $cor}30;
+    scale: 1.032;
   }
   &:active {
     background-color: ${({ $cor }) => $cor}60;
+    scale: 1.01;
   }
 `;
+
 function OperacaoConteudo() {
   const token = localStorage.getItem("token");
 
@@ -77,18 +85,7 @@ function OperacaoConteudo() {
   const [modalPreveiw, setModalPreview] = useState(false);
   const [voucherPreview, setVoucherPreview] = useState<any>(null);
 
-  const { listaVouchers, refetch: refetchTotal } = useVouchers();
-
-  const vouchersAbertos = listaVouchers
-  // .filter((v: any) => {
-  //   return v.status == "Aberto"; 
-  // });
-
-  const ordenada = [...vouchersAbertos].sort(
-    (a, b) =>
-      new Date(a.dataHoraProgramado).getTime() -
-      new Date(b.dataHoraProgramado).getTime(),
-  );
+  const { listaVouchers, refetch: refetchTotal, loading } = useVouchers({});
 
   const formatarData = (isoOrDate: string | Date) => {
     const d = new Date(isoOrDate);
@@ -108,12 +105,6 @@ function OperacaoConteudo() {
   const listaVoucherDataFiltro = listaVoucherData.filter((v: any) => {
     return v.status == "Aberto";
   });
-
-  const ordenadaDia = [...listaVoucherDataFiltro].sort(
-    (a, b) =>
-      new Date(a.dataHoraProgramado).getTime() -
-      new Date(b.dataHoraProgramado).getTime(),
-  );
 
   useEffect(() => {
     const atualizarOperacao = () => {
@@ -154,7 +145,6 @@ function OperacaoConteudo() {
         onClick={() => {
           refetchVouchers();
           refetchTotal();
-          console.log("Foi...");
         }}
       >
         <p
@@ -212,7 +202,7 @@ function OperacaoConteudo() {
             gap: 5,
           }}
         >
-          {ordenadaDia.slice(0, 12).map((v: any) => (
+          {listaVoucherDataFiltro.slice(0, 12).map((v: any) => (
             <BtnProximaViagem
               v={v}
               key={v.id}
@@ -232,7 +222,12 @@ function OperacaoConteudo() {
             gap: 5,
           }}
         >
-          <BtnNovoVoucher $cor={Cor.primaria}>
+          <BtnNovoVoucher
+            $cor={Cor.primaria}
+            onClick={() => {
+              navigate("/modelosvouchersfixos");
+            }}
+          >
             <p
               style={{
                 fontFamily: "Icone",
@@ -322,18 +317,25 @@ function OperacaoConteudo() {
             height: 100,
           }}
         >
-          {" "}
-          <p>Próximos Vouchers</p>{" "}
+          <p>Próximos Vouchers</p>
         </div>
-        {ordenada.map((v: any) => (
-          <ListaProximasViagens
-            v={v}
-            key={v.id}
-            modalPreveiw={modalPreveiw}
-            setModalPreview={setModalPreview}
-            setVoucherPreview={setVoucherPreview}
+        {loading ? (
+          <CircularProgress
+            size={40}
+            thickness={5}
+            sx={{ color: Cor.primaria }}
           />
-        ))}
+        ) : (
+          listaVouchers.map((v: any) => (
+            <ListaProximasViagens
+              v={v}
+              key={v.id}
+              modalPreveiw={modalPreveiw}
+              setModalPreview={setModalPreview}
+              setVoucherPreview={setVoucherPreview}
+            />
+          ))
+        )}
       </div>
     </div>
   );

@@ -656,6 +656,11 @@ function LinhaCarro({ c, setOpen }: { c: any; setOpen: any }) {
     refetchCarroAtrelado();
     setOpen(false);
   }
+  async function desvincularMotoristafunc() {
+    await vincularMotorista(c.id, null);
+    refetchCarroAtrelado();
+    setOpen(false);
+  }
 
   return (
     <LinhaCarroStyled $cor={Cor.texto2} $linha={Cor.texto2}>
@@ -679,10 +684,11 @@ function LinhaCarro({ c, setOpen }: { c: any; setOpen: any }) {
           style={{
             display: "flex",
             flexDirection: "column",
+            overflow: "hidden",
           }}
         >
           <p style={{ color: Cor.texto2, fontSize: 12 }}>Marca / Modelo</p>
-          <p style={{ color: Cor.texto1 }}>
+          <p style={{ color: Cor.texto1, textWrap: "nowrap"}}>
             {c.marca} - {c.modelo}
           </p>
         </div>
@@ -690,6 +696,7 @@ function LinhaCarro({ c, setOpen }: { c: any; setOpen: any }) {
           style={{
             display: "flex",
             flexDirection: "column",
+            overflow: "hidden",
           }}
         >
           <p style={{ color: Cor.texto2, fontSize: 12 }}>Placa</p>
@@ -748,16 +755,21 @@ function LinhaCarro({ c, setOpen }: { c: any; setOpen: any }) {
               fontFamily: "Icone",
               fontSize: 22,
               color: Cor.primaria,
+              userSelect: "none",
             }}
           >
             check
           </p>
         </BtnSave>
-        <BtnDelete $cor={Cor.atencao}>
+        <BtnDelete
+          $cor={Cor.atencao}
+          onClick={() => desvincularMotoristafunc()}
+        >
           <p
             style={{
               fontFamily: "Icone",
               fontSize: 22,
+              userSelect: "none",
             }}
           >
             delete

@@ -4,6 +4,7 @@ import icinativo from "../../../../assets/animations/icinativo.json";
 import { useTema } from "../../../../hooks/temaContext";
 import { OptCarros } from "./optCarros";
 import { useCarroAtrelado } from "../../../../hooks/useCarros";
+import CircularProgress from "@mui/material/CircularProgress";
 
 function CardDetalhesVeiculo({ motorista }: { motorista: any }) {
   const { carroAtrelado, loading } = useCarroAtrelado(motorista?.id || 0);
@@ -31,6 +32,7 @@ function CardDetalhesVeiculo({ motorista }: { motorista: any }) {
       <div
         style={{
           width: "50%",
+          height: 280,
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
@@ -69,7 +71,55 @@ function CardDetalhesVeiculo({ motorista }: { motorista: any }) {
           }}
         >
           <p style={{ color: Cor.texto1, fontSize: 16 }}>
-            {loading ? "Buscando veículo..." : "Sem Carro atrelado"}
+            {loading ? (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 10,
+                }}
+              >
+                <CircularProgress
+                  size={20}
+                  thickness={8}
+                  sx={{
+                    color: Cor.primaria,
+                    "& .MuiCircularProgress-circle": {
+                      strokeLinecap: "round",
+                    },
+                  }}
+                />
+                
+                <p>"Buscando veículo..."</p>
+              </div>
+            ) : (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  userSelect: "none"
+                }}
+              >
+                <img
+                  src="https://iyqleanlhzcnndzuugkg.supabase.co/storage/v1/object/public/neofrotabkt/carros/default.png"
+                  style={{ width: "80%", opacity: 0.1 }}
+                  alt=""
+                />
+                <p
+                  style={{
+                    position: "absolute",
+                    fontWeight: 900,
+                    color: Cor.texto1,
+                  }}
+                >
+                  "Sem Carro atrelado"
+                </p>
+              </div>
+            )}
           </p>
         </div>
       </div>
@@ -80,6 +130,7 @@ function CardDetalhesVeiculo({ motorista }: { motorista: any }) {
     <div
       style={{
         width: "50%",
+        height: 280,
         display: "flex",
         flexDirection: "column",
         backgroundColor: Cor.secundaria + 20,

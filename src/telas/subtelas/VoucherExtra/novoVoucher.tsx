@@ -49,6 +49,7 @@ function NovoVoucherConteudo() {
   const [carro, setCarro] = useState<any>();
   const [carroSaida, setCarroSaida] = useState<any>();
   const [qntDeslocamento, setQntDeslocamento] = useState<number>(0);
+  const [observacao, setObservacao] = useState<string>("");
 
   const [passageirosVoucher, setPassageirosVoucher] = useState<any[]>([]);
 
@@ -76,7 +77,7 @@ function NovoVoucherConteudo() {
   const { listaCarros: listaCarrosEntrada } = useCarros(motorista || "");
   const { listaCarros: listaCarrosSaida } = useCarros(motoristaSaida || "");
 
-  // Atualizações de estado baseadas em efeitos colaterais
+  // Atualizações de estado baseadas em useEffects
 
   useEffect(() => {
     if (listaCarrosEntrada && listaCarrosEntrada.length > 0) {
@@ -129,6 +130,7 @@ function NovoVoucherConteudo() {
       valorPedagio: tipoCarro?.valorPedagio?.valor || 0,
       valorEstacionamento: 0,
       passageiros: passageiros,
+      observacao: observacao,
     };
 
     const vouchers = [];
@@ -261,6 +263,7 @@ function NovoVoucherConteudo() {
         setMotoristaSaida={setMotoristaSaida}
         setQntDeslocamento={setQntDeslocamento}
         qntDeslocamento={qntDeslocamento}
+        setObersevacao={setObservacao}
       />
       <IncluirPassageiros
         empresaCliente={empresaCliente}
@@ -573,6 +576,7 @@ function DetalhesDoVoucher({
   setDataHoraSaida,
   setQntDeslocamento,
   qntDeslocamento,
+  setObersevacao,
 }: {
   tipo: any;
   empresaCliente: any;
@@ -587,6 +591,7 @@ function DetalhesDoVoucher({
   setDataHoraSaida: any;
   setQntDeslocamento: any;
   qntDeslocamento: number;
+  setObersevacao: any;
 }) {
   const Cor = useTema().Cor;
 
@@ -951,7 +956,7 @@ function DetalhesDoVoucher({
                   height: 18,
                   backgroundColor: Cor.texto2 + 50,
                 }}
-              ></div>
+              />
             )}
             <div
               style={{
@@ -1097,6 +1102,42 @@ function DetalhesDoVoucher({
               }}
             />
           </div>
+        </div>
+      </div>
+      <div
+        style={{
+          width: "100%",
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <div
+          style={{ display: "flex", flexDirection: "column", width: "100%" }}
+        >
+          <p
+            style={{
+              fontSize: 14,
+              color: Cor.primariaTxt + 90,
+              fontWeight: "bold",
+              margin: 5,
+            }}
+          >
+            Obsercação
+          </p>
+          <input
+            placeholder="Digite aqui sua observação..."
+            onChange={(e)=> setObersevacao(e.target.value)}
+            type="text"
+            style={{
+              width: "100%",
+              padding: 10,
+              borderRadius: 14,
+              border: `1px solid ${Cor.texto2 + 50}`,
+              outline: "none"
+            }}
+          />
         </div>
       </div>
     </div>
@@ -1715,7 +1756,7 @@ function BaseModalConfirmacao({
         left: 0,
         width: "100%",
         height: "100%",
-        backgroundColor: Cor.base2 + 50,
+        backgroundColor: Cor.texto1 + 90,
         backdropFilter: "blur(2px)",
         pointerEvents: cxConfirmarVoucher ? "auto" : "none",
         transition: "all ease-in-out 0.3s",
@@ -1749,17 +1790,10 @@ function BaseModalConfirmacao({
 function ModalConfirmacao({ v, cxModal }: { v: any; cxModal: boolean }) {
   const Cor = useTema().Cor;
 
-  console.log(v);
-
   const { empresaCliente } = useEmpresaCliente(v?.empresaClienteId);
   const { motorista } = useMotoristaId(v?.motoristaId);
   const { unidade } = useUnidadeId(v?.unidadeClienteId);
   const { carro } = useCarroId(v?.carroId);
-
-  console.log("Empresa: ", empresaCliente);
-  console.log("Motorista: ", motorista);
-  console.log("Unidade: ", unidade);
-  console.log("Carro: ", carro);
 
   return (
     <div

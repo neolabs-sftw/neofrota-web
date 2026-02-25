@@ -179,6 +179,7 @@ function ModalPreviewVoucher({
         <div
           style={{ width: "100%", height: 1, backgroundColor: Cor.texto2 + 70 }}
         />
+        <DetalhesDoOperador v={v} />
         <DetalhesDoMotorista v={v} />
         <div
           style={{
@@ -1051,6 +1052,35 @@ function CodigoRoteiro({ v }: { v: any }) {
   );
 }
 
+function DetalhesDoOperador({ v }: { v: any }) {
+  const Cor = useTema().Cor;
+  return (
+    <div
+      style={{
+        width: "100%",
+        backgroundColor: Cor.texto2 + 20,
+        height: 35,
+        borderRadius: 18,
+        alignItems: "center",
+        display: "flex",
+        flexDirection: "row",
+        padding: 10,
+      }}
+    >
+      <p style={{ fontSize: 12, color: Cor.texto1 }}>Obs. Operador: </p>
+      <p
+        style={{
+          fontSize: 14,
+          fontWeight: "500",
+          color: Cor.texto1,
+          marginLeft: 5,
+        }}
+      >
+        {v?.observacao || "Nenhuma observação registrada."}
+      </p>
+    </div>
+  );
+}
 function DetalhesDoMotorista({ v }: { v: any }) {
   const Cor = useTema().Cor;
   return (

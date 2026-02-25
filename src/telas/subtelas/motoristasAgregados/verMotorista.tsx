@@ -426,7 +426,10 @@ function ListaMotoristasFuncionarios({ motorista }: { motorista: any }) {
   const agregadoID = motorista?.id;
   const [funcionarioID, setFuncionarioID] = useState("");
 
-  const funcionarios = useListaRelacaoByAgrd(motorista?.id).listaRelacaoFunc;
+  const {
+    listaRelacaoFunc: funcionarios,
+    refetch: refetchListaMotoristaFuncionario,
+  } = useListaRelacaoByAgrd(motorista?.id);
 
   const [createRelacaoAgrdFunc] = useMutation(CREATE_RELACAO);
 
@@ -447,7 +450,7 @@ function ListaMotoristasFuncionarios({ motorista }: { motorista: any }) {
         },
       });
       setFuncionarioID("");
-      window.location.reload();
+      refetchListaMotoristaFuncionario();
     } catch (err) {
       console.error("Erro ao criar relação:", err);
     }
@@ -707,8 +710,6 @@ function LinhaFuncionario({ f, rId }: { f: any; rId: any }) {
 
   const { carroAtrelado } = useCarroAtrelado(String(f.id));
 
-  console.log(carroAtrelado);
-
   const carro = carroAtrelado?.[0] || null;
   const { Cor } = useTema();
   const navigate = useNavigate();
@@ -716,8 +717,6 @@ function LinhaFuncionario({ f, rId }: { f: any; rId: any }) {
   const atualizar = useListaRelacaoByAgrd(
     String(useParams().motoristaId),
   ).refetch;
-
-  console.log("Atualizar: ", atualizar);
 
   const { deletarRelacao, loading } = useDeleteRelacao();
   return (
@@ -776,8 +775,12 @@ function LinhaFuncionario({ f, rId }: { f: any; rId: any }) {
             <CircularProgress
               size={18}
               thickness={8}
-              color="inherit"
-              sx={{ color: Cor.atencao }}
+              sx={{
+                color: Cor.atencao,
+                "& .MuiCircularProgress-circle": {
+                  strokeLinecap: "round",
+                },
+              }}
             />
           ) : (
             <p

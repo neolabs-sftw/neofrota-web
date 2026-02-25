@@ -6,6 +6,7 @@ import { useListaClientes } from "../../../hooks/useEmpresaCliente";
 import { useUnidadeCliente } from "../../../hooks/useUnidadesClientes";
 import { useState } from "react";
 import { useMotorista } from "../../../hooks/useMotorista";
+import styled from "styled-components";
 
 export function ModelosFixos() {
   return BaseTelas({
@@ -55,7 +56,7 @@ function ModeloFixosConteudo() {
           }}
         >
           <h3 style={{ color: Cor.textoFixo, fontSize: "20px" }}>
-            Modelos Fixos
+            Roteiros Fixos
           </h3>
           <div
             style={{
@@ -73,20 +74,8 @@ function ModeloFixosConteudo() {
           motorista={motorista}
           setMotorista={setMotorista}
         />
-        <div
-          style={{
-            width: "100%",
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "flex-end",
-            gap: 10,
-          }}
-        >
-          <p style={{ color: Cor.textoFixo, fontSize: 14, fontWeight: 600 }}>
-            Lista de Modelos Fixos
-          </p>
-        </div>
+
+        <Cabecalho />
         <div
           style={{
             width: "100%",
@@ -94,7 +83,7 @@ function ModeloFixosConteudo() {
             paddingTop: 10,
             display: "flex",
             flexDirection: "column",
-            gap: 10,
+            gap: 5,
             // backgroundColor: Cor.atencao + 50,
             borderTop: `1px solid ${Cor.fixo}`,
             overflow: "auto",
@@ -117,6 +106,38 @@ function ModeloFixosConteudo() {
     </>
   );
 }
+
+interface BtnNovoRoteiroFixoProps {
+  $cor: string;
+  $texto: string;
+}
+
+const BtnNovoRoteiroFixo = styled.div<BtnNovoRoteiroFixoProps>`
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
+  padding: 0 15px;
+  justify-content: center;
+  align-items: center;
+  border-radius: 14px;
+  background-color: ${({ $cor }) => $cor}30;
+  color: ${({ $texto }) => $texto}DD;
+  cursor: pointer;
+  border: 1px solid ${({ $cor }) => $cor};
+  transition: ease-in-out all 0.1s;
+  user-select: none;
+
+  &:hover {
+    background-color: ${({ $cor }) => $cor}15;
+    color: ${({ $texto }) => $texto};
+    scale: 1.03;
+  }
+
+  &:active {
+    background-color: ${({ $cor }) => $cor}35;
+    color: ${({ $texto }) => $texto}90;
+  }
+`;
 
 function Filtros({
   empresaCliente,
@@ -180,14 +201,24 @@ function Filtros({
               fontWeight: "bold",
             }}
           >
-            Consulta de Modelos Fixos
+            Consulta Roteiros Fixos
           </p>
           <p style={{ fontSize: 12, color: Cor.texto2, marginBottom: 5 }}>
             Gerencie e acompanhe os modelos cadastrados filtrando por dados
             específicos.
           </p>
         </div>
-        <div style={{}}>Novo Modelo Fixo</div>
+        <BtnNovoRoteiroFixo $cor={Cor.fixo} $texto={Cor.textoFixo}>
+          <p
+            style={{
+              fontFamily: "Icone",
+              fontSize: 20,
+            }}
+          >
+            history
+          </p>
+          <p style={{ fontWeight: 500 }}>Novo Roteiro Fixo</p>
+        </BtnNovoRoteiroFixo>
       </div>
 
       <div
@@ -199,7 +230,38 @@ function Filtros({
           alignItems: "center",
         }}
       >
-        <div style={{ display: "flex", flexDirection: "column", width: "32%" }}>
+        <div style={{ display: "flex", flexDirection: "column", width: "25%" }}>
+          <p
+            style={{
+              fontSize: 14,
+              color: Cor.textoFixo + "BB",
+              fontWeight: "bold",
+              margin: 5,
+            }}
+          >
+            Cód. Roteiro:
+          </p>
+          <div
+            style={{
+              width: "100%",
+              border: `1px solid ${Cor.texto2 + 50}`,
+              padding: 10,
+              borderRadius: 14,
+            }}
+          >
+            <input
+              placeholder="Digite aqui..."
+              style={{
+                width: "100%",
+                outline: "none",
+                border: "none",
+                backgroundColor: "transparent",
+                color: Cor.texto1,
+              }}
+            />
+          </div>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", width: "20%" }}>
           <p
             style={{
               fontSize: 14,
@@ -255,7 +317,7 @@ function Filtros({
             </select>
           </div>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", width: "32%" }}>
+        <div style={{ display: "flex", flexDirection: "column", width: "25%" }}>
           <p
             style={{
               fontSize: 14,
@@ -312,7 +374,7 @@ function Filtros({
             </select>
           </div>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", width: "32%" }}>
+        <div style={{ display: "flex", flexDirection: "column", width: "25%" }}>
           <p
             style={{
               fontSize: 14,
@@ -374,29 +436,372 @@ function Filtros({
   );
 }
 
-function LinhaModeloFixo() {
+function Cabecalho() {
   const { Cor } = useTema();
   return (
     <div
       style={{
         width: "100%",
-        backgroundColor: Cor.base2,
-        borderRadius: 14,
-        padding: 5,
-        boxShadow: Cor.sombra
+        display: "flex",
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        paddingLeft: 5,
+        paddingRight: 20,
+        backgroundColor: Cor.fixo,
+        marginBottom: -8,
       }}
     >
-      <div
+      <p
         style={{
-          width: 250,
-          height: 40,
-          border: `1px solid ${Cor.fixo}BB`,
-          backgroundColor: Cor.fixo + 10,
-          borderRadius: 8,
+          width: "20%",
+          color: Cor.base2,
+          fontSize: 14,
+          fontWeight: 400,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          padding: 5,
         }}
       >
-        s
-      </div>
+        Código do Roteiro
+      </p>
+      <p
+        style={{
+          width: "20%",
+          color: Cor.base2,
+          fontSize: 14,
+          fontWeight: 400,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          padding: 5,
+          textAlign: "center",
+          height: 15,
+          borderLeft: `1px solid ${Cor.base2}`,
+        }}
+      >
+        Rota
+      </p>
+      <p
+        style={{
+          width: "5%",
+          color: Cor.base2,
+          fontSize: 14,
+          fontWeight: 400,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          padding: 5,
+          height: 15,
+          borderLeft: `1px solid ${Cor.base2}`,
+        }}
+      >
+        Tipo
+      </p>
+      <p
+        style={{
+          width: "10%",
+          color: Cor.base2,
+          fontSize: 14,
+          fontWeight: 400,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          padding: 5,
+          height: 15,
+          borderLeft: `1px solid ${Cor.base2}`,
+        }}
+      >
+        Cliente
+      </p>
+      <p
+        style={{
+          width: "15%",
+          color: Cor.base2,
+          fontSize: 14,
+          fontWeight: 400,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          padding: 5,
+          height: 15,
+          borderLeft: `1px solid ${Cor.base2}`,
+        }}
+      >
+        Unidade
+      </p>
+      <p
+        style={{
+          width: "25%",
+          color: Cor.base2,
+          fontSize: 14,
+          fontWeight: 400,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          padding: 5,
+          height: 15,
+          borderLeft: `1px solid ${Cor.base2}`,
+        }}
+      >
+        Motoristas
+      </p>
+      <p
+        style={{
+          width: "5%",
+          color: Cor.base2,
+          fontSize: 14,
+          fontWeight: 400,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          padding: 5,
+          height: 15,
+          borderLeft: `1px solid ${Cor.base2}`,
+        }}
+      >
+        Ação
+      </p>
     </div>
   );
 }
+
+interface LinhaModeloFixoProps {
+  $cor: string;
+}
+
+const LinhaModeloFixoStyled = styled.div<LinhaModeloFixoProps>`
+  width: 100%;
+  background-color: ${({ $cor }) => $cor}10;
+  border-radius: 14px;
+  padding: 5px;
+  border: 1px solid ${({ $cor }) => $cor}30;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  font-size: 14px;
+  transition: ease-in-out all 0.1s;
+  cursor: pointer;
+
+  &:hover {
+    background-color: ${({ $cor }) => $cor}35;
+  }
+
+  &:active {
+    scale: 0.99;
+  }
+`;
+
+function LinhaModeloFixo() {
+  const [statusVoucher, setStatusVoucher] = useState<boolean>(true);
+  const { Cor } = useTema();
+  return (
+    <LinhaModeloFixoStyled
+      $cor={statusVoucher ? Cor.texto2 : Cor.atencao}
+      onClick={() => console.log("id Voucher")}
+    >
+      <div
+        style={{
+          width: "20%",
+          height: 60,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          border: `1px solid ${statusVoucher ? Cor.fixo : Cor.atencao}AA`,
+          backgroundColor: statusVoucher ? Cor.fixo + 10 : Cor.atencao + 10,
+          borderRadius: 8,
+          padding: 5,
+          overflow: "hidden",
+        }}
+      >
+        <h5
+          style={{
+            color: statusVoucher ? Cor.textoFixo : Cor.atencao,
+            textAlign: "center",
+          }}
+        >
+          CARRO 4- 2 TURNO SAIDA - PASSAGEM X SIMOES FILHO
+        </h5>
+      </div>
+      <div
+        style={{
+          width: "20%",
+          height: 60,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "flex-start",
+          padding: 10,
+          gap: 2,
+        }}
+      >
+        <p style={{ color: statusVoucher ? Cor.textoFixo : Cor.atencao }}>
+          Origem: <strong>FABRICA X PASSAGEM</strong>
+        </p>
+        <div
+          style={{
+            width: "40%",
+            height: 1,
+            backgroundColor: statusVoucher ? Cor.textoFixo : Cor.atencao,
+          }}
+        />
+        <p style={{ color: statusVoucher ? Cor.textoFixo : Cor.atencao }}>
+          Destino: <strong>S.FILHO</strong>
+        </p>
+      </div>
+      <div
+        style={{
+          width: "5%",
+          height: 60,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <p
+          style={{
+            color: statusVoucher ? Cor.textoFixo : Cor.atencao,
+            textAlign: "center",
+          }}
+        >
+          Entrada
+        </p>
+        <p
+          style={{
+            color: statusVoucher ? Cor.textoFixo : Cor.atencao,
+            textAlign: "center",
+          }}
+        >
+          Saída
+        </p>
+      </div>
+      <div
+        style={{
+          width: "10%",
+          height: 60,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          overflow: "hidden",
+          padding: 5,
+        }}
+      >
+        <p
+          style={{
+            color: statusVoucher ? Cor.textoFixo : Cor.atencao,
+            textAlign: "center",
+          }}
+        >
+          Arcelomital Brasil
+        </p>
+      </div>
+      <div
+        style={{
+          width: "15%",
+          height: 60,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          overflow: "hidden",
+          padding: 5,
+        }}
+      >
+        <p
+          style={{
+            color: statusVoucher ? Cor.textoFixo : Cor.atencao,
+            textAlign: "center",
+          }}
+        >
+          CDB Salvador
+        </p>
+      </div>
+      <div
+        style={{
+          width: "25%",
+          height: 60,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          padding: 5,
+          gap: 5,
+        }}
+      >
+        <p
+          style={{
+            color: statusVoucher ? Cor.textoFixo : Cor.atencao,
+            textAlign: "center",
+          }}
+        >
+          Jose Bomfim Montenegro Mascarenhas
+        </p>
+        <p
+          style={{
+            color: statusVoucher ? Cor.textoFixo : Cor.atencao,
+            textAlign: "center",
+          }}
+        >
+          Antonio Carlos Conceição Lima Junior
+        </p>
+      </div>
+      <div
+        style={{
+          width: "5%",
+          height: 60,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <BtnDesativerModelo
+          $cor={statusVoucher ? Cor.ativo : Cor.atencao}
+          onClick={(e) => {
+            e.stopPropagation();
+            setStatusVoucher(!statusVoucher);
+          }}
+        >
+          <p style={{ fontFamily: "Icone", userSelect: "none" }}>
+            {statusVoucher ? "autoplay" : "autopause"}
+          </p>
+          <p style={{ fontFamily: "Icone", userSelect: "none" }}>
+            progress_activity
+          </p>
+        </BtnDesativerModelo>
+      </div>
+    </LinhaModeloFixoStyled>
+  );
+}
+
+interface BtnDesativerModeloProps {
+  $cor: string;
+}
+
+const BtnDesativerModelo = styled.div<BtnDesativerModeloProps>`
+  width: 90%;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: ${({ $cor }) => $cor}30;
+  border-radius: 10px;
+  cursor: pointer;
+  color: ${({ $cor }) => $cor}99;
+  font-size: 28px;
+  transition: ease-in-out all 0.1s;
+
+  &:hover {
+    color: ${({ $cor }) => $cor}CC;
+    background-color: ${({ $cor }) => $cor}40;
+    font-size: 32px;
+    scale: 1.05;
+  }
+
+  &:active {
+    color: ${({ $cor }) => $cor};
+    background-color: ${({ $cor }) => $cor}25;
+    font-size: 30px;
+    scale: 1.02;
+  }
+`;

@@ -231,12 +231,12 @@ const DEFINIR_MOTORISTA = gql`
 export function useDefinirMotorista() {
   const [atualizar, { data, loading, error }] = useMutation(DEFINIR_MOTORISTA);
 
-  const vincularMotorista = async (CarroId: string, motoristaId: number) => {
+  const vincularMotorista = async (CarroId: string, motoristaId: number | null) => {
     return await atualizar({
       variables: {
         updateCarroId: CarroId,
         data: {
-          motoristaId: Number(motoristaId),
+          motoristaId: motoristaId === null ? null : Number(motoristaId),
         },
       },
     });

@@ -175,7 +175,7 @@ function EditarMotoristaConteudo() {
           flexDirection: "column",
           justifyContent: "flex-start",
           alignItems: "center",
-          gap: 20,
+          gap: 10,
         }}
       >
         {statusCx && (
@@ -200,7 +200,7 @@ function EditarMotoristaConteudo() {
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 20,
+                gap: 10,
                 width: "20%",
                 height: "40%",
                 padding: 22,
@@ -247,7 +247,7 @@ function EditarMotoristaConteudo() {
             width: "100%",
             display: "flex",
             flexDirection: "column",
-            padding: 20,
+            padding: 10,
             alignItems: "flex-start",
             justifyContent: "flex-start",
           }}
@@ -265,7 +265,7 @@ function EditarMotoristaConteudo() {
             style={{
               width: "100%",
               borderRadius: 22,
-              marginTop: 20,
+              marginTop: 10,
               boxShadow: Cor.sombra,
               border: "1px solid" + Cor.texto2 + 25,
               backgroundColor: Cor.base2,
@@ -298,7 +298,7 @@ function EditarMotoristaConteudo() {
                   width: "50%",
                   display: "flex",
                   flexDirection: "column",
-                  gap: 20,
+                  gap: 10,
                   padding: "0 20px",
                 }}
               >

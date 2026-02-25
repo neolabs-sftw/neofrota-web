@@ -66,8 +66,18 @@ export function useCreateVoucher() {
 }
 
 const GET_VOUCHERS = gql`
-  query Vouchers {
-    vouchers {
+  query Vouchers(
+    $operadiraId: ID
+    $filter: VoucherFilterInput
+    $offset: Int
+    $limit: Int
+  ) {
+    vouchers(
+      operadiraId: $operadiraId
+      filter: $filter
+      offset: $offset
+      limit: $limit
+    ) {
       id
       origem
       destino
@@ -92,9 +102,9 @@ const GET_VOUCHERS = gql`
       empresaCliente {
         id
         nome
-        rSocial
         fotoLogoCliente
-        cnpj
+        rSocial
+        statusCliente
       }
       unidadeCliente {
         id
@@ -106,23 +116,30 @@ const GET_VOUCHERS = gql`
         endNumero
         endRua
         endUf
+        statusUnidadeCliente
+        cnpj
       }
       motorista {
         id
         nome
         fotoMotorista
         vCnh
+        statusMotorista
+        statusCnh
       }
       carro {
-        cor
+        id
         marca
         modelo
-        id
+        cor
         placa
+        ano
       }
       adminUsuario {
         id
         nome
+        funcao
+        fotoAdminOperadora
       }
       solicitante {
         id
@@ -130,13 +147,9 @@ const GET_VOUCHERS = gql`
         funcao
         fotoUrlSolicitante
       }
+
       operadora {
         id
-        nome
-      }
-
-      rota {
-        tributacao
       }
       passageiros {
         id
@@ -144,32 +157,50 @@ const GET_VOUCHERS = gql`
         horarioEmbarqueReal
         rateio
         passageiroId {
-          id
-          nome
-          matricula
-          telefone
-          email
           ativo
-          fotoPerfilPassageiro
-          endRua
-          endNumero
+          email
           endBairro
           endCidade
-          pontoApanha
+          endNumero
+          endRua
+          fotoPerfilPassageiro
           horarioEmbarque
-          centroCustoClienteId {
-            codigo
-            nome
-            id
-          }
+          matricula
+          id
         }
       }
     }
   }
 `;
 
-export function useVouchers() {
+interface UseVouchersParams {
+  operadiraId?: string; // Troque para 'number' se o seu ID for numérico
+  offset?: number;
+  limit?: number;
+  motoristaId?: string;
+  natureza?: string;
+  status?: string;
+}
+
+export function useVouchers({
+  operadiraId,
+  offset,
+  limit,
+  motoristaId,
+  natureza,
+  status,
+}: UseVouchersParams) {
   const { data, loading, error, refetch } = useQuery(GET_VOUCHERS, {
+    variables: {
+      operadiraId,
+      offset,
+      filter: {
+        motoristaId,
+        natureza,
+        status,
+      },
+      limit,
+    },
     fetchPolicy: "cache-and-network",
   });
 
