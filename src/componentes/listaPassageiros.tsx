@@ -6,12 +6,18 @@ import { useEmpresaCliente } from "../hooks/useEmpresaCliente";
 import { useEffect, useState } from "react";
 import LinhaTabelaPassageiro from "../telas/subtelas/empresaCliente/btnComponentes/verPassageiro";
 
-function ListaPassageiros() {
-  const Cor = useTema().Cor;
+function ListaPassageiros({
+  bNome,
+  bCentro,
+}: {
+  bNome: string;
+  bCentro: string;
+}) {
+  const { Cor } = useTema();
 
-  const clienteId = useParams().clienteId;
+  const { clienteId } = useParams();
 
-  const empresaCliente = useEmpresaCliente(clienteId!).empresaCliente;
+  const { empresaCliente } = useEmpresaCliente(clienteId!);
 
   const logo = empresaCliente?.fotoLogoCliente;
   return (
@@ -62,7 +68,7 @@ function ListaPassageiros() {
           </div>
         </div>
       </div>
-      <TabelaPassageiros />
+      <TabelaPassageiros bNome={bNome} bCentro={bCentro} />
     </div>
   );
 }
@@ -75,7 +81,7 @@ interface TabelaPassageirosProps {
   $base: string;
 }
 
-const TabelaPassageirosStyled = styled.table<TabelaPassageirosProps>`
+const TabelaPassageirosStyled = styled.div<TabelaPassageirosProps>`
   width: 100%;
   border-collapse: collapse;
   font-size: 14px;
@@ -100,35 +106,61 @@ const TabelaPassageirosStyled = styled.table<TabelaPassageirosProps>`
   }
 `;
 
-function TabelaPassageiros() {
+function TabelaPassageiros({
+  bNome,
+  bCentro,
+}: {
+  bNome: string;
+  bCentro: string;
+}) {
   const Cor = useTema().Cor;
   const clienteId = useParams().clienteId;
-  const { listaPassageiro } = usePassageiros(clienteId!);
+  const { listaPassageiro: listaTotal } = usePassageiros(clienteId!);
+
   const [passageiro, setPassageiro] = useState();
 
   const [cxVerPassageiro, setCxVerPassageiro] = useState(false);
 
-  console.log(listaPassageiro);
+  const listaPassageiro = listaTotal?.filter((p: any) => {
+    const nomeBusca = bNome.toLowerCase();
+    const centroBusca = bCentro.toLowerCase();
+    const coincideNome = p.nome.toLowerCase().includes(nomeBusca);
+    const coincideCentro = p.centroCustoClienteId?.nome
+      .toLowerCase()
+      .includes(centroBusca);
+    return coincideNome && coincideCentro;
+  });
+
   return (
     <TabelaPassageirosStyled
       $texto1={Cor.texto1}
       $texto2={Cor.texto2}
       $base={Cor.base}
     >
-      <thead>
-        <tr>
-          <th style={{ width: "5%", textAlign: "center" }}>Foto</th>
-          <th style={{ width: "10%", textAlign: "center" }}>Matrícula</th>
-          <th style={{ width: "25%", textAlign: "center" }}>Nome</th>
-          <th style={{ width: "5%", textAlign: "center" }}>Horário</th>
-          <th style={{ width: "30%", textAlign: "center" }}>Endereço</th>
-          <th style={{ width: "15%", textAlign: "center" }}>Centro Custo</th>
-          <th style={{ width: "10%", textAlign: "center" }}>Telefone</th>
-        </tr>
-      </thead>
-      <tbody>
-        {listaPassageiro?.map((passageiro: any) => (
+      <div
+        style={{
+          width: "100%",
+          textAlign: "center",
+          display: "flex",
+          flexDirection: "row",
+          padding: 5,
+          backgroundColor: "#55555555",
+          color: Cor.texto1,
+          fontWeight: 500,
+        }}
+      >
+        <p style={{ width: "5%", textAlign: "center" }}>Foto</p>
+        <p style={{ width: "10%", textAlign: "center" }}>Matrícula</p>
+        <p style={{ width: "25%", textAlign: "center" }}>Nome</p>
+        <p style={{ width: "5%", textAlign: "center" }}>Horário</p>
+        <p style={{ width: "30%", textAlign: "center" }}>Endereço</p>
+        <p style={{ width: "15%", textAlign: "center" }}>Centro Custo</p>
+        <p style={{ width: "10%", textAlign: "center" }}>Telefone</p>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
+        {listaPassageiro?.map((passageiro: any, index) => (
           <LinhaTabelaPassageiro
+            par={index % 2 === 0}
             passageiro={passageiro}
             setPassageiro={setPassageiro}
             cxVerPassageiro={cxVerPassageiro}
@@ -136,7 +168,8 @@ function TabelaPassageiros() {
             key={passageiro.id}
           />
         ))}
-      </tbody>
+      </div>
+
       <ModalVerPassageiro
         passageiro={passageiro}
         cxVerPassageiro={cxVerPassageiro}
@@ -175,19 +208,19 @@ function ModalVerPassageiro({
       "https://www.shutterstock.com/image-vector/default-avatar-profile-icon-social-600nw-1906669723.jpg",
   );
 
-   useEffect(() => {
+  useEffect(() => {
     if (!cxVerPassageiro) return;
 
     if (passageiro) {
-      fotoPerfilPassageiro
-      setNome(passageiro.nome ?? "");
+      fotoPerfilPassageiro;
+      setNome(passageiro.nome ?? "")
       setEmail(passageiro.email ?? "");
       setTelefone(passageiro.telefone ?? "");
       setMatricula(passageiro.matricula ?? "");
       setCentroCusto(
         passageiro.centroCustoClienteId.id
           ? String(passageiro.centroCustoClienteId.id)
-          : ""
+          : "",
       );
       setEndRua(passageiro.endRua ?? "");
       setEndNumero(passageiro.endNumero ?? "");
@@ -210,8 +243,6 @@ function ModalVerPassageiro({
       setPontoApanha("");
     }
   }, [cxVerPassageiro, passageiro?.id]); // ✅ NÃO coloque "nome", "email" etc aqui
-
-  console.log(passageiro);
 
   function carregarImagem(event: React.ChangeEvent<HTMLInputElement>) {
     const files = event.target.files;
@@ -557,59 +588,59 @@ function ModalVerPassageiro({
       </div>
     </div>
   );
+}
 
-  function TextoEntrada({
-    placeholder,
-    onChange,
-    value,
-    type,
-    largura,
-  }: {
-    placeholder: string;
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    value: string;
-    type: string;
-    largura: string;
-  }) {
-    const Cor = useTema().Cor;
-    return (
-      <div
+function TextoEntrada({
+  placeholder,
+  onChange,
+  value,
+  type,
+  largura,
+}: {
+  placeholder: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  value: string;
+  type: string;
+  largura: string;
+}) {
+  const Cor = useTema().Cor;
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "row",
+        alignContent: "flex-end",
+        width: largura,
+        backgroundColor: Cor.texto2 + 20,
+        padding: 10,
+        gap: 5,
+        borderRadius: 22,
+      }}
+    >
+      <span
         style={{
-          display: "flex",
-          flexDirection: "row",
-          alignContent: "flex-end",
-          width: largura,
-          backgroundColor: Cor.texto2 + 20,
-          padding: 10,
-          gap: 5,
-          borderRadius: 22,
+          maxLines: 1,
+          overflow: "hidden",
+          fontSize: 11,
+          color: Cor.texto2,
         }}
       >
-        <span
-          style={{
-            maxLines: 1,
-            overflow: "hidden",
-            fontSize: 11,
-            color: Cor.texto2,
-          }}
-        >
-          {placeholder}:
-        </span>
-        <input
-          type={type}
-          placeholder={placeholder}
-          onChange={onChange}
-          value={value}
-          style={{
-            content:"ds",
-            backgroundColor: "transparent",
-            color: Cor.texto1,
-            border: "none",
-            outline: "none",
-            width: "100%",
-          }}
-        />
-      </div>
-    );
-  }
+        {placeholder}:
+      </span>
+      <input
+        type={type}
+        placeholder={placeholder}
+        onChange={onChange}
+        value={value}
+        style={{
+          content: "ds",
+          backgroundColor: "transparent",
+          color: Cor.texto1,
+          border: "none",
+          outline: "none",
+          width: "100%",
+        }}
+      />
+    </div>
+  );
 }

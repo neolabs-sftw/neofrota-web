@@ -54,8 +54,6 @@ function ListaMotoristasAgregados() {
 
     const isAtivo = motorista.tipoMorista !== "Excluido";
 
-    console.log(motorista.tipoMotorista)
-
     if (!busca) return isAtivo;
     return (
       isAtivo && motorista.nome.toLowerCase().includes(busca.toLowerCase())

@@ -1,11 +1,11 @@
 import { useTema } from "../../../../hooks/temaContext";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import styled from "styled-components";
 import { useCentroCustoByEmpresa } from "../../../../hooks/useCentrosDeCusto";
 import { useParams } from "react-router-dom";
 import {
   useCreatePassageiro,
-  usePassageiroId,
+  usePassageiros,
 } from "../../../../hooks/usePassageiros";
 import { supabase } from "../../../../hooks/supabaseClient";
 
@@ -26,6 +26,19 @@ const BtnCadastrarPassageiroStyled = styled.button<BtnCadastrarPassageiroStyledP
   flex-direction: row;
   align-items: center;
   gap: 10px;
+  transition: ease-in-out all 0.1s;
+
+  &:hover {
+    background-color: ${({ $backgroundColor }) => $backgroundColor + 25};
+    border: 1px solid ${({ $backgroundColor }) => $backgroundColor + 90};
+    scale: 1.02;
+  }
+
+  &:active {
+    background-color: ${({ $backgroundColor }) => $backgroundColor + 40};
+    border: 1px solid ${({ $backgroundColor }) => $backgroundColor + 90};
+    scale: 0.95;
+  }
 `;
 
 function BtnCriarPassageiro() {
@@ -62,7 +75,7 @@ function ModalCriarPassageiro({
 
   const [centroCusto, setCentroCusto] = useState<string>("");
   const [email, setEmail] = useState<string>("");
-  const clienteId = useParams().clienteId;
+  const { clienteId } = useParams();
   const [endBairro, setEndBairro] = useState<string>("");
   const [endCidade, setEndCidade] = useState<string>("");
   const [endNumero, setEndNumero] = useState<string>("");
@@ -78,35 +91,38 @@ function ModalCriarPassageiro({
 
   const [imgPreview, setImgPreview] = useState<string>("");
 
-  const { listaCentrosCustos } = useCentroCustoByEmpresa(`${clienteId}`);
+  const { listaCentrosCustos } = useCentroCustoByEmpresa(String(clienteId));
 
   const carregarImagem = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setImgPreview(URL.createObjectURL(file));
+      setFotoPerfilPassageiro(file);
     }
   };
 
-  const passageiro = {
-    centroCustoClienteId: Number(centroCusto),
-    email: email,
-    empresaClienteId: Number(clienteId),
-    endBairro: endBairro,
-    endCidade: endCidade,
-    endNumero: endNumero,
-    endRua: endRua,
-    fotoPerfilPassageiro: String(fotoPerfilPassageiro),
-    horarioEmbarque: horarioEmbarque,
-    matricula: matricula,
-    nome: nome,
-    pontoApanha: pontoApanha,
-    telefone: telefone,
-    ativo: true,
+  const limparFormulario = () => {
+    setNome("");
+    setMatricula("");
+    setEmail("");
+    setTelefone("");
+    setCentroCusto("");
+    setHorarioEmbarque("");
+    setPontoApanha("");
+    setEndBairro("");
+    setEndCidade("");
+    setEndNumero("");
+    setEndRua("");
+
+    // Limpar os estados da imagem também é crucial!
+    setFotoPerfilPassageiro(null);
+    setImgPreview("");
+    setStatusCarregamento("");
   };
 
   const { criarPassageiro } = useCreatePassageiro();
 
-  const { refetch } = usePassageiroId(`${clienteId}`);
+  const { refetch } = usePassageiros(String(clienteId));
 
   async function criarP() {
     try {
@@ -134,22 +150,32 @@ function ModalCriarPassageiro({
           .getPublicUrl(uploadData.path);
 
         fotoUrlFinal = urlData.publicUrl;
-
-        console.log(fotoUrlFinal);
-
-        setFotoPerfilPassageiro(fotoUrlFinal);
       } else {
         setStatusCarregamento("Registo sem foto...");
       }
       setStatusCarregamento("Enviando dados para o servidor...");
 
-      console.log("input:", passageiro);
+      const passageiro = {
+        centroCustoClienteId: Number(centroCusto),
+        email: email,
+        empresaClienteId: Number(clienteId),
+        endBairro: endBairro,
+        endCidade: endCidade,
+        endNumero: endNumero,
+        endRua: endRua,
+        fotoPerfilPassageiro: fotoUrlFinal || "",
+        horarioEmbarque: horarioEmbarque,
+        matricula: matricula,
+        nome: nome,
+        pontoApanha: pontoApanha,
+        telefone: telefone,
+        ativo: true,
+      };
 
-      const res = await criarPassageiro(passageiro);
-      console.log("resultado:", res.data);
+      await criarPassageiro(passageiro);
 
       setCxCriarPassageiro(false);
-      // reset inputs...
+      limparFormulario();
       await refetch();
     } catch (err: any) {
       console.log("graphQLErrors:", err?.graphQLErrors);
@@ -157,10 +183,6 @@ function ModalCriarPassageiro({
       console.log("message:", err?.message);
     }
   }
-
-  useEffect(() => {
-    fotoPerfilPassageiro;
-  }, []);
 
   return (
     <div
@@ -445,7 +467,7 @@ function ModalCriarPassageiro({
             />
             <TextoEntrada
               placeholder="Horário de Embarque"
-              type="text"
+              type="time"
               largura="33%"
               onChange={(e) => setHorarioEmbarque(e.target.value)}
               value={horarioEmbarque}

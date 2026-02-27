@@ -1,9 +1,11 @@
+import { useParams } from "react-router-dom";
 import BaseTelas from "../../../componentes/baseTelas";
 import EditPerfil from "../../../componentes/editPerfil";
 import ListaPassageiros from "../../../componentes/listaPassageiros";
 import { useTema } from "../../../hooks/temaContext";
-import styled from "styled-components";
+import { useCentroCustoByEmpresa } from "../../../hooks/useCentrosDeCusto";
 import BtnCriarPassageiro from "./btnComponentes/criarPassageiro";
+import { useState } from "react";
 
 function Passageiros() {
   return BaseTelas({
@@ -19,7 +21,9 @@ function Passageiros() {
 export default Passageiros;
 
 function PassageirosConteudo() {
-  const Cor = useTema().Cor;
+  const [bNome, setbNome] = useState<string>("");
+  const [bCentro, setbCentro] = useState<string>("");
+  const { Cor } = useTema();
   return (
     <div
       style={{
@@ -51,13 +55,19 @@ function PassageirosConteudo() {
           }}
         />
       </div>
-      <CadastrarNovoCliente />
-      <ListaPassageiros />
+      <CadastrarNovoCliente setbNome={setbNome} setbCentro={setbCentro} />
+      <ListaPassageiros bNome={bNome} bCentro={bCentro} />
     </div>
   );
 }
 
-function CadastrarNovoCliente() {
+function CadastrarNovoCliente({
+  setbNome,
+  setbCentro,
+}: {
+  setbNome: any;
+  setbCentro: any;
+}) {
   const Cor = useTema().Cor;
 
   return (
@@ -85,47 +95,18 @@ function CadastrarNovoCliente() {
         <p style={{ color: Cor.texto2, fontSize: 14 }}>
           Pesquisar por <br /> passageiros:
         </p>
-        <CampoBuscasPassageiros />
+        <CampoBuscasPassageiros setbNome={setbNome} />
         <p style={{ color: Cor.texto2, fontSize: 14 }}>
           Pesquisar por <br /> Centro de Custo:
         </p>
-        <SelectCentroCusto />
+        <SelectCentroCusto setbCentro={setbCentro} />
       </div>
       <BtnCriarPassageiro />
     </div>
   );
 }
-interface BtnLupaProps {
-  $corBG: string;
-}
 
-const BtnLupa = styled.div<BtnLupaProps>`
-  background-color: ${({ $corBG }) => $corBG};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 0 22px 22px 0;
-  height: 40px;
-  width: 40px;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-
-  text {
-    font-size: 24px;
-    font-weight: bold;
-    transition: all 0.1s ease-in-out;
-  }
-
-  &:hover {
-    filter: brightness(1.1);
-
-    text {
-      font-size: 28px;
-    }
-  }
-`;
-
-function CampoBuscasPassageiros() {
+function CampoBuscasPassageiros({ setbNome }: { setbNome: any }) {
   const Cor = useTema().Cor;
   return (
     <div
@@ -145,25 +126,25 @@ function CampoBuscasPassageiros() {
           padding: "15px 0 15px 15px",
           border: "none",
           outline: "none",
-          width: 300,
+          width: 350,
           borderRadius: "22px 0 0 22px",
           color: Cor.texto1,
           backgroundColor: "transparent",
           fontSize: 16,
         }}
+        onChange={(e) => setbNome(e.target.value)}
       />
-
-      <BtnLupa $corBG={Cor.primaria}>
-        <p style={{ fontFamily: "Icone", color: Cor.secundaria }}>
-          search
-        </p>
-      </BtnLupa>
     </div>
   );
 }
 
-function SelectCentroCusto() {
-  const Cor = useTema().Cor;
+function SelectCentroCusto({ setbCentro }: { setbCentro: any }) {
+  const { Cor } = useTema();
+
+  const { clienteId } = useParams();
+
+  const { listaCentrosCustos } = useCentroCustoByEmpresa(String(clienteId));
+
   return (
     <select
       style={{
@@ -176,12 +157,12 @@ function SelectCentroCusto() {
         color: Cor.texto1,
         fontSize: 16,
       }}
-      defaultValue={""}
+      onChange={(e) => setbCentro(e.target.value)}
     >
       <option value="">Todos</option>
-      <option>Centro de Custo 1</option>
-      <option>Centro de Custo 2</option>
-      <option>Centro de Custo 3</option>
+      {listaCentrosCustos.map((c: any) => {
+        return <option key={c.id} value={c.nome}>{c?.nome || ""}</option>;
+      })}
     </select>
   );
 }

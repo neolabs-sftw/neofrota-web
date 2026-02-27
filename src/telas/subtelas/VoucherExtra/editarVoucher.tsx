@@ -22,7 +22,7 @@ import { useCarroId, useCarros } from "../../../hooks/useCarros";
 import { useCreateVoucher } from "../../../hooks/useVouchers";
 import { useNavigate } from "react-router-dom";
 
-function NovoVoucher() {
+function EditarVoucher() {
   return BaseTelas({
     conteudo: (
       <>
@@ -33,7 +33,7 @@ function NovoVoucher() {
   });
 }
 
-export default NovoVoucher;
+export default EditarVoucher;
 
 function NovoVoucherConteudo() {
   // Variáveis de estado
@@ -232,7 +232,7 @@ function NovoVoucherConteudo() {
         }}
       >
         <h3 style={{ color: Cor.secundaria, fontSize: "20px" }}>
-          Novo Voucher
+          Editar Voucher
         </h3>
         <div
           style={{
@@ -373,10 +373,10 @@ function DadosGerais({
             fontWeight: "bold",
           }}
         >
-          Criar Novo Voucher Extra
+          Criar Editar Voucher Extra
         </p>
         <p style={{ fontSize: 12, color: Cor.texto2, marginBottom: 5 }}>
-          Preencha a baixo os dados Gerais para criar um novo voucher extra.
+          Preencha a baixo os dados Gerais para criar um Editar voucher extra.
         </p>
       </div>
       <div
