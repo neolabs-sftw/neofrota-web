@@ -111,11 +111,11 @@ function VerEmpresaConteudo({
 function Cabecalho() {
   const Cor = useTema().Cor;
   const { clienteId } = useParams();
+  
+  const navigate = useNavigate();
 
   const { listaUnidades } = useUnidadeCliente(clienteId || "");
   const { solicitantes } = useSolicitante(clienteId || "");
-
-  console.log(solicitantes);
 
   const undCabecalho = listaUnidades?.find((u: any) => u.matriz === true);
 
@@ -220,6 +220,7 @@ function Cabecalho() {
             color: Cor.base,
             cursor: "pointer",
           }}
+          onClick={()=> navigate(`/editarempresa/${empresaCliente.id}`)}
         >
           Editar Informações
         </button>

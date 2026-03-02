@@ -4,6 +4,11 @@ import { gql, useQuery } from "@apollo/client";
 import { jwtDecode } from "jwt-decode";
 import { useEffect, useMemo, useState } from "react";
 import { exportarPlanilha } from "../hooks/exportarPlanilha";
+import CircularProgress from "@mui/material/CircularProgress";
+import styled from "styled-components";
+import { useEditarEmpresaCliente } from "../hooks/useEmpresaCliente";
+import { useAdminLogado } from "../hooks/AdminLogado";
+import { useSolicitante } from "../hooks/useSolicitantes";
 
 const GET_EMPRESAS_CLIENTES = gql`
   query EmpresaClienteOper($operadoraId: String) {
@@ -23,7 +28,6 @@ const GET_EMPRESAS_CLIENTES = gql`
 
 function ListaEmpresasCadastradas() {
   const Cor = useTema().Cor;
-  const navigate = useNavigate();
 
   const [busca, setBusca] = useState("");
 
@@ -53,11 +57,23 @@ function ListaEmpresasCadastradas() {
   const clientesFiltrados = useMemo(() => {
     if (!busca) return clientes;
     return clientes.filter((cliente: any) =>
-      cliente.nome.toLowerCase().includes(busca.toLowerCase())
+      cliente.nome.toLowerCase().includes(busca.toLowerCase()),
     );
   }, [clientes, busca]);
 
-  if (loading) return <p>Carregando...</p>;
+  if (loading)
+    return (
+      <CircularProgress
+        size={18}
+        thickness={8}
+        sx={{
+          color: Cor.primaria,
+          "& .MuiCircularProgress-circle": {
+            strokeLinecap: "round",
+          },
+        }}
+      />
+    );
   if (error) return <p>Erro ao carregar os dados</p>;
 
   return (
@@ -208,67 +224,9 @@ function ListaEmpresasCadastradas() {
               textAlign: "left",
             }}
           >
-            {clientesFiltrados.map((cliente: any) => (
-              <tr
-                key={cliente.id}
-                style={{
-                  borderBottom: "1px solid" + Cor.texto2 + 10,
-                  cursor: "pointer",
-                }}
-                onClick={() => navigate("/verempresa/" + cliente.id)}
-              >
-                <td
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <img
-                    src={cliente.fotoLogoCliente}
-                    alt=""
-                    style={{
-                      width: 50,
-                      height: 50,
-                      borderRadius: 10,
-                      boxShadow: "2px 2px 1px rgba(0, 0, 0, 0.05)",
-                      objectFit: "cover",
-                      objectPosition: "center",
-                    }}
-                  />
-                </td>
-                <td style={{ color: Cor.texto1 }}>{cliente.nome}</td>
-                <td style={{ color: Cor.texto1 }}>Pessoa Responsável</td>
-                <td style={{ color: Cor.texto1 }}>Email Responsável</td>
-                <td style={{ color: Cor.texto1 }}>Contato Responsável </td>
-                <td style={{ color: Cor.texto1 }}>{cliente.cnpj}</td>
-                <td>
-                  <p
-                    style={{
-                      color:
-                        cliente.statusCliente === true
-                          ? Cor.ativo
-                          : Cor.inativo,
-                      textAlign: "center",
-                      fontSize: 12,
-                      fontWeight: "bold",
-                      backgroundColor:
-                        cliente.statusCliente === true
-                          ? Cor.ativo + 30
-                          : Cor.inativo + 30,
-                      width: 80,
-                      height: 25,
-                      borderRadius: 22,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    {cliente.statusCliente ? "Ativo" : "Inativo"}
-                  </p>
-                </td>
-              </tr>
-            ))}
+            {clientesFiltrados.map((cliente: any) => {
+              return <LinhaEmpresa cliente={cliente} key={cliente.id} />;
+            })}
           </tbody>
         </table>
         <div
@@ -286,6 +244,149 @@ function ListaEmpresasCadastradas() {
         />
       </div>
     </div>
+  );
+}
+
+interface BtnStatusProps {
+  $cor: string;
+}
+
+const BtnStatus = styled.div<BtnStatusProps>`
+  color: ${({ $cor }) => $cor};
+  text-align: center;
+  font-size: 12px;
+  font-weight: bold;
+  background-color: ${({ $cor }) => $cor}15;
+  border: 1px solid ${({ $cor }) => $cor}30;
+  width: 80px;
+  height: 25px;
+  border-radius: 22px;
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: ease-in-out all 0.1s;
+  user-select: none;
+
+  &:hover {
+    scale: 1.02;
+    background-color: ${({ $cor }) => $cor}25;
+    border: 1px solid ${({ $cor }) => $cor}40;
+  }
+
+  &:active {
+    scale: 0.95;
+    background-color: ${({ $cor }) => $cor}50;
+    border: 1px solid ${({ $cor }) => $cor}90;
+  }
+`;
+
+function LinhaEmpresa({ cliente }: { cliente: any }) {
+  const operadora = useAdminLogado()?.operadora.id;
+
+  const {
+    editarEmpresa,
+    loading: Atualizando,
+    error,
+  } = useEditarEmpresaCliente(String(operadora));
+
+  const { solicitantes } = useSolicitante(cliente.id || "");
+
+  const solicitantePrincipal = solicitantes?.find(
+    (s: any) => s.funcao === "Prin",
+  );
+
+  const solicitante = solicitantePrincipal
+    ? solicitantePrincipal
+    : solicitantes?.[0];
+
+  async function editarStatusEmpresaFunc() {
+    try {
+      await editarEmpresa(String(cliente.id), {
+        operadoraId: Number(operadora),
+        statusCliente: !cliente.statusCliente,
+      });
+      console.log("Status atualizado com sucesso!");
+    } catch (err) {
+      console.error(error);
+    }
+  }
+
+  const { Cor } = useTema();
+  const navigate = useNavigate();
+  return (
+    <tr
+      key={cliente.id}
+      style={{
+        borderBottom: "1px solid" + Cor.texto2 + 10,
+        cursor: "pointer",
+      }}
+      onClick={() => navigate("/verempresa/" + cliente.id)}
+    >
+      <td
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <img
+          src={cliente.fotoLogoCliente}
+          alt=""
+          style={{
+            width: 50,
+            height: 50,
+            borderRadius: 10,
+            boxShadow: "2px 2px 1px rgba(0, 0, 0, 0.05)",
+            objectFit: "cover",
+            objectPosition: "center",
+          }}
+        />
+      </td>
+      <td style={{ color: Cor.texto1, width: "25%" }}>{cliente.nome}</td>
+      <td style={{ color: Cor.texto1, width: "15%" }}>
+        {solicitante?.nome || "-"}
+      </td>
+      <td style={{ color: Cor.texto1, width: "20%" }}>
+        {solicitante?.email || "-"}
+      </td>
+      <td style={{ color: Cor.texto1, width: "15%" }}>
+        {solicitante?.telefone || "-"}
+      </td>
+      <td style={{ color: Cor.texto1, width: "15%" }}>{cliente.cnpj}</td>
+      <td style={{ width: "10%" }}>
+        <BtnStatus
+          $cor={cliente.statusCliente ? Cor.ativo : Cor.atencao}
+          onClick={(e: any) => {
+            e.stopPropagation();
+            editarStatusEmpresaFunc();
+          }}
+        >
+          {Atualizando ? (
+            <CircularProgress
+              size={18}
+              thickness={8}
+              sx={{
+                color: cliente.statusCliente ? Cor.ativo : Cor.atencao,
+                "& .MuiCircularProgress-circle": {
+                  strokeLinecap: "round",
+                },
+              }}
+            />
+          ) : (
+            <>
+              <p style={{ fontFamily: "Icone", fontSize: 16 }}>
+                {cliente.statusCliente ? "lock_open" : "lock"}
+              </p>
+              <p style={{ fontSize: 12 }}>
+                {cliente.statusCliente ? "Ativo" : "Inativo"}
+              </p>
+            </>
+          )}
+        </BtnStatus>
+      </td>
+    </tr>
   );
 }
 
