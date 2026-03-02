@@ -303,9 +303,9 @@ function EditarEmpresaConteudo() {
                   backgroundColor: Cor.texto2,
                   borderRadius: 12,
                   color: Cor.base,
-                  cursor: "pointer"
+                  cursor: "pointer",
                 }}
-                onClick={()=> removerFoto()}
+                onClick={() => removerFoto()}
               >
                 Remover Foto
               </p>
