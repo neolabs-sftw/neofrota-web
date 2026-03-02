@@ -62,11 +62,11 @@ function EditPerfil() {
               }
               alt="Logo"
               style={{
-                width: "40px",
-                height: "40px",
+                width: 40,
+                aspectRatio: 1,
                 objectFit: "cover",
-                borderRadius: "100px",
-                transition: "width 0.3s ease-in-out",
+                borderRadius: 100,
+                transition: "ease-in-out all 0.3s",
               }}
             />
             <p
@@ -87,6 +87,7 @@ function EditPerfil() {
               fontWeight: "bold",
               marginRight: "10px",
               cursor: "pointer",
+              userSelect:"none"
             }}
             onClick={() => setAberto(!aberto)}
           >
@@ -125,6 +126,7 @@ function EditPerfil() {
               alignItems: "center",
               justifyContent: "center",
               cursor: "pointer",
+              userSelect:"none"
             }}
             onClick={() => {
               alternarTema();
@@ -153,6 +155,7 @@ function EditPerfil() {
               alignItems: "center",
               justifyContent: "center",
               cursor: "pointer",
+              userSelect:"none"
             }}
             onClick={() => {
               localStorage.clear();

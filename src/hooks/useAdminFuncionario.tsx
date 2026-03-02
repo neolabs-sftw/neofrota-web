@@ -1,4 +1,4 @@
-import { gql, useQuery } from "@apollo/client";
+import { gql, useMutation, useQuery } from "@apollo/client";
 
 const GET_ADMIN_USER_BY_OPERADORA = gql`
   query AdminUsuario($adminUsuarioId: ID!) {
@@ -83,5 +83,40 @@ export function useListaAdminFuncionario(operadoraId: string) {
     loading,
     error,
     refetch: refetch || (() => Promise.resolve()),
+  };
+}
+
+const UPDATE_ADMIN_USER = gql`
+  mutation UpdateAdminUsuario(
+    $updateAdminUsuarioId: ID!
+    $data: AdminUsuarioInput!
+  ) {
+    updateAdminUsuario(id: $updateAdminUsuarioId, data: $data) {
+      id
+    }
+  }
+`;
+
+export function useEditarAdminUsuario(operadoraId: string) {
+  const [editar, { loading, data, error }] = useMutation(UPDATE_ADMIN_USER, {
+    refetchQueries: [
+      { query: GET_LIST_ADMIN_USER_BY_OPERADORA, variables: { operadoraId } },
+    ],
+  });
+
+  const editarAdmin = (updateAdminUsuarioId: string, data: any) => {
+    return editar({
+      variables: {
+        updateAdminUsuarioId,
+        data,
+      },
+    });
+  };
+
+  return {
+    editarAdmin,
+    loading,
+    data,
+    error,
   };
 }

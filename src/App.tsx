@@ -20,6 +20,7 @@ import CriarFuncionario from "./telas/subtelas/funcionario/criarFuncionario";
 import Passageiros from "./telas/subtelas/empresaCliente/passageiros";
 import NovoVoucher from "./telas/subtelas/VoucherExtra/novoVoucher";
 import { ModelosFixos } from "./telas/subtelas/modeloFixo/modelosFixos";
+import EditarFuncionario from "./telas/subtelas/funcionario/editarFuncionario";
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
               <Route path="/empresas" element={<Empresas />} />
               <Route path="/financeiro" element={<Financeiro />} />
               <Route path="/funcionarios" element={<Funcionarios />} />
+              <Route path="/editarfuncionario/:adminId" element={<EditarFuncionario />} />
               <Route path="/operacao" element={<Operacao />} />
               <Route path="/relatorios" element={<Relatorios />} />
               <Route path="/verempresa/:clienteId" element={<VerEmpresa />} />

@@ -1,44 +1,47 @@
 import { useState } from "react";
 import { useTema } from "../hooks/temaContext";
 import styled from "styled-components";
-import { useListaAdminFuncionario } from "../hooks/useAdminFuncionario";
+import {
+  useEditarAdminUsuario,
+  useListaAdminFuncionario,
+} from "../hooks/useAdminFuncionario";
 import CircularProgress from "@mui/material/CircularProgress";
+import { useAdminLogado } from "../hooks/AdminLogado";
+import { useNavigate } from "react-router-dom";
 
-interface TabelaFuncionariosProps {
-  $texto1: string;
-  $texto2: string;
-  $base: string;
+interface BtnProps {
+  $cor: string;
 }
 
-interface LinhaFuncionarioProps {
-  $texto1: string;
-  $base: string;
-}
+const Btn = styled.div<BtnProps>`
+  color: ${({ $cor }) => $cor};
+  text-align: center;
+  padding: 15px;
+  font-size: 12px;
+  font-weight: bold;
+  background-color: ${({ $cor }) => $cor}15;
+  border: 1px solid ${({ $cor }) => $cor}30;
+  width: 35%;
+  height: 25px;
+  border-radius: 22px;
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: ease-in-out all 0.1s;
+  user-select: none;
 
-const TabelaFuncionarios = styled.table<TabelaFuncionariosProps>`
-  width: 100%;
-  border-collapse: collapse;
-  th {
-    text-align: left;
-    padding: 5px;
-    color: ${({ $texto1 }) => $texto1};
-    font-size: 12px;
-    background-color: ${({ $texto2 }) => $texto2 + 80};
-  }
-  td {
-    text-align: left;
-    padding: 5px;
-    color: ${({ $texto1 }) => $texto1};
-  }
-`;
-
-const LinhaUsuario = styled.tr<LinhaFuncionarioProps>`
-  font-size: 14px;
-  &:nth-child(even) {
-    background-color: ${({ $base }) => $base};
-  }
   &:hover {
-    background-color: ${({ $texto1 }) => $texto1 + "15"};
+    scale: 1.02;
+    background-color: ${({ $cor }) => $cor}25;
+    border: 1px solid ${({ $cor }) => $cor}40;
+  }
+
+  &:active {
+    scale: 0.95;
+    background-color: ${({ $cor }) => $cor}50;
+    border: 1px solid ${({ $cor }) => $cor}90;
   }
 `;
 
@@ -46,7 +49,9 @@ function ListaFuncionariosOperadora() {
   const [busca, setBusca] = useState("");
   const Cor = useTema().Cor;
 
-  const { listAdminFuncionario, loading } = useListaAdminFuncionario("1");
+  const operadora = useAdminLogado()?.operadora.id;
+
+  const { listAdminFuncionario } = useListaAdminFuncionario(String(operadora));
 
   return (
     <div
@@ -152,91 +157,172 @@ function ListaFuncionariosOperadora() {
           </div>
         </div>
       </div>
-      <TabelaFuncionarios
-        $base={Cor.base}
-        $texto1={Cor.texto1}
-        $texto2={Cor.texto2}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          width: "100%",
+          backgroundColor: Cor.texto2 + 50,
+          padding: 5,
+          color: Cor.texto1,
+          fontSize: 14,
+          fontWeight: "bold",
+        }}
       >
-        <thead>
-          <tr>
-            <th style={{ width: "5%" }}>Id</th>
-            <th style={{ width: "30%" }}>Nome</th>
-            <th style={{ width: "20%" }}>E-mail</th>
-            <th style={{ width: "10%" }}>Função</th>
-            <th style={{ width: "15%" }}>Status</th>
-            <th style={{ width: "5%" }}>Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          {loading ? (
-            <tr
-              style={{
-                textAlign: "center",
-                justifyContent: "center",
-                alignItems: "center",
-                gap: 20,
-              }}
-            >
-              <td colSpan={7}>
-                <p>Carregando...</p>
-                <CircularProgress size={15} thickness={3} color="inherit" />
-              </td>
-            </tr>
-          ) : (
-            listAdminFuncionario?.map((funcionario) => {
-              return (
-                <LinhaUsuario
-                  $base={Cor.base}
-                  $texto1={Cor.texto1}
-                  key={funcionario.id}
-                >
-                  <td>
-                    <div
-                      style={{ display: "flex", flexDirection: "row", gap: 5 }}
-                    >
-                      <img
-                        src={
-                          funcionario.fotoAdminOperadora
-                            ? funcionario.fotoAdminOperadora
-                            : "https://iyqleanlhzcnndzuugkg.supabase.co/storage/v1/object/public/neofrotabkt/img_perfis/default.png"
-                        }
-                        alt=""
-                        style={{
-                          width: 50,
-                          aspectRatio: 1,
-                          borderRadius: 14,
-                          objectFit: "cover",
-                          boxShadow: Cor.sombra,
-                        }}
-                      />
-                    </div>
-                  </td>
-                  <td>{funcionario?.nome}</td>
-                  <td>{funcionario?.email}</td>
-                  <td>{funcionario?.funcao}</td>
-                  <td>
-                    {funcionario?.statusAdminOperadora ? "Ativo" : "Inativo"}
-                  </td>
-                  <td>
-                    <p
-                      style={{
-                        fontFamily: "Icone",
-                        fontWeight: "bold",
-                        fontSize: "24px",
-                        color: Cor.primaria,
-                        cursor: "pointer",
-                      }}
-                    >
-                      edit
-                    </p>
-                  </td>
-                </LinhaUsuario>
-              );
-            })
-          )}
-        </tbody>
-      </TabelaFuncionarios>
+        <p style={{ width: "5%" }}>Foto</p>
+        <p style={{ width: "30%" }}>Nome</p>
+        <p style={{ width: "25%" }}>E-mail</p>
+        <p style={{ width: "10%" }}>Função</p>
+        <p style={{ width: "30%", textAlign: "center" }}>Status</p>
+      </div>
+      {listAdminFuncionario?.map((f: any, index: any) => {
+        const par = index % 2 === 0;
+        return <LinhaFuncionario par={par} f={f} key={f.id} />;
+      })}
     </div>
+  );
+}
+
+interface LinhaFuncionaroProps {
+  $cor: string;
+  $cor2: string;
+}
+
+const LinhaFuncionarioStyle = styled.div<LinhaFuncionaroProps>`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 60px;
+  padding: 5px;
+  background-color: ${({ $cor }) => $cor};
+  transition: ease-in-out all 0.1s;
+  color:  ${({ $cor2 }) => $cor2};
+
+  &:hover{
+  background-color: ${({ $cor2 }) => $cor2}10
+`;
+
+function LinhaFuncionario({ f, par }: { f: any; par: boolean }) {
+  const { Cor } = useTema();
+
+  const operadora = useAdminLogado()?.operadora.id;
+
+  const [lStatus, setLStatus] = useState(false);
+  const [lDelete, setLDelete] = useState(false);
+
+  const { editarAdmin } = useEditarAdminUsuario(String(operadora));
+
+  async function alterarStatus() {
+    setLStatus(true);
+    await editarAdmin(f.id, {
+      operadoraId: operadora,
+      statusAdminOperadora: !f.statusAdminOperadora,
+    });
+    setLStatus(false);
+  }
+  async function deletarFuncionario() {
+    setLDelete(true);
+    await editarAdmin(f.id, {
+      operadoraId: operadora,
+      statusAdminOperadora: !f.statusAdminOperadora,
+      funcao: null,
+    });
+    setLDelete(false);
+  }
+
+  const navigate = useNavigate();
+
+  return (
+    <LinhaFuncionarioStyle
+      $cor={par ? Cor.texto1 + "00" : Cor.texto1 + "05"}
+      $cor2={Cor.texto1}
+      onClick={() => navigate(`/editarfuncionario/${f.id}`)}
+    >
+      <div style={{ width: "5%" }}>
+        <img
+          src={
+            f.fotoAdminOperadora
+              ? f.fotoAdminOperadora
+              : "https://iyqleanlhzcnndzuugkg.supabase.co/storage/v1/object/public/neofrotabkt/img_perfis/default.png"
+          }
+          alt=""
+          style={{
+            width: 50,
+            aspectRatio: 1,
+            borderRadius: 14,
+            objectFit: "cover",
+            boxShadow: Cor.sombra,
+          }}
+        />
+      </div>
+
+      <p style={{ width: "30%" }}>{f.nome}</p>
+      <p style={{ width: "25%" }}>{f.email}</p>
+      <p style={{ width: "10%" }}>{f.funcao}</p>
+      <div
+        style={{
+          width: "30%",
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "space-evenly",
+        }}
+      >
+        <Btn
+          $cor={f.statusAdminOperadora ? Cor.ativo : Cor.atencao}
+          onClick={(e) => {
+            alterarStatus();
+            e.stopPropagation();
+          }}
+        >
+          {lStatus ? (
+            <CircularProgress
+              size={18}
+              thickness={8}
+              sx={{
+                color: f.statusAdminOperadora ? Cor.ativo : Cor.atencao,
+                "& .MuiCircularProgress-circle": {
+                  strokeLinecap: "round",
+                },
+              }}
+            />
+          ) : (
+            <>
+              <p style={{ fontFamily: "Icone", fontSize: 16 }}>
+                {f.statusAdminOperadora ? "lock_open" : "lock"}
+              </p>
+              <p style={{ fontSize: 12 }}>
+                {f.statusAdminOperadora ? "Ativo" : "Inativo"}
+              </p>
+            </>
+          )}
+        </Btn>
+        <Btn
+          $cor={Cor.atencao}
+          onClick={(e) => {
+            deletarFuncionario();
+            e.stopPropagation();
+          }}
+        >
+          {lDelete ? (
+            <CircularProgress
+              size={18}
+              thickness={8}
+              sx={{
+                color: f.statusAdminOperadora ? Cor.ativo : Cor.atencao,
+                "& .MuiCircularProgress-circle": {
+                  strokeLinecap: "round",
+                },
+              }}
+            />
+          ) : (
+            <>
+              <p style={{ fontFamily: "Icone", fontSize: 16 }}>delete</p>
+              <p style={{ fontSize: 12 }}>Remover</p>
+            </>
+          )}
+        </Btn>
+      </div>
+    </LinhaFuncionarioStyle>
   );
 }
 
