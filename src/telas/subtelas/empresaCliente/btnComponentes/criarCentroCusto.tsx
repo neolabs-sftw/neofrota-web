@@ -3,6 +3,7 @@ import { useTema } from "../../../../hooks/temaContext";
 import { useParams } from "react-router-dom";
 import { gql, useMutation } from "@apollo/client";
 import { jwtDecode } from "jwt-decode";
+import styled from "styled-components";
 
 const CRIAR_CENTRO_CUSTO = gql`
   mutation CreateCentroCusto($input: CentroCustoInput!) {
@@ -29,26 +30,48 @@ const GET_CENTROS_CUSTO_CLIENTE_ID = gql`
   }
 `;
 
+interface BtnProps {
+  $base: string;
+  $cor: string;
+}
+
+const Btn = styled.div<BtnProps>`
+  width: 27.5%;
+  height: 100px;
+  background-color: ${({ $base }) => $base}99;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid ${({ $cor }) => $cor}50;
+  user-select: none;
+  cursor: pointer;
+  border-radius: 22px;
+  box-shadow: 2px 2px 4px #00000010;
+  transition: ease-in-out all 0.1s;
+
+  &:hover {
+    scale: 1.02;
+    background-color: ${({ $base }) => $base}BB;
+    box-shadow: 3px 3px 6px #00000010;
+  }
+
+  &:active {
+    scale: 0.98;
+    background-color: ${({ $base }) => $base};
+    box-shadow: 1px 1px 2px #00000030;
+  }
+`;
+
 function CriarCentroCusto() {
   const Cor = useTema().Cor;
   const [cxCriarCentroCusto, setCxCriarCentroCusto] = useState(false);
 
   return (
     <>
-      <div
-        style={{
-          width: "25%",
-          height: 100,
-          backgroundColor: Cor.base2,
-          borderRadius: 22,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          border: "1px solid" + Cor.primaria + 50,
-          boxShadow: Cor.sombra,
-          cursor: "pointer",
-        }}
+      <Btn
+        $base={Cor.base2}
+        $cor={Cor.primaria}
         onClick={() => setCxCriarCentroCusto(true)}
       >
         <p
@@ -62,9 +85,9 @@ function CriarCentroCusto() {
           arrows_input
         </p>
         <p style={{ textAlign: "center", fontSize: 12, color: Cor.texto1 }}>
-          Centro de <br/> Custo
+          Centro de Custo
         </p>
-      </div>
+      </Btn>
       <ModalCriarSolicitante
         cxCriarCentroCusto={cxCriarCentroCusto}
         setCxCriarCentroCusto={setCxCriarCentroCusto}
@@ -128,15 +151,18 @@ function ModalCriarSolicitante({
       style={{
         width: "100vw",
         height: "100vh",
-        display: cxCriarCentroCusto ? "flex" : "none",
+        display: "flex",
         position: "absolute",
         zIndex: 10,
         top: 0,
         left: 0,
-        backgroundColor: Cor.base2 + "80",
+        backgroundColor: Cor.texto1 + 50,
         backdropFilter: "blur(2.5px)",
         justifyContent: "center",
         alignItems: "center",
+        opacity: cxCriarCentroCusto ? 1 : 0,
+        transition: `ease-in-out all 0.2s`,
+        pointerEvents: cxCriarCentroCusto ? "auto" : "none",
       }}
       onClick={() => setCxCriarCentroCusto(false)}
     >
@@ -152,6 +178,8 @@ function ModalCriarSolicitante({
           gap: 10,
           border: "1px solid" + Cor.texto2 + 50,
           boxShadow: Cor.sombra,
+          transition: `ease-in-out all 0.2s`,
+          scale: cxCriarCentroCusto ? 1 : 0.6,
         }}
         onClick={(e) => {
           e.stopPropagation();
@@ -225,7 +253,6 @@ function ModalCriarSolicitante({
             type="text"
             largura="100%"
           />
-        
         </div>
 
         <div
@@ -255,8 +282,8 @@ function ModalCriarSolicitante({
             onClick={() => {
               criarCentroCustoFunc();
               setCxCriarCentroCusto(false);
-              setNome("")
-              setCodigo("")
+              setNome("");
+              setCodigo("");
             }}
           >
             <p style={{ fontSize: 14, color: Cor.texto1, fontWeight: "bold" }}>

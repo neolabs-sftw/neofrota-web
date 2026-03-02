@@ -12,6 +12,7 @@ import CriarCentroCusto from "./btnComponentes/criarCentroCusto";
 import ListaCentrosCustoEmpresaCliente from "../../../componentes/listaCentrosCustoEmpresaCliente";
 import { useUnidadeCliente } from "../../../hooks/useUnidadesClientes";
 import { useSolicitante } from "../../../hooks/useSolicitantes";
+import styled from "styled-components";
 
 const GET_EMPRESA_CLIENTE = gql`
   query EmpresaClienteId($empresaClienteId: ID!) {
@@ -114,8 +115,17 @@ function Cabecalho() {
   const { listaUnidades } = useUnidadeCliente(clienteId || "");
   const { solicitantes } = useSolicitante(clienteId || "");
 
-  const undCabecalho = listaUnidades?.[0] || null;
-  const solicitanteCabecalho = solicitantes?.[0] || null;
+  console.log(solicitantes);
+
+  const undCabecalho = listaUnidades?.find((u: any) => u.matriz === true);
+
+  const solicitantePrincipal = solicitantes?.find(
+    (s: any) => s.funcao === "Prin",
+  );
+
+  const solicitanteCabecalho = solicitantePrincipal
+    ? solicitantePrincipal
+    : solicitantes?.[0];
 
   const {
     data: empresa,
@@ -387,6 +397,39 @@ function Cabecalho() {
   );
 }
 
+interface BtnProps {
+  $base: string;
+  $cor: string;
+}
+
+const Btn = styled.div<BtnProps>`
+  width: 22.5%;
+  height: 100px;
+  background-color: ${({ $base }) => $base}99;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid ${({ $cor }) => $cor}50;
+  user-select: none;
+  cursor: pointer;
+  border-radius: 22px;
+  box-shadow: 2px 2px 4px #00000010;
+  transition: ease-in-out all 0.1s;
+
+  &:hover {
+    scale: 1.02;
+    background-color: ${({ $base }) => $base}BB;
+    box-shadow: 3px 3px 6px #00000010;
+  }
+
+  &:active {
+    scale: 0.98;
+    background-color: ${({ $base }) => $base};
+    box-shadow: 1px 1px 2px #00000030;
+  }
+`;
+
 function BtnPassageiros() {
   const Cor = useTema().Cor;
 
@@ -394,23 +437,11 @@ function BtnPassageiros() {
 
   const navigate = useNavigate();
   return (
-    <div
-      style={{
-        width: "25%",
-        height: 100,
-        backgroundColor: Cor.base2,
-        borderRadius: 22,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        border: "1px solid" + Cor.primaria + 50,
-        cursor: "pointer",
-        boxShadow: Cor.sombra,
-      }}
+    <Btn
+      $base={Cor.base2}
+      $cor={Cor.primaria}
       onClick={() => navigate(`/passageiros/${clienteId}`)}
     >
-      {" "}
       <p
         style={{
           fontFamily: "Icone",
@@ -424,7 +455,7 @@ function BtnPassageiros() {
       <p style={{ textAlign: "center", fontSize: 12, color: Cor.texto1 }}>
         Passageiros
       </p>
-    </div>
+    </Btn>
   );
 }
 

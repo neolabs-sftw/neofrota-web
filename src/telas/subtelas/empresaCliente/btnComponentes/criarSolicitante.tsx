@@ -2,47 +2,81 @@ import { useState } from "react";
 import { useTema } from "../../../../hooks/temaContext";
 import { gql, useMutation } from "@apollo/client";
 import { jwtDecode } from "jwt-decode";
+import styled from "styled-components";
 
 const CRIAR_SOLICITANTE = gql`
-    mutation CreateSolicitante($input: SolicitanteInput!) {
-      createSolicitante(input: $input) {
+  mutation CreateSolicitante($input: SolicitanteInput!) {
+    createSolicitante(input: $input) {
+      id
+      nome
+      email
+      senha
+      funcao
+      telefone
+      operadoraId {
         id
-        nome
-        email
-        senha
-        funcao
-        telefone
-        operadoraId {
-          id
-        }
-        statusSolicitante
-        empresaClienteId {
-          id
-        }
-        fotoUrlSolicitante
       }
+      statusSolicitante
+      empresaClienteId {
+        id
+      }
+      fotoUrlSolicitante
     }
-  `;
-
-  const GET_SOLICITANTES_EMPRESA_CLIENTE = gql`
-  query SolicitantesEmpresaClienteId($solicitantesEmpresaClienteId: ID!) {
-  solicitantesEmpresaClienteId(id: $solicitantesEmpresaClienteId) {
-    id
-    nome
-    email
-    senha
-    funcao
-    telefone
-    operadoraId {
-      id
-    }
-    statusSolicitante
-    empresaClienteId {
-      id
-    }
-    fotoUrlSolicitante
   }
+`;
+
+const GET_SOLICITANTES_EMPRESA_CLIENTE = gql`
+  query SolicitantesEmpresaClienteId($solicitantesEmpresaClienteId: ID!) {
+    solicitantesEmpresaClienteId(id: $solicitantesEmpresaClienteId) {
+      id
+      nome
+      email
+      senha
+      funcao
+      telefone
+      operadoraId {
+        id
+      }
+      statusSolicitante
+      empresaClienteId {
+        id
+      }
+      fotoUrlSolicitante
+    }
+  }
+`;
+
+interface BtnProps {
+  $base: string;
+  $cor: string;
 }
+
+const Btn = styled.div<BtnProps>`
+  width: 22.5%;
+  height: 100px;
+  background-color: ${({ $base }) => $base}99;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid ${({ $cor }) => $cor}50;
+  user-select: none;
+  cursor: pointer;
+  border-radius: 22px;
+  box-shadow: 2px 2px 4px #00000010;
+  transition: ease-in-out all 0.1s;
+
+  &:hover {
+    scale: 1.02;
+    background-color: ${({ $base }) => $base}BB;
+    box-shadow: 3px 3px 6px #00000010;
+  }
+
+  &:active {
+    scale: 0.98;
+    background-color: ${({ $base }) => $base};
+    box-shadow: 1px 1px 2px #00000030;
+  }
 `;
 
 function criarSolicitante({ empresaClienteId }: { empresaClienteId: any }) {
@@ -51,20 +85,9 @@ function criarSolicitante({ empresaClienteId }: { empresaClienteId: any }) {
 
   return (
     <>
-      <div
-        style={{
-          width: "25%",
-          height: 100,
-          backgroundColor: Cor.base2,
-          borderRadius: 22,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          border: "1px solid" + Cor.primaria + 50,
-          boxShadow: Cor.sombra,
-          cursor: "pointer",
-        }}
+      <Btn
+        $base={Cor.base2}
+        $cor={Cor.primaria}
         onClick={() => setCxCriarSolicitante(true)}
       >
         <p
@@ -80,7 +103,7 @@ function criarSolicitante({ empresaClienteId }: { empresaClienteId: any }) {
         <p style={{ textAlign: "center", fontSize: 12, color: Cor.texto1 }}>
           Solicitante
         </p>
-      </div>
+      </Btn>
       <ModalCriarSolicitante
         cxCriarSolicitante={cxCriarSolicitante}
         setCxCriarSolicitante={setCxCriarSolicitante}
@@ -119,7 +142,7 @@ function ModalCriarSolicitante({
   const [telefone, setTelefone] = useState("");
   const [funcao, setFuncao] = useState("");
 
-  const [criarSolicitanteMutation] = useMutation(CRIAR_SOLICITANTE,{
+  const [criarSolicitanteMutation] = useMutation(CRIAR_SOLICITANTE, {
     refetchQueries: [
       {
         query: GET_SOLICITANTES_EMPRESA_CLIENTE,
@@ -127,7 +150,7 @@ function ModalCriarSolicitante({
           solicitantesEmpresaClienteId: empresaClienteId,
         },
       },
-    ]
+    ],
   });
 
   const criarSolicitanteFunc = async () => {
@@ -150,15 +173,18 @@ function ModalCriarSolicitante({
       style={{
         width: "100vw",
         height: "100vh",
-        display: cxCriarSolicitante ? "flex" : "none",
+        display: "flex",
         position: "absolute",
         zIndex: 10,
         top: 0,
         left: 0,
-        backgroundColor: Cor.base2 + "80",
+        backgroundColor: Cor.texto1 + 50,
         backdropFilter: "blur(2.5px)",
         justifyContent: "center",
         alignItems: "center",
+        opacity: cxCriarSolicitante ? 1 : 0,
+        transition: `ease-in-out all 0.2s`,
+        pointerEvents: cxCriarSolicitante ? "auto" : "none",
       }}
       onClick={() => setCxCriarSolicitante(false)}
     >
@@ -174,6 +200,8 @@ function ModalCriarSolicitante({
           gap: 10,
           border: "1px solid" + Cor.texto2 + 50,
           boxShadow: Cor.sombra,
+          transition: `ease-in-out all 0.2s`,
+          scale: cxCriarSolicitante ? 1 : 0.6,
         }}
         onClick={(e) => {
           e.stopPropagation();
@@ -283,6 +311,9 @@ function ModalCriarSolicitante({
             >
               <option value="" style={{ color: "#555555" }}>
                 Selecione uma Função
+              </option>
+              <option value="Prin" style={{ color: "#555555" }}>
+                Principal
               </option>
               <option value="Finc" style={{ color: "#555555" }}>
                 Administrador

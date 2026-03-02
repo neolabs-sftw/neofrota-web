@@ -159,9 +159,19 @@ function SelectCentroCusto({ setbCentro }: { setbCentro: any }) {
       }}
       onChange={(e) => setbCentro(e.target.value)}
     >
-      <option value="">Todos</option>
+      <option value="" style={{ backgroundColor: Cor.base, color: Cor.texto1 }}>
+        Todos
+      </option>
       {listaCentrosCustos.map((c: any) => {
-        return <option key={c.id} value={c.nome}>{c?.nome || ""}</option>;
+        return (
+          <option
+            key={c.id}
+            value={c.nome}
+            style={{ backgroundColor: Cor.base, color: Cor.texto1 }}
+          >
+            {c?.nome || ""}
+          </option>
+        );
       })}
     </select>
   );

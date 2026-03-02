@@ -1,4 +1,4 @@
-import { gql, useQuery } from "@apollo/client";
+import { gql, useMutation, useQuery } from "@apollo/client";
 
 const GET_SOLICITANTES_EMPRESA_ID = gql`
   query SolicitantesEmpresaClienteId($solicitantesEmpresaClienteId: ID!) {
@@ -26,13 +26,51 @@ export function useSolicitante(solicitantesEmpresaClienteId: any) {
     GET_SOLICITANTES_EMPRESA_ID,
     {
       variables: { solicitantesEmpresaClienteId },
-      fetchPolicy: "cache-and-network" 
-    }
+      fetchPolicy: "cache-and-network",
+    },
   );
   return {
     solicitantes: data?.solicitantesEmpresaClienteId,
     loading,
     error,
     refetch: refetch || Promise.resolve(),
+  };
+}
+
+const UPDATE_SOLICITANTE = gql`
+  mutation UpdateSolicitante(
+    $updateSolicitanteId: ID!
+    $input: SolicitanteInput!
+  ) {
+    updateSolicitante(id: $updateSolicitanteId, input: $input) {
+      id
+    }
+  }
+`;
+
+export function useEditarSolicitante(solicitantesEmpresaClienteId: any) {
+  const [edit, { data, loading, error }] = useMutation(UPDATE_SOLICITANTE, {
+    refetchQueries: [
+      {
+        query: GET_SOLICITANTES_EMPRESA_ID,
+        variables: { solicitantesEmpresaClienteId },
+      },
+    ],
+  });
+
+  const editarSolicitante = (updateSolicitanteId: any, input: any) => {
+    return edit({
+      variables: {
+        updateSolicitanteId,
+        input,
+      },
+    });
+  };
+
+  return {
+    editarSolicitante,
+    data,
+    loading,
+    error,
   };
 }

@@ -343,15 +343,31 @@ function DadosGerais({
 
   const operId = getOperadoraId();
 
-  const { listaClientes } = useListaClientes(operId || "0");
+  const { listaClientes: listaClientesTotal } = useListaClientes(operId || "0");
 
-  const { listaUnidades, loading } = useUnidadeCliente(empresaCliente || "0");
+  const listaClientes = listaClientesTotal?.filter(
+    (c: any) => c.statusCliente === true,
+  );
+
+  const { listaUnidades: listaUnidadesTotal, loading } = useUnidadeCliente(
+    empresaCliente || "0",
+  );
+
+  const listaUnidades = listaUnidadesTotal?.filter(
+    (u: any) => u.statusUnidadeCliente === true,
+  );
 
   useEffect(() => {
     setCarregandoEmpresa(loading);
   }, [loading]);
 
-  const { solicitantes } = useSolicitante(empresaCliente || "0");
+  const { solicitantes: solicitantesTotal } = useSolicitante(
+    empresaCliente || "0",
+  );
+
+  const solicitantes = solicitantesTotal?.filter(
+    (s: any) => s.statusSolicitante === true,
+  );
 
   return (
     <div
@@ -1275,13 +1291,13 @@ function SeletorPassageiro({
   passageirosVoucher: any;
   setPassageirosVoucher: any;
 }) {
-  const { listaPassageiro } = usePassageiros(empresaCliente || "0");
+  const { listaPassageiro } = usePassageiros(empresaCliente ?? "");
 
   const desabilitado = !listaPassageiro || listaPassageiro.length === 0;
 
   const [cxPesquisa, setCxPesquisa] = useState<boolean>(false);
 
-  const Cor = useTema().Cor;
+  const { Cor } = useTema();
 
   return (
     <>
@@ -1328,7 +1344,9 @@ function ModalSeletorPassageiro({
   const [nomeBusca, setNomeBusca] = useState<string>("");
   const [bairroBusca, setBairroBusca] = useState<string>("");
 
-  const { listaPassageiro } = usePassageiros(empresaCliente || "0");
+  const { listaPassageiro: listaTotal } = usePassageiros(empresaCliente || "0");
+
+  const listaPassageiro = listaTotal?.filter((p: any) => p.ativo === true);
 
   const Cor = useTema().Cor;
 

@@ -169,3 +169,51 @@ export function useCreatePassageiro() {
     error,
   };
 }
+
+const UPDATE_PASSAGEIRO = gql`
+  mutation UpdatePassageiro($updatePassageiroId: ID!, $data: PassageiroInput!) {
+    updatePassageiro(id: $updatePassageiroId, data: $data) {
+      id
+    }
+  }
+`;
+
+interface PassageiroInput {
+  nome: string;
+  matricula: string;
+  telefone: string;
+  email: string;
+  endRua: string;
+  endNumero: string;
+  endBairro: string;
+  endCidade: string;
+  pontoApanha: string;
+  horarioEmbarque: string;
+  fotoPerfilPassageiro: string;
+  centroCustoClienteId: number;
+  empresaClienteId: number;
+  ativo: Boolean;
+}
+
+export function useUpdatePassageiro() {
+  const [update, { data, loading, error }] = useMutation(UPDATE_PASSAGEIRO);
+
+  const atualizarPassageiro = (
+    id: string,
+    data: Partial<PassageiroInput>,
+  ) => {
+    return update({
+      variables: {
+        updatePassageiroId: id,
+        data,
+      },
+    });
+  };
+
+  return {
+    atualizarPassageiro,
+    data,
+    loading,
+    error,
+  };
+}

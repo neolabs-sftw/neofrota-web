@@ -1,10 +1,12 @@
 import styled from "styled-components";
 import { useTema } from "../hooks/temaContext";
-import { usePassageiros } from "../hooks/usePassageiros";
+import { usePassageiros, useUpdatePassageiro } from "../hooks/usePassageiros";
 import { useParams } from "react-router-dom";
 import { useEmpresaCliente } from "../hooks/useEmpresaCliente";
 import { useEffect, useState } from "react";
 import LinhaTabelaPassageiro from "../telas/subtelas/empresaCliente/btnComponentes/verPassageiro";
+import { useCentroCustoByEmpresa } from "../hooks/useCentrosDeCusto";
+import { supabase } from "../hooks/supabaseClient";
 
 function ListaPassageiros({
   bNome,
@@ -154,8 +156,9 @@ function TabelaPassageiros({
         <p style={{ width: "25%", textAlign: "center" }}>Nome</p>
         <p style={{ width: "5%", textAlign: "center" }}>Horário</p>
         <p style={{ width: "30%", textAlign: "center" }}>Endereço</p>
-        <p style={{ width: "15%", textAlign: "center" }}>Centro Custo</p>
+        <p style={{ width: "10%", textAlign: "center" }}>Centro Custo</p>
         <p style={{ width: "10%", textAlign: "center" }}>Telefone</p>
+        <p style={{ width: "5%", textAlign: "center" }}>Status</p>
       </div>
       <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
         {listaPassageiro?.map((passageiro: any, index) => (
@@ -188,7 +191,12 @@ function ModalVerPassageiro({
   setCxVerPassageiro: any;
   cxVerPassageiro: boolean;
 }) {
-  const Cor = useTema().Cor;
+  const { Cor } = useTema();
+
+  const { clienteId } = useParams();
+
+  const { listaCentrosCustos } = useCentroCustoByEmpresa(String(clienteId));
+  const { refetch } = usePassageiros(clienteId!);
 
   const [nome, setNome] = useState<string>();
   const [email, setEmail] = useState<string>();
@@ -203,17 +211,15 @@ function ModalVerPassageiro({
   const [pontoApanha, setPontoApanha] = useState<string>();
   const [fotoPerfilPassageiro, setFotoPerfilPassageiro] = useState<File>();
 
-  const [imgPreview, setImgPreview] = useState<string>(
-    passageiro?.fotoPerfilPassageiro ||
-      "https://www.shutterstock.com/image-vector/default-avatar-profile-icon-social-600nw-1906669723.jpg",
-  );
+  const [imgPreview, setImgPreview] = useState<string>();
 
   useEffect(() => {
-    if (!cxVerPassageiro) return;
+      
 
     if (passageiro) {
-      fotoPerfilPassageiro;
-      setNome(passageiro.nome ?? "")
+      setFotoPerfilPassageiro(passageiro?.fotoPerfilPassageiro ?? "");
+      setImgPreview(passageiro.fotoPerfilPassageiro ?? "");
+      setNome(passageiro.nome ?? "");
       setEmail(passageiro.email ?? "");
       setTelefone(passageiro.telefone ?? "");
       setMatricula(passageiro.matricula ?? "");
@@ -229,7 +235,6 @@ function ModalVerPassageiro({
       setHorarioEmbarque(passageiro.horarioEmbarque ?? "");
       setPontoApanha(passageiro.pontoApanha ?? "");
     } else {
-      // create: limpa
       setNome("");
       setEmail("");
       setTelefone("");
@@ -242,31 +247,82 @@ function ModalVerPassageiro({
       setHorarioEmbarque("");
       setPontoApanha("");
     }
-  }, [cxVerPassageiro, passageiro?.id]); // ✅ NÃO coloque "nome", "email" etc aqui
+  }, [cxVerPassageiro, passageiro?.id]);
 
-  function carregarImagem(event: React.ChangeEvent<HTMLInputElement>) {
-    const files = event.target.files;
-    if (files && files[0]) {
-      const file = files[0];
+  const carregarImagem = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImgPreview(URL.createObjectURL(file));
       setFotoPerfilPassageiro(file);
-      try {
-        const url = URL.createObjectURL(file);
-        setImgPreview(url);
-      } catch {
-        setImgPreview("");
+    }
+  };
+
+  const { atualizarPassageiro } = useUpdatePassageiro();
+
+  function removerFoto() {
+    setImgPreview("");
+    setFotoPerfilPassageiro(undefined);
+  }
+
+  async function AtualizarPassageiroFunc() {
+    try {
+      let fotoUrlFinal = "";
+
+      if (fotoPerfilPassageiro instanceof File) {
+        console.log("A enviar nova foto...");
+
+        const nomeImg = `foto_perfil_passageiros/${nome}_${matricula}-${Date.now()}.png`;
+        const bucket = "neofrotabkt";
+
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from(bucket)
+          .upload(nomeImg, fotoPerfilPassageiro);
+
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabase.storage
+          .from(bucket)
+          .getPublicUrl(uploadData.path);
+
+        fotoUrlFinal = urlData.publicUrl;
+      } else if (typeof fotoPerfilPassageiro === "string") {
+        fotoUrlFinal = fotoPerfilPassageiro;
       }
-    } else {
-      setFotoPerfilPassageiro(undefined);
-      setImgPreview("");
+      const passageiroAlterar = {
+        centroCustoClienteId: Number(centroCusto) || 0,
+        email: email || "",
+        empresaClienteId: Number(clienteId),
+        endBairro: endBairro || "",
+        endCidade: endCidade || "",
+        endNumero: endNumero || "",
+        endRua: endRua || "",
+
+        fotoPerfilPassageiro: fotoUrlFinal,
+
+        horarioEmbarque: horarioEmbarque || "",
+        matricula: matricula || "",
+        nome: nome || "",
+        pontoApanha: pontoApanha || "",
+        telefone: telefone || "",
+      };
+
+      console.log("Enviando para o servidor:", passageiroAlterar);
+
+      await atualizarPassageiro(String(passageiro.id), passageiroAlterar);
+      refetch();
+      setCxVerPassageiro(false);
+    } catch (error) {
+      console.error("Erro ao atualizar o passageiro:", error);
     }
   }
+
   return (
     <div
       style={{
         width: "100%",
         height: "100%",
-        backgroundColor: Cor.base + 60,
-        backdropFilter: "blur(2px)",
+        backgroundColor: Cor.texto1 + 60,
+        backdropFilter: "blur(3px)",
         position: "fixed",
         opacity: cxVerPassageiro ? 1 : 0,
         transition: "all 0.3s ease-in-out",
@@ -380,27 +436,70 @@ function ModalVerPassageiro({
                   backgroundPosition: "center",
                 }}
               />
-              <label
-                htmlFor="fotoUpload"
+              <div
                 style={{
-                  backgroundColor: Cor.primaria,
-                  color: Cor.base,
-                  borderRadius: 22,
-                  padding: "10px 20px",
-                  cursor: "pointer",
                   display: "flex",
                   flexDirection: "row",
-                  alignItems: "center",
-                  gap: 5,
-                  justifyContent: "center",
+                  width: "100%",
+                  justifyContent: "space-between",
+                  gap: 10,
                 }}
               >
-                <p style={{ fontFamily: "Icone", fontWeight: "bold" }}>add</p>
-                <p style={{ fontSize: 15 }}>Foto perfil</p>
-              </label>
+                <label
+                  htmlFor="fotoPassageiroUpload"
+                  style={{
+                    width: "50%",
+                    backgroundColor: Cor.primaria,
+                    color: Cor.base,
+                    borderRadius: 22,
+                    cursor: "pointer",
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 5,
+                    justifyContent: "center",
+                  }}
+                >
+                  <p
+                    style={{
+                      fontFamily: "Icone",
+                      fontWeight: "bold",
+                      fontSize: 22,
+                    }}
+                  >
+                    autorenew
+                  </p>
+                </label>
+                <button
+                  style={{
+                    width: "50%",
+                    backgroundColor: Cor.primaria,
+                    color: Cor.base,
+                    borderRadius: 22,
+                    cursor: "pointer",
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 5,
+                    justifyContent: "center",
+                    border: "none",
+                  }}
+                  onClick={() => removerFoto()}
+                >
+                  <p
+                    style={{
+                      fontFamily: "Icone",
+                      fontWeight: "bold",
+                      fontSize: 22,
+                    }}
+                  >
+                    delete
+                  </p>
+                </button>
+              </div>
 
               <input
-                id="fotoUpload"
+                id="fotoPassageiroUpload"
                 type="file"
                 title=""
                 accept="image/*"
@@ -420,6 +519,7 @@ function ModalVerPassageiro({
             >
               <TextoEntrada
                 placeholder="Nome do Passageiro"
+                lPlace="22%"
                 type="text"
                 largura="100%"
                 onChange={(e) => setNome(e.target.value)}
@@ -428,6 +528,7 @@ function ModalVerPassageiro({
               <div style={{ display: "flex", flexDirection: "row", gap: 10 }}>
                 <TextoEntrada
                   placeholder="E-mail"
+                  lPlace="11%"
                   type="text"
                   largura="60%"
                   onChange={(e) => {
@@ -437,6 +538,7 @@ function ModalVerPassageiro({
                 />
                 <TextoEntrada
                   placeholder="Telefone"
+                  lPlace="25%"
                   type="text"
                   largura="40%"
                   onChange={(e) => {
@@ -455,6 +557,7 @@ function ModalVerPassageiro({
               >
                 <TextoEntrada
                   placeholder="Matrícula"
+                  lPlace="22%"
                   type="text"
                   largura="50%"
                   onChange={(e: { target: { value: any } }) => {
@@ -462,15 +565,41 @@ function ModalVerPassageiro({
                   }}
                   value={matricula || ""}
                 />
-                <TextoEntrada
-                  placeholder="Centro de Custo"
-                  type="text"
-                  largura="50%"
-                  onChange={(e: { target: { value: any } }) => {
-                    setCentroCusto(e.target.value);
+                <select
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    width: "50%",
+                    backgroundColor: Cor.texto2 + 20,
+                    padding: 10,
+                    gap: 5,
+                    borderRadius: 22,
+                    color: Cor.texto1,
+                    outline: "none",
+                    border: "none",
                   }}
-                  value={centroCusto || "0"}
-                />
+                  onChange={(e) => setCentroCusto(e.target.value)}
+                  value={centroCusto}
+                >
+                  <option
+                    style={{ backgroundColor: Cor.base, color: Cor.texto1 }}
+                    value={""}
+                  >
+                    Selecione o Centro de Custo
+                  </option>
+                  {listaCentrosCustos.map((cc: any) => {
+                    return (
+                      <option
+                        style={{ backgroundColor: Cor.base, color: Cor.texto1 }}
+                        value={cc.id}
+                        key={cc.id}
+                      >
+                        {cc.nome}
+                      </option>
+                    );
+                  })}
+                </select>
               </div>
               <div
                 style={{
@@ -482,6 +611,7 @@ function ModalVerPassageiro({
               >
                 <TextoEntrada
                   placeholder="Rua"
+                  lPlace="5%"
                   type="text"
                   largura="75%"
                   onChange={(e) => setEndRua(e.target.value)}
@@ -489,6 +619,7 @@ function ModalVerPassageiro({
                 />
                 <TextoEntrada
                   placeholder="Número"
+                  lPlace="50%"
                   type="text"
                   largura="25%"
                   onChange={(e) => setEndNumero(e.target.value)}
@@ -508,6 +639,7 @@ function ModalVerPassageiro({
           >
             <TextoEntrada
               placeholder="Bairro"
+              lPlace="17%"
               type="text"
               largura="33%"
               onChange={(e) => setEndBairro(e.target.value)}
@@ -515,6 +647,7 @@ function ModalVerPassageiro({
             />
             <TextoEntrada
               placeholder="Cidade"
+              lPlace="22%"
               type="text"
               largura="34%"
               onChange={(e) => setEndCidade(e.target.value)}
@@ -522,7 +655,8 @@ function ModalVerPassageiro({
             />
             <TextoEntrada
               placeholder="Horário de Embarque"
-              type="text"
+              lPlace="100%"
+              type="time"
               largura="33%"
               onChange={(e) => setHorarioEmbarque(e.target.value)}
               value={horarioEmbarque || ""}
@@ -538,6 +672,7 @@ function ModalVerPassageiro({
           >
             <TextoEntrada
               placeholder="Ponto de Apanha"
+              lPlace="13%"
               type="text"
               largura="100%"
               onChange={(e) => setPontoApanha(e.target.value)}
@@ -570,8 +705,7 @@ function ModalVerPassageiro({
               borderRadius: 22,
             }}
             onClick={() => {
-              //   criarUnidadeFunc();
-              console.log(passageiro);
+              AtualizarPassageiroFunc();
             }}
           >
             <p
@@ -592,24 +726,26 @@ function ModalVerPassageiro({
 
 function TextoEntrada({
   placeholder,
+  lPlace,
   onChange,
   value,
   type,
   largura,
 }: {
   placeholder: string;
+  lPlace: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   value: string;
   type: string;
   largura: string;
 }) {
-  const Cor = useTema().Cor;
+  const { Cor } = useTema();
   return (
     <div
       style={{
         display: "flex",
         flexDirection: "row",
-        alignContent: "flex-end",
+        alignItems: "center",
         width: largura,
         backgroundColor: Cor.texto2 + 20,
         padding: 10,
@@ -619,8 +755,10 @@ function TextoEntrada({
     >
       <span
         style={{
+          width: lPlace,
           maxLines: 1,
           overflow: "hidden",
+          textWrap: "nowrap",
           fontSize: 11,
           color: Cor.texto2,
         }}
@@ -633,9 +771,9 @@ function TextoEntrada({
         onChange={onChange}
         value={value}
         style={{
-          content: "ds",
           backgroundColor: "transparent",
           color: Cor.texto1,
+          fontWeight: 500,
           border: "none",
           outline: "none",
           width: "100%",

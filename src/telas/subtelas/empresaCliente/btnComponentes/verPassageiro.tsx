@@ -1,5 +1,11 @@
 import styled from "styled-components";
 import { useTema } from "../../../../hooks/temaContext";
+import {
+  usePassageiros,
+  useUpdatePassageiro,
+} from "../../../../hooks/usePassageiros";
+import { useParams } from "react-router-dom";
+import CircularProgress from "@mui/material/CircularProgress";
 
 interface PassageiroProps {
   passageiro: {
@@ -48,7 +54,7 @@ const LinhaPassageiro = styled.div<LinhaPasageiro>`
     background-color: ${({ $cor }) => $cor}20;
   }
 
-  &:active
+  &: active;
 `;
 
 function LinhaTabelaPassageiro({
@@ -63,6 +69,16 @@ function LinhaTabelaPassageiro({
   cxVerPassageiro: boolean;
 }) {
   const { Cor } = useTema();
+
+  const { clienteId } = useParams();
+
+  const { refetch } = usePassageiros(clienteId!);
+  const { atualizarPassageiro, loading } = useUpdatePassageiro();
+
+  async function alterarStatusFunc() {
+    await atualizarPassageiro(passageiro.id, { ativo: !passageiro.ativo });
+    refetch();
+  }
   return (
     <LinhaPassageiro
       $cor={Cor.texto1}
@@ -86,7 +102,7 @@ function LinhaTabelaPassageiro({
             passageiro?.fotoPerfilPassageiro ||
             "https://www.shutterstock.com/image-vector/default-avatar-profile-icon-social-600nw-1906669723.jpg"
           }
-          style={{ width: 40, height: 40, borderRadius: 8, objectFit: "cover"}}
+          style={{ width: 40, height: 40, borderRadius: 8, objectFit: "cover" }}
         />
       </div>
       <p style={{ width: "10%", textAlign: "center" }}>
@@ -101,12 +117,65 @@ function LinhaTabelaPassageiro({
           {passageiro.endRua}, {passageiro.endBairro}, {passageiro.endCidade}
         </p>
       </div>
-      <p style={{ width: "15%", textAlign: "center" }}>
+      <p style={{ width: "10%", textAlign: "center" }}>
         {passageiro.centroCustoClienteId.codigo}
       </p>
       <p style={{ width: "10%", textAlign: "center" }}>{passageiro.telefone}</p>
+      <BtnAlterarStatus
+        $cor={passageiro.ativo ? Cor.ativo : Cor.inativo}
+        onClick={(e) => {
+          e.stopPropagation();
+          console.log(passageiro.nome, passageiro.ativo);
+          alterarStatusFunc();
+        }}
+      >
+        {loading ? (
+          <CircularProgress
+            size={18}
+            thickness={8}
+            sx={{
+              color: passageiro.ativo ? Cor.ativo : Cor.inativo,
+              "& .MuiCircularProgress-circle": {
+                strokeLinecap: "round",
+              },
+            }}
+          />
+        ) : (
+          <p style={{userSelect: "none"}}>{passageiro.ativo ? "Ativo" : "Inativo"}</p>
+        )}
+      </BtnAlterarStatus>
     </LinhaPassageiro>
   );
 }
+
+interface BtnAlterarStatus {
+  $cor: string;
+}
+
+const BtnAlterarStatus = styled.div<BtnAlterarStatus>`
+  width: 5%;
+  height: 30px;
+  border-radius: 12px;
+  background-color: ${({ $cor }) => $cor}20;
+  border: 1px solid ${({ $cor }) => $cor}40;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: ${({ $cor }) => $cor};
+  cursor: pointer;
+  transition: ease-in-out all 0.1s;
+
+  &:hover {
+    scale: 1.05;
+    background-color: ${({ $cor }) => $cor}40;
+    border: 1px solid ${({ $cor }) => $cor}80;
+  }
+
+  &:active {
+    scale: 0.98;
+    background-color: ${({ $cor }) => $cor}60;
+    border: 1px solid ${({ $cor }) => $cor}CC;
+  }
+`;
 
 export default LinhaTabelaPassageiro;

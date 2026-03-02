@@ -1,33 +1,41 @@
 import { useParams } from "react-router-dom";
 import { useTema } from "../../../../hooks/temaContext";
-import { gql, useMutation } from "@apollo/client";
 import { useState } from "react";
 import { jwtDecode } from "jwt-decode";
+import styled from "styled-components";
+import CircularProgress from "@mui/material/CircularProgress";
+import { useCriarUnidadeCliente } from "../../../../hooks/useUnidadesClientes";
 
-const GET_UNIDADES_EMPRESA_CLIENTE = gql`
-  query ListaUnidadesEmpresaClienteId($empresaClienteId: ID!) {
-    listaUnidadesEmpresaClienteId(id: $empresaClienteId) {
-      id
-      nome
-      cnpj
-      endRua
-      endNumero
-      endBairro
-      endCep
-      endCidade
-      endComplemento
-      endUf
-      statusUnidadeCliente
-      matriz
-    }
+interface BtnProps {
+  $base: string;
+  $cor: string;
+}
+
+const Btn = styled.div<BtnProps>`
+  width: 22.5%;
+  height: 100px;
+  background-color: ${({ $base }) => $base}99;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid ${({ $cor }) => $cor}50;
+  user-select: none;
+  cursor: pointer;
+  border-radius: 22px;
+  box-shadow: 2px 2px 4px #00000010;
+  transition: ease-in-out all 0.1s;
+
+  &:hover {
+    scale: 1.02;
+    background-color: ${({ $base }) => $base}BB;
+    box-shadow: 3px 3px 6px #00000010;
   }
-`;
 
-const CRIAR_UNIDADE_CLIENTE = gql`
-  mutation CreateUnidadeEmpresaCliente($input: UnidadeEmpresaClienteInput!) {
-    createUnidadeEmpresaCliente(input: $input) {
-      id
-    }
+  &:active {
+    scale: 0.98;
+    background-color: ${({ $base }) => $base};
+    box-shadow: 1px 1px 2px #00000030;
   }
 `;
 
@@ -38,20 +46,9 @@ function CriarUnidades() {
 
   return (
     <>
-      <div
-        style={{
-          width: "20%",
-          height: 100,
-          backgroundColor: Cor.base2,
-          borderRadius: 22,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          border: "1px solid" + Cor.primaria + 50,
-          cursor: "pointer",
-          boxShadow: Cor.sombra,
-        }}
+      <Btn
+        $base={Cor.base2}
+        $cor={Cor.primaria}
         onClick={() => setCxAlertaCriarUnidade(true)}
       >
         <p
@@ -67,7 +64,7 @@ function CriarUnidades() {
         <p style={{ textAlign: "center", fontSize: 12, color: Cor.texto1 }}>
           Unidade
         </p>
-      </div>
+      </Btn>
       <ModalCriarUnidade
         CxAlertaCriarUnidade={CxAlertaCriarUnidade}
         setCxAlertaCriarUnidade={setCxAlertaCriarUnidade}
@@ -111,40 +108,30 @@ function ModalCriarUnidade({
   const operadoraIdBigInt = decoded ? decoded.operadoraId : null;
   const operadoraId = operadoraIdBigInt ? parseInt(operadoraIdBigInt) : null;
 
-  const [criarUnidadeMutation] = useMutation(CRIAR_UNIDADE_CLIENTE, {
-    refetchQueries: [
-      {
-        query: GET_UNIDADES_EMPRESA_CLIENTE,
-        variables: { empresaClienteId: clienteId },
-      },
-    ],
-  });
-
+  const { criarUnidade, loading } = useCriarUnidadeCliente(String(clienteId));
   const criarUnidadeFunc = async () => {
     if (!nome || !cnpj || !endRua) {
-      alert("Preencha os campos obrigatórios");
+      alert("Os Campos Nome da Unidade e CNPJ são obrigatórios");
       return;
     }
+    if (endUf && endUf.length !== 2) {
+      alert("O campo UF deve conter exatamente 2 letras (Ex: SP, BA, RJ).");
+      return; // O return para a execução da função aqui!
+    }
     try {
-      await criarUnidadeMutation({
-        variables: {
-          input: {
-            nome,
-            cnpj,
-            endRua,
-            endNumero,
-            endBairro,
-            endCep,
-            endCidade,
-            endComplemento,
-            endUf,
-            empresaClienteId,
-            operadoraId,
-          },
-        },
+      await criarUnidade({
+        nome,
+        cnpj,
+        endRua,
+        endNumero,
+        endBairro,
+        endCep,
+        endCidade,
+        endComplemento,
+        endUf,
+        empresaClienteId,
+        operadoraId,
       });
-      console.log("Unidade criada com sucesso!");
-      // window.location.reload(); // Recarrega a página
     } catch (error) {
       console.error("Erro ao criar unidade:", error);
       alert("Erro ao criar unidade");
@@ -156,15 +143,18 @@ function ModalCriarUnidade({
       style={{
         width: "100vw",
         height: "100vh",
-        display: CxAlertaCriarUnidade ? "flex" : "none",
+        display: "flex",
         position: "absolute",
         zIndex: 10,
         top: 0,
         left: 0,
-        backgroundColor: Cor.base2 + "80",
+        backgroundColor: Cor.texto1 + 50,
         backdropFilter: "blur(2.5px)",
         justifyContent: "center",
         alignItems: "center",
+        opacity: CxAlertaCriarUnidade ? 1 : 0,
+        transition: `ease-in-out all 0.2s`,
+        pointerEvents: CxAlertaCriarUnidade ? "auto" : "none",
       }}
       onClick={() => setCxAlertaCriarUnidade(false)}
     >
@@ -177,6 +167,8 @@ function ModalCriarUnidade({
           flexDirection: "column",
           justifyContent: "space-between",
           alignItems: "center",
+          transition: `ease-in-out all 0.2s`,
+          scale: CxAlertaCriarUnidade ? 1 : 0.6,
           gap: 10,
           border: "1px solid" + Cor.texto2 + 50,
           boxShadow: Cor.sombra,
@@ -354,9 +346,13 @@ function ModalCriarUnidade({
         >
           <div
             style={{
+              width: "20%",
+              height: 35,
               cursor: "pointer",
-              backgroundColor: Cor.primaria,
-              padding: "10px 50px",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              backgroundColor: loading ? Cor.texto1 + 50 : Cor.primaria,
               borderRadius: 22,
             }}
             onClick={() => {
@@ -373,15 +369,28 @@ function ModalCriarUnidade({
               setEndUf("");
             }}
           >
-            <p
-              style={{
-                fontSize: 14,
-                color: Cor.primariaTxt,
-                fontWeight: "bold",
-              }}
-            >
-              Salvar
-            </p>
+            {loading ? (
+              <CircularProgress
+                size={18}
+                thickness={8}
+                sx={{
+                  color: Cor.primariaTxt,
+                  "& .MuiCircularProgress-circle": {
+                    strokeLinecap: "round",
+                  },
+                }}
+              />
+            ) : (
+              <p
+                style={{
+                  fontSize: 14,
+                  color: Cor.primariaTxt,
+                  fontWeight: "bold",
+                }}
+              >
+                Salvar
+              </p>
+            )}
           </div>
         </div>
       </div>
