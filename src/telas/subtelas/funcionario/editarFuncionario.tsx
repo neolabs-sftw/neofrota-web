@@ -14,7 +14,6 @@ import {
   useEditarAdminUsuario,
 } from "../../../hooks/useAdminFuncionario";
 
-
 function EditarFuncionario() {
   return BaseTelas({
     conteudo: (
@@ -69,9 +68,7 @@ function EditarFuncionarioConteudo() {
 
   const operadoraId = useAdmin?.operadora?.id;
 
-  const [imgPreview, setImgPreview] = useState<string>(
-    admin?.fotoAdminOperadora || "",
-  );
+  const [imgPreview, setImgPreview] = useState<string>("");
 
   useEffect(() => {
     if (!adminId) return;
@@ -382,22 +379,22 @@ function EditarFuncionarioConteudo() {
                     }}
                     onChange={carregarImagem}
                   />
-                   <p
-                style={{
-                  width: "50%",
-                  padding: 5,
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  backgroundColor: Cor.texto2,
-                  borderRadius: 12,
-                  color: Cor.base,
-                  cursor: "pointer",
-                }}
-                onClick={() => removerFoto()}
-              >
-                Remover Foto
-              </p>
+                  <p
+                    style={{
+                      width: "50%",
+                      padding: 5,
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      backgroundColor: Cor.texto2,
+                      borderRadius: 12,
+                      color: Cor.base,
+                      cursor: "pointer",
+                    }}
+                    onClick={() => removerFoto()}
+                  >
+                    Remover Foto
+                  </p>
                 </div>
               </div>
             </div>
@@ -423,7 +420,7 @@ function EditarFuncionarioConteudo() {
                 cursor: "pointer",
               }}
               onClick={() => {
-               editarfuncionariofunc();
+                editarfuncionariofunc();
               }}
             >
               {loading ? "Salvando..." : "Salvar"}

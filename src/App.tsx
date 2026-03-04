@@ -21,6 +21,7 @@ import Passageiros from "./telas/subtelas/empresaCliente/passageiros";
 import NovoVoucher from "./telas/subtelas/VoucherExtra/novoVoucher";
 import { ModelosFixos } from "./telas/subtelas/modeloFixo/modelosFixos";
 import EditarFuncionario from "./telas/subtelas/funcionario/editarFuncionario";
+import { NovoFixo } from "./telas/subtelas/modeloFixo/novoFixo";
 
 function App() {
   return (
@@ -60,6 +61,7 @@ function App() {
               <Route path="/passageiros/:clienteId" element={<Passageiros />} />
               <Route path="/novovoucher" element={<NovoVoucher />} />
               <Route path="/modelosvouchersfixos" element={<ModelosFixos />} />
+              <Route path="/novofixo" element={<NovoFixo />} />
             </Route>
           </Routes>
         </BrowserRouter>

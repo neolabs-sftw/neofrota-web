@@ -43,7 +43,7 @@ function NavMenu({ sidebar, logado }: { sidebar: boolean; logado: any }) {
       path: "/operacao",
       submenu: true,
       itensSubMenu: [
-        { tela: "Modelos Fixos", icone: "mediation", path: "/modelosvouchersfixos" },
+        { tela: "Roteiros Fixos", icone: "mediation", path: "/modelosvouchersfixos" },
         { tela: "Novo Voucher", icone: "mediation", path: "/novovoucher" },
         { tela: "Rotas", icone: "mediation", path: "/Rotas" },
       ],
@@ -112,7 +112,7 @@ function NavMenu({ sidebar, logado }: { sidebar: boolean; logado: any }) {
       path: "/operacao",
       submenu: true,
       itensSubMenu: [
-        { tela: "Modelos Fixos", icone: "mediation", path: "/modelosvouchersfixos" },
+        { tela: "Roteiros Fixos", icone: "mediation", path: "/modelosvouchersfixos" },
         { tela: "Novo Voucher", icone: "mediation", path: "/novovoucher" },
         { tela: "Rotas", icone: "mediation", path: "/operacao" },
       ],
@@ -190,7 +190,7 @@ function NavMenu({ sidebar, logado }: { sidebar: boolean; logado: any }) {
       path: "/operacao",
       submenu: true,
       itensSubMenu: [
-        { tela: "Modelos Fixos", icone: "mediation", path: "/modelosvouchersfixos" },
+        { tela: "Roteiros Fixos", icone: "mediation", path: "/modelosvouchersfixos" },
         { tela: "Novo Voucher", icone: "mediation", path: "/novovoucher" },
         { tela: "Rotas", icone: "mediation", path: "/operacao" },
       ],

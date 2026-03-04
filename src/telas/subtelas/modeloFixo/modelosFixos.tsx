@@ -7,6 +7,7 @@ import { useUnidadeCliente } from "../../../hooks/useUnidadesClientes";
 import { useState } from "react";
 import { useMotorista } from "../../../hooks/useMotorista";
 import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
 
 export function ModelosFixos() {
   return BaseTelas({
@@ -173,6 +174,8 @@ function Filtros({
   const { listaClientes } = useListaClientes(operId || "0");
   const { listaUnidades, loading } = useUnidadeCliente(empresaCliente || "0");
 
+  const navigate = useNavigate();
+
   return (
     <div
       style={{
@@ -208,7 +211,7 @@ function Filtros({
             específicos.
           </p>
         </div>
-        <BtnNovoRoteiroFixo $cor={Cor.fixo} $texto={Cor.textoFixo}>
+        <BtnNovoRoteiroFixo $cor={Cor.fixo} $texto={Cor.textoFixo} onClick={()=> navigate("/novofixo")} >
           <p
             style={{
               fontFamily: "Icone",

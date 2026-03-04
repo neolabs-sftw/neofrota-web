@@ -51,7 +51,12 @@ function ListaFuncionariosOperadora() {
 
   const operadora = useAdminLogado()?.operadora.id;
 
-  const { listAdminFuncionario } = useListaAdminFuncionario(String(operadora));
+  const { listAdminFuncionario: listaTotal } = useListaAdminFuncionario(
+    String(operadora),
+  );
+
+  const listAdminFuncionario =
+    listaTotal?.filter((a: any) => a.funcao !== null) || [];
 
   return (
     <div
@@ -210,6 +215,8 @@ function LinhaFuncionario({ f, par }: { f: any; par: boolean }) {
   const [lStatus, setLStatus] = useState(false);
   const [lDelete, setLDelete] = useState(false);
 
+  console.log(f);
+
   const { editarAdmin } = useEditarAdminUsuario(String(operadora));
 
   async function alterarStatus() {
@@ -224,7 +231,8 @@ function LinhaFuncionario({ f, par }: { f: any; par: boolean }) {
     setLDelete(true);
     await editarAdmin(f.id, {
       operadoraId: operadora,
-      statusAdminOperadora: !f.statusAdminOperadora,
+      statusAdminOperadora: false,
+      email: `(deletado)${f?.email || f.nome}`,
       funcao: null,
     });
     setLDelete(false);

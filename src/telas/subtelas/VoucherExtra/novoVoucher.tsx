@@ -330,18 +330,7 @@ function DadosGerais({
 }) {
   const Cor = useTema().Cor;
 
-  const token = localStorage.getItem("token");
-
-  function getOperadoraId() {
-    if (token) {
-      const decoded = jwtDecode<JwtPayload>(token);
-      return decoded.operadoraId;
-    } else {
-      console.log("Nenhum token encontrado");
-    }
-  }
-
-  const operId = getOperadoraId();
+  const operId = useAdminLogado()?.operadora.id;
 
   const { listaClientes: listaClientesTotal } = useListaClientes(operId || "0");
 
