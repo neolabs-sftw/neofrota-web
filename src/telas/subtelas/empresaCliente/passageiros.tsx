@@ -70,6 +70,8 @@ function CadastrarNovoCliente({
 }) {
   const Cor = useTema().Cor;
 
+  const {clienteId} = useParams()
+
   return (
     <div
       style={{
@@ -101,7 +103,7 @@ function CadastrarNovoCliente({
         </p>
         <SelectCentroCusto setbCentro={setbCentro} />
       </div>
-      <BtnCriarPassageiro />
+      <BtnCriarPassageiro clienteId={String(clienteId)} />
     </div>
   );
 }

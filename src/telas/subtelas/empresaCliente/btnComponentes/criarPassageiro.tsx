@@ -2,7 +2,6 @@ import { useTema } from "../../../../hooks/temaContext";
 import { useState } from "react";
 import styled from "styled-components";
 import { useCentroCustoByEmpresa } from "../../../../hooks/useCentrosDeCusto";
-import { useParams } from "react-router-dom";
 import {
   useCreatePassageiro,
   usePassageiros,
@@ -19,7 +18,7 @@ const BtnCadastrarPassageiroStyled = styled.button<BtnCadastrarPassageiroStyledP
   background-color: ${({ $backgroundColor }) => $backgroundColor + 10};
   border: 1px solid ${({ $backgroundColor }) => $backgroundColor + 70};
   font-weight: bold;
-  padding: 10px 35px;
+  padding: 5px 35px;
   border-radius: 22px;
   cursor: pointer;
   display: flex;
@@ -41,9 +40,10 @@ const BtnCadastrarPassageiroStyled = styled.button<BtnCadastrarPassageiroStyledP
   }
 `;
 
-function BtnCriarPassageiro() {
+function BtnCriarPassageiro({ clienteId }: { clienteId: string }) {
   const Cor = useTema().Cor;
   const [CxCriarPassageiro, setCxCriarPassageiro] = useState(false);
+
   return (
     <>
       <BtnCadastrarPassageiroStyled
@@ -57,6 +57,7 @@ function BtnCriarPassageiro() {
       <ModalCriarPassageiro
         CxCriarPassageiro={CxCriarPassageiro}
         setCxCriarPassageiro={setCxCriarPassageiro}
+        clienteId={clienteId}
       />
     </>
   );
@@ -65,7 +66,9 @@ function BtnCriarPassageiro() {
 function ModalCriarPassageiro({
   CxCriarPassageiro,
   setCxCriarPassageiro,
+  clienteId,
 }: {
+  clienteId: string;
   CxCriarPassageiro: any;
   setCxCriarPassageiro: any;
 }) {
@@ -75,7 +78,6 @@ function ModalCriarPassageiro({
 
   const [centroCusto, setCentroCusto] = useState<string>("");
   const [email, setEmail] = useState<string>("");
-  const { clienteId } = useParams();
   const [endBairro, setEndBairro] = useState<string>("");
   const [endCidade, setEndCidade] = useState<string>("");
   const [endNumero, setEndNumero] = useState<string>("");
@@ -91,7 +93,7 @@ function ModalCriarPassageiro({
 
   const [imgPreview, setImgPreview] = useState<string>("");
 
-  const { listaCentrosCustos } = useCentroCustoByEmpresa(String(clienteId));
+  const { listaCentrosCustos } = useCentroCustoByEmpresa(clienteId);
 
   const carregarImagem = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
