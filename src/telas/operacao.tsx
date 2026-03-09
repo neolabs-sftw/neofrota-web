@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import BtnProximaViagem from "../componentes/btnProximaViagem";
 import ListaProximasViagens from "../componentes/listaProximasViagens";
 import { useNavigate } from "react-router-dom";
-import { useVouchers, useVouchersData } from "../hooks/useVouchers";
+import { useVouchersData } from "../hooks/useVouchers";
 import ModalPreviewVoucher from "../componentes/modalPreviewVoucher";
 import { jwtDecode } from "jwt-decode";
 import styled from "styled-components";
