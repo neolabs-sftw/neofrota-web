@@ -85,7 +85,7 @@ function OperacaoConteudo() {
   const [modalPreveiw, setModalPreview] = useState(false);
   const [voucherPreview, setVoucherPreview] = useState<any>(null);
 
-  const { listaVouchers, refetch: refetchTotal, loading } = useVouchers({});
+  // const { listaVouchers, refetch: refetchTotal, loading } = useVouchers({});
 
   const formatarData = (isoOrDate: string | Date) => {
     const d = new Date(isoOrDate);
@@ -97,7 +97,7 @@ function OperacaoConteudo() {
 
   const hoje = formatarData(new Date());
 
-  const { listaVoucherData, refetch: refetchVouchers } = useVouchersData(
+  const { listaVoucherData, refetch: refetchVouchers, loading } = useVouchersData(
     operadoraId,
     hoje,
   );
@@ -109,7 +109,7 @@ function OperacaoConteudo() {
   useEffect(() => {
     const atualizarOperacao = () => {
       refetchVouchers();
-      refetchTotal();
+      // refetchTotal();
     };
 
     atualizarOperacao(); // chama na montagem
@@ -144,7 +144,7 @@ function OperacaoConteudo() {
         $cor={Cor.primaria}
         onClick={() => {
           refetchVouchers();
-          refetchTotal();
+          // refetchTotal();
         }}
       >
         <p
@@ -326,7 +326,7 @@ function OperacaoConteudo() {
             sx={{ color: Cor.primaria }}
           />
         ) : (
-          listaVouchers.map((v: any) => (
+          listaVoucherData.map((v: any) => (
             <ListaProximasViagens
               v={v}
               key={v.id}
