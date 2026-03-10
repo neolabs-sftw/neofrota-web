@@ -605,9 +605,6 @@ function LinhaModeloFixo({ mv }: { mv: any }) {
     (c: any) => c.tipo === "Entrada",
   );
   const configSaida = mv.configuracoes?.find((c: any) => c.tipo === "Saida");
-  // console.log(mv);
-  console.log(configEntrada);
-  console.log(configSaida);
   return (
     <LinhaModeloFixoStyled
       $cor={statusVoucher ? Cor.texto2 : Cor.atencao}
