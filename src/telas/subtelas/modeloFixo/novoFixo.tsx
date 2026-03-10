@@ -809,7 +809,7 @@ function DetalhesEntrada() {
         backgroundColor: Cor.base2,
         borderRadius: 22,
         boxShadow: Cor.sombra,
-        opacity: !habilitado ? 0.5 : 1,
+        opacity: !habilitado ? 0.8 : 1,
       }}
     >
       <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -1081,7 +1081,7 @@ function DetalhesSaida() {
         backgroundColor: Cor.base2,
         borderRadius: 22,
         boxShadow: Cor.sombra,
-        opacity: !habilitado ? 0.5 : 1,
+        opacity: !habilitado ? 0.8 : 1,
       }}
     >
       <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -1214,6 +1214,7 @@ function DetalhesSaida() {
               border: `1px solid ${Cor.texto2 + 50}`,
               padding: 10,
               borderRadius: 14,
+              opacity: !habilitado ? 0.5 : 1,
             }}
           >
             <input
@@ -1249,7 +1250,7 @@ function DetalhesSaida() {
               pointerEvents: !habilitado ? "none" : "auto",
             }}
           >
-            <div style={{ display: "flex", flexDirection: "row", gap: 10 }}>
+            <div style={{ display: "flex", flexDirection: "row", gap: 10, opacity: !habilitado ? 0.3 : 1, }}>
               <BtnAtivarStyled
                 $cor={dom ? Cor.textoFixo : Cor.texto1}
                 $bg={dom ? Cor.fixo : Cor.texto2}

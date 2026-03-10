@@ -97,10 +97,11 @@ function OperacaoConteudo() {
 
   const hoje = formatarData(new Date());
 
-  const { listaVoucherData, refetch: refetchVouchers, loading } = useVouchersData(
-    operadoraId,
-    hoje,
-  );
+  const {
+    listaVoucherData,
+    refetch: refetchVouchers,
+    loading,
+  } = useVouchersData(operadoraId, hoje);
 
   const listaVoucherDataFiltro = listaVoucherData.filter((v: any) => {
     return v.status == "Aberto";

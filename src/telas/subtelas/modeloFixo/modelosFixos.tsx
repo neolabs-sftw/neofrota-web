@@ -8,6 +8,8 @@ import { useState } from "react";
 import { useMotorista } from "../../../hooks/useMotorista";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
+import { useModelosFixos } from "../../../hooks/useModelosFIxos";
+import { useAdminLogado } from "../../../hooks/AdminLogado";
 
 export function ModelosFixos() {
   return BaseTelas({
@@ -28,9 +30,12 @@ interface JwtPayload {
 function ModeloFixosConteudo() {
   const { Cor } = useTema();
 
+  const operadoraId = useAdminLogado()?.operadora.id;
+
   const [empresaCliente, setEmpresaCliente] = useState<any>();
   const [unidadeEmpresaCliente, setUnidadeEmpresaCliente] = useState<any>();
   const [motorista, setMotorista] = useState<any>();
+  const { listaModelos } = useModelosFixos(String(operadoraId));
 
   return (
     <>
@@ -91,17 +96,9 @@ function ModeloFixosConteudo() {
             scrollbarColor: `${Cor.secundaria} ${Cor.base + "00"}`,
           }}
         >
-          <LinhaModeloFixo />
-          <LinhaModeloFixo />
-          <LinhaModeloFixo />
-          <LinhaModeloFixo />
-          <LinhaModeloFixo />
-          <LinhaModeloFixo />
-          <LinhaModeloFixo />
-          <LinhaModeloFixo />
-          <LinhaModeloFixo />
-          <LinhaModeloFixo />
-          <LinhaModeloFixo />
+          {listaModelos.map((mv: any) => {
+            return <LinhaModeloFixo key={mv.id} mv={mv} />;
+          })}
         </div>
       </div>
     </>
@@ -211,7 +208,11 @@ function Filtros({
             específicos.
           </p>
         </div>
-        <BtnNovoRoteiroFixo $cor={Cor.fixo} $texto={Cor.textoFixo} onClick={()=> navigate("/novofixo")} >
+        <BtnNovoRoteiroFixo
+          $cor={Cor.fixo}
+          $texto={Cor.textoFixo}
+          onClick={() => navigate("/novofixo")}
+        >
           <p
             style={{
               fontFamily: "Icone",
@@ -596,13 +597,21 @@ const LinhaModeloFixoStyled = styled.div<LinhaModeloFixoProps>`
   }
 `;
 
-function LinhaModeloFixo() {
+function LinhaModeloFixo({ mv }: { mv: any }) {
   const [statusVoucher, setStatusVoucher] = useState<boolean>(true);
   const { Cor } = useTema();
+
+  const configEntrada = mv.configuracoes?.find(
+    (c: any) => c.tipo === "Entrada",
+  );
+  const configSaida = mv.configuracoes?.find((c: any) => c.tipo === "Saida");
+  // console.log(mv);
+  console.log(configEntrada);
+  console.log(configSaida);
   return (
     <LinhaModeloFixoStyled
       $cor={statusVoucher ? Cor.texto2 : Cor.atencao}
-      onClick={() => console.log("id Voucher")}
+      onClick={() => console.log("id Voucher", mv.id)}
     >
       <div
         style={{
@@ -624,7 +633,7 @@ function LinhaModeloFixo() {
             textAlign: "center",
           }}
         >
-          CARRO 4- 2 TURNO SAIDA - PASSAGEM X SIMOES FILHO
+          {mv?.nomeModelo || "..."}
         </h5>
       </div>
       <div
@@ -640,7 +649,7 @@ function LinhaModeloFixo() {
         }}
       >
         <p style={{ color: statusVoucher ? Cor.textoFixo : Cor.atencao }}>
-          Origem: <strong>FABRICA X PASSAGEM</strong>
+          Origem: <strong>{mv.configuracoes[0]?.origem}</strong>
         </p>
         <div
           style={{
@@ -650,7 +659,7 @@ function LinhaModeloFixo() {
           }}
         />
         <p style={{ color: statusVoucher ? Cor.textoFixo : Cor.atencao }}>
-          Destino: <strong>S.FILHO</strong>
+          Destino: <strong>{mv.configuracoes[0]?.destino}</strong>
         </p>
       </div>
       <div
@@ -669,7 +678,7 @@ function LinhaModeloFixo() {
             textAlign: "center",
           }}
         >
-          Entrada
+          {configEntrada ? "Entrada" : "-"}
         </p>
         <p
           style={{
@@ -677,7 +686,7 @@ function LinhaModeloFixo() {
             textAlign: "center",
           }}
         >
-          Saída
+          {configSaida ? "Saída" : "-"}
         </p>
       </div>
       <div
@@ -697,7 +706,7 @@ function LinhaModeloFixo() {
             textAlign: "center",
           }}
         >
-          Arcelomital Brasil
+          {mv.empresaCliente.nome}
         </p>
       </div>
       <div
@@ -717,7 +726,7 @@ function LinhaModeloFixo() {
             textAlign: "center",
           }}
         >
-          CDB Salvador
+          {mv.unidadeCliente.nome}
         </p>
       </div>
       <div
@@ -738,7 +747,7 @@ function LinhaModeloFixo() {
             textAlign: "center",
           }}
         >
-          Jose Bomfim Montenegro Mascarenhas
+         {configEntrada ? configEntrada.motorista.nome : "-"}
         </p>
         <p
           style={{
@@ -746,7 +755,7 @@ function LinhaModeloFixo() {
             textAlign: "center",
           }}
         >
-          Antonio Carlos Conceição Lima Junior
+          {configSaida ? configSaida.motorista.nome : "-"}
         </p>
       </div>
       <div
