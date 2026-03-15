@@ -104,7 +104,7 @@ function OperacaoConteudo() {
   } = useVouchersData(operadoraId, hoje);
 
   const listaVoucherDataFiltro = listaVoucherData.filter((v: any) => {
-    return v.status == "Aberto";
+    return v.status == "Concluido";
   });
 
   useEffect(() => {

@@ -8,8 +8,8 @@ import { useState } from "react";
 import { useMotorista } from "../../../hooks/useMotorista";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import { useModelosFixos } from "../../../hooks/useModelosFIxos";
 import { useAdminLogado } from "../../../hooks/AdminLogado";
+import { useModelosFixos } from "../../../hooks/useModelosFixos";
 
 export function ModelosFixos() {
   return BaseTelas({
@@ -90,7 +90,8 @@ function ModeloFixosConteudo() {
             display: "flex",
             flexDirection: "column",
             gap: 5,
-            // backgroundColor: Cor.atencao + 50,
+            paddingBottom: 15,
+            overflowY: "auto",
             borderTop: `1px solid ${Cor.fixo}`,
             overflow: "auto",
             scrollbarColor: `${Cor.secundaria} ${Cor.base + "00"}`,
@@ -598,7 +599,9 @@ const LinhaModeloFixoStyled = styled.div<LinhaModeloFixoProps>`
 `;
 
 function LinhaModeloFixo({ mv }: { mv: any }) {
-  const [statusVoucher, setStatusVoucher] = useState<boolean>(true);
+  const navigate = useNavigate();
+
+  const [statusVoucher, setStatusVoucher] = useState<boolean>(mv.ativo);
   const { Cor } = useTema();
 
   const configEntrada = mv.configuracoes?.find(
@@ -608,7 +611,7 @@ function LinhaModeloFixo({ mv }: { mv: any }) {
   return (
     <LinhaModeloFixoStyled
       $cor={statusVoucher ? Cor.texto2 : Cor.atencao}
-      onClick={() => console.log("id Voucher", mv.id)}
+      onClick={() => navigate(`/editarfixo/${btoa(mv.id)}`)}
     >
       <div
         style={{
@@ -628,6 +631,7 @@ function LinhaModeloFixo({ mv }: { mv: any }) {
           style={{
             color: statusVoucher ? Cor.textoFixo : Cor.atencao,
             textAlign: "center",
+            fontSize: 14,
           }}
         >
           {mv?.nomeModelo || "..."}
@@ -744,7 +748,7 @@ function LinhaModeloFixo({ mv }: { mv: any }) {
             textAlign: "center",
           }}
         >
-         {configEntrada ? configEntrada.motorista.nome : "-"}
+          {configEntrada ? configEntrada.motorista.nome : "-"}
         </p>
         <p
           style={{
@@ -774,9 +778,9 @@ function LinhaModeloFixo({ mv }: { mv: any }) {
           <p style={{ fontFamily: "Icone", userSelect: "none" }}>
             {statusVoucher ? "autoplay" : "autopause"}
           </p>
-          <p style={{ fontFamily: "Icone", userSelect: "none" }}>
+          {/* <p style={{ fontFamily: "Icone", userSelect: "none" }}>
             progress_activity
-          </p>
+          </p> */}
         </BtnDesativerModelo>
       </div>
     </LinhaModeloFixoStyled>
@@ -794,6 +798,7 @@ const BtnDesativerModelo = styled.div<BtnDesativerModeloProps>`
   justify-content: center;
   align-items: center;
   background-color: ${({ $cor }) => $cor}30;
+  border: 1px solid ${({ $cor }) => $cor}50;
   border-radius: 10px;
   cursor: pointer;
   color: ${({ $cor }) => $cor}99;

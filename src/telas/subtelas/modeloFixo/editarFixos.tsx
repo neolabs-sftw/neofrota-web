@@ -11,34 +11,41 @@ import styled from "styled-components";
 import { usePassageiros } from "../../../hooks/usePassageiros";
 import BtnCriarPassageiro from "../empresaCliente/btnComponentes/criarPassageiro";
 import { useCarroAtrelado } from "../../../hooks/useCarros";
-import { useCriarModeloFixo } from "../../../hooks/useModelosFixos";
+import {
+  useEditarModeloVoucherFixo,
+  useModeloFixoId,
+} from "../../../hooks/useModelosFixos";
+import { useNavigate, useParams } from "react-router-dom";
 import CircularProgress from "@mui/material/CircularProgress";
-import { useNavigate } from "react-router-dom";
 
-export function NovoFixo() {
+export function EditarFixo() {
   return BaseTelas({
     conteudo: (
       <>
         <EditPerfil />
-        <NovoVoucherFixoConteudo />
+        <EditarVoucherFixoConteudo />
       </>
     ),
   });
 }
 
-function NovoVoucherFixoConteudo() {
+function EditarVoucherFixoConteudo() {
+  const { FixoId } = useParams();
+
+  const { modeloFixo, loading } = useModeloFixoId(atob(`${FixoId}`));
+
   const [empresaCliente, setEmpresaCliente] = useState("");
   const [unidadeCliente, setUnidadeCliente] = useState("");
   const [nomeModelo, setNomeModelo] = useState("");
   const [origem, setOrigem] = useState("");
   const [destino, setDestino] = useState("");
 
-  const [valorViagem, setValorViagem] = useState(0);
-  const [valorViagemRepasse, setValorViagemRepasse] = useState(0);
-  const [valorDeslocamento, setValorDeslocamento] = useState(0);
-  const [valorDeslocamentoRepasse, setValorDeslocamentoRepasse] = useState(0);
-  const [valorHoraParada, setValorHoraParada] = useState(0);
-  const [valorHoraParadaRepasse, setValorHoraParadaRepasse] = useState(0);
+  const [valorViagem, setValorViagem] = useState("");
+  const [valorViagemRepasse, setValorViagemRepasse] = useState("");
+  const [valorDeslocamento, setValorDeslocamento] = useState("");
+  const [valorDeslocamentoRepasse, setValorDeslocamentoRepasse] = useState("");
+  const [valorHoraParada, setValorHoraParada] = useState("");
+  const [valorHoraParadaRepasse, setValorHoraParadaRepasse] = useState("");
 
   const [valorPedagio, setValorPedagio] = useState("");
 
@@ -79,11 +86,128 @@ function NovoVoucherFixoConteudo() {
 
   const { Cor } = useTema();
 
+  useEffect(() => {
+    setEmpresaCliente(modeloFixo.empresaCliente?.id || "");
+    setUnidadeCliente(modeloFixo.unidadeCliente?.id || "");
+    setNomeModelo(modeloFixo.nomeModelo || "");
+    setValorViagem(modeloFixo.valorViagem || "");
+    setValorViagemRepasse(modeloFixo.valorViagemRepasse || "");
+    setValorDeslocamento(modeloFixo.valorDeslocamento || "");
+    setValorDeslocamentoRepasse(modeloFixo.valorDeslocamentoRepasse || "");
+    setValorHoraParada(modeloFixo.valorHoraParada || "");
+    setValorHoraParadaRepasse(modeloFixo.valorHoraParadaRepasse || "");
+    setValorPedagio(modeloFixo.pedagio?.id || "");
+
+    const confEntrada = modeloFixo.configuracoes?.find(
+      (c: any) => c.tipo === "Entrada",
+    );
+
+    const confSaida = modeloFixo.configuracoes?.find(
+      (c: any) => c.tipo === "Saida",
+    );
+
+    if (confEntrada) {
+      setOrigem(confEntrada?.origem || "");
+      setDestino(confEntrada?.destino || "");
+    } else {
+      setOrigem(confSaida?.destino || "");
+      setDestino(confSaida?.origem || "");
+    }
+
+    if (confEntrada) {
+      setConfigEntrada({
+        habilitado: true,
+        motoristaId: confEntrada?.motorista.id || "",
+        carroId: confEntrada?.carro?.id || "",
+        tipo: "Entrada",
+        origem: confEntrada?.origem || "",
+        destino: confEntrada?.destino || "",
+        horario: confEntrada?.horario || "",
+        domingo: confEntrada?.domingo || false,
+        segunda: confEntrada?.segunda || false,
+        terca: confEntrada?.terca || false,
+        quarta: confEntrada?.quarta || false,
+        quinta: confEntrada?.quinta || false,
+        sexta: confEntrada?.sexta || false,
+        sabado: confEntrada?.sabado || false,
+      });
+    } else {
+      setConfigEntrada({
+        habilitado: false,
+        motoristaId: "",
+        carroId: "",
+        tipo: "Entrada",
+        origem: "",
+        destino: "",
+        horario: "",
+        domingo: false,
+        segunda: false,
+        terca: false,
+        quarta: false,
+        quinta: false,
+        sexta: false,
+        sabado: false,
+      });
+    }
+
+    if (confSaida) {
+      setConfigSaida({
+        habilitado: true,
+        motoristaId: confSaida?.motorista.id || "",
+        carroId: confSaida?.carro?.id || "",
+        tipo: "Saida",
+        origem: confSaida?.origem || "",
+        destino: confSaida?.destino || "",
+        horario: confSaida?.horario || "",
+        domingo: confSaida?.domingo || false,
+        segunda: confSaida?.segunda || false,
+        terca: confSaida?.terca || false,
+        quarta: confSaida?.quarta || false,
+        quinta: confSaida?.quinta || false,
+        sexta: confSaida?.sexta || false,
+        sabado: confSaida?.sabado || false,
+      });
+    } else {
+      setConfigSaida({
+        habilitado: false,
+        motoristaId: "",
+        carroId: "",
+        tipo: "Saida",
+        origem: "",
+        destino: "",
+        horario: "",
+        domingo: false,
+        segunda: false,
+        terca: false,
+        quarta: false,
+        quinta: false,
+        sexta: false,
+        sabado: false,
+      });
+    }
+    if (
+      modeloFixo.passageirosFixos &&
+      Array.isArray(modeloFixo.passageirosFixos)
+    ) {
+      const passageirosFormatados = modeloFixo.passageirosFixos.map(
+        (item: any) => {
+          if (item.passageiro) {
+            return item.passageiro;
+          }
+          return item;
+        },
+      );
+
+      setPassageirosVoucher(passageirosFormatados);
+    } else {
+      setPassageirosVoucher([]);
+    }
+  }, [modeloFixo?.id, loading]);
+
   const operadoraId = useAdminLogado()?.operadora.id;
   const adminId = useAdminLogado()?.id;
 
   const gerarPayload = () => {
-    // Array vazio que vamos preencher
     const configuracoesPayload = [];
 
     const passageirosMapeados = passageirosVoucher.map((passageiro) => {
@@ -92,15 +216,14 @@ function NovoVoucherFixoConteudo() {
       };
     });
 
-    // Se a entrada estiver habilitada, adiciona ao array
     if (configEntrada.habilitado) {
       configuracoesPayload.push({
-        carroId: configEntrada.carroId, // Atenção: carroId está fixo, talvez precise de um select também!
+        carroId: configEntrada.carroId,
         motoristaId: configEntrada.motoristaId,
         tipo: "Entrada",
         horario: configEntrada.horario,
-        destino: destino, // Vem do estado geral
-        origem: origem, // Vem do estado geral
+        destino: destino, 
+        origem: origem,
         domingo: configEntrada.domingo,
         segunda: configEntrada.segunda,
         terca: configEntrada.terca,
@@ -111,10 +234,9 @@ function NovoVoucherFixoConteudo() {
       });
     }
 
-    // Se a saída estiver habilitada, adiciona ao array
     if (configSaida.habilitado) {
       configuracoesPayload.push({
-        carroId: configSaida.carroId, // Atenção: carroId fixo
+        carroId: configSaida.carroId,
         motoristaId: configSaida.motoristaId,
         tipo: "Saida",
         horario: configSaida.horario,
@@ -130,7 +252,6 @@ function NovoVoucherFixoConteudo() {
       });
     }
 
-    // Retorna o objeto completo pronto para salvar
     return {
       adminUsuarioId: adminId,
       empresaClienteId: empresaCliente,
@@ -144,12 +265,13 @@ function NovoVoucherFixoConteudo() {
       valorViagemRepasse: Number(valorViagemRepasse),
       valorDeslocamentoRepasse: Number(valorDeslocamentoRepasse),
       valorHoraParadaRepasse: Number(valorHoraParadaRepasse),
-      configuracoes: configuracoesPayload, // Envia o array que montamos
+      configuracoes: configuracoesPayload, 
       passageirosFixos: passageirosMapeados,
     };
   };
 
-  const { criarModeloFixo, loading } = useCriarModeloFixo(String(operadoraId));
+  const { editarModeloVoucherFixo, loading: atualizarModelo } =
+    useEditarModeloVoucherFixo();
 
   const navigate = useNavigate()
 
@@ -160,23 +282,41 @@ function NovoVoucherFixoConteudo() {
       return;
     }
 
-    if(configEntrada.habilitado === true && configEntrada.carroId === ""){
-      alert("Motorista sem carro atrelado")
-      return;
-    }
-
-    if(configSaida.habilitado === true && configSaida.carroId === ""){
-      alert("Motorista sem carro atrelado")
-      return;
-    }
-
     console.log(payload);
 
-    const lancado = await criarModeloFixo(payload);
+    const lancado = await editarModeloVoucherFixo(atob(`${FixoId}`), payload);
 
     navigate("/modelosvouchersfixos")
 
     console.log("Retorno: ", lancado);
+  }
+
+  if (loading) {
+    return (
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          gap: 5,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <CircularProgress
+          size={24}
+          thickness={8}
+          sx={{
+            color: Cor.fixo,
+            "& .MuiCircularProgress-circle": {
+              strokeLinecap: "round",
+            },
+          }}
+        />
+        <p style={{ color: Cor.textoFixo }}> Aguarde </p>
+      </div>
+    );
   }
 
   return (
@@ -202,7 +342,7 @@ function NovoVoucherFixoConteudo() {
         }}
       >
         <h3 style={{ color: Cor.textoFixo, fontSize: "20px" }}>
-          Novo Roteiro Fixo
+          Editar Roteiro Fixo
         </h3>
         <div
           style={{
@@ -258,8 +398,8 @@ function NovoVoucherFixoConteudo() {
         $texto={Cor.textoFixo}
         onClick={() => criarModeloFixoFunc()}
       >
-        <p>Salvar</p>
-        {loading ? (
+        <p>Atualizar</p>
+        {atualizarModelo ? (
           <CircularProgress
             size={24}
             thickness={8}
@@ -1037,10 +1177,13 @@ function DetalhesEntrada({
     setConfigEntrada((prev: any) => ({ ...prev, [campo]: valor }));
   };
 
+  const idDoCarro = Number(carroAtrelado?.[0]?.id) || 0;
+
   useEffect(() => {
-    const idDoCarro = Number(carroAtrelado?.[0]?.id) || 0;
-    atualizarCampo("carroId", idDoCarro);
-  }, [carroAtrelado, configEntrada.motoristaId]);
+    if (String(configEntrada.carroId) !== String(idDoCarro)) {
+      atualizarCampo("carroId", idDoCarro);
+    }
+  }, [idDoCarro, configEntrada.carroId, configEntrada.motoristaId]);
 
   return (
     <div
@@ -1356,11 +1499,13 @@ function DetalhesSaida({
   const atualizarCampo = (campo: string, valor: any) => {
     setConfigSaida((prev: any) => ({ ...prev, [campo]: valor }));
   };
+  const idDoCarro = Number(carroAtrelado?.[0]?.id) || 0;
 
   useEffect(() => {
-    const idDoCarro = Number(carroAtrelado?.[0]?.id) || 0;
-    atualizarCampo("carroId", idDoCarro);
-  }, [carroAtrelado, configSaida.motoristaId]);
+    if (String(configSaida.carroId) !== String(idDoCarro)) {
+      atualizarCampo("carroId", idDoCarro);
+    }
+  }, [idDoCarro, configSaida.carroId, configSaida.motoristaId]);
 
   return (
     <div
