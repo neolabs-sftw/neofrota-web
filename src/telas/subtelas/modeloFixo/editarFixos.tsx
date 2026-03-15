@@ -222,7 +222,7 @@ function EditarVoucherFixoConteudo() {
         motoristaId: configEntrada.motoristaId,
         tipo: "Entrada",
         horario: configEntrada.horario,
-        destino: destino, 
+        destino: destino,
         origem: origem,
         domingo: configEntrada.domingo,
         segunda: configEntrada.segunda,
@@ -265,7 +265,7 @@ function EditarVoucherFixoConteudo() {
       valorViagemRepasse: Number(valorViagemRepasse),
       valorDeslocamentoRepasse: Number(valorDeslocamentoRepasse),
       valorHoraParadaRepasse: Number(valorHoraParadaRepasse),
-      configuracoes: configuracoesPayload, 
+      configuracoes: configuracoesPayload,
       passageirosFixos: passageirosMapeados,
     };
   };
@@ -273,7 +273,7 @@ function EditarVoucherFixoConteudo() {
   const { editarModeloVoucherFixo, loading: atualizarModelo } =
     useEditarModeloVoucherFixo();
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   async function criarModeloFixoFunc() {
     const payload = gerarPayload();
@@ -281,14 +281,9 @@ function EditarVoucherFixoConteudo() {
       alert("Habilite pelo menos uma configuração (Entrada ou Saída)!");
       return;
     }
+    await editarModeloVoucherFixo(atob(`${FixoId}`), payload);
 
-    console.log(payload);
-
-    const lancado = await editarModeloVoucherFixo(atob(`${FixoId}`), payload);
-
-    navigate("/modelosvouchersfixos")
-
-    console.log("Retorno: ", lancado);
+    navigate("/modelosvouchersfixos");
   }
 
   if (loading) {

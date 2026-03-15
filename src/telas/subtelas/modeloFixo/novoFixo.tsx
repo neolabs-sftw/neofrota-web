@@ -151,7 +151,7 @@ function NovoVoucherFixoConteudo() {
 
   const { criarModeloFixo, loading } = useCriarModeloFixo(String(operadoraId));
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   async function criarModeloFixoFunc() {
     const payload = gerarPayload();
@@ -160,23 +160,19 @@ function NovoVoucherFixoConteudo() {
       return;
     }
 
-    if(configEntrada.habilitado === true && configEntrada.carroId === ""){
-      alert("Motorista sem carro atrelado")
+    if (configEntrada.habilitado === true && configEntrada.carroId === "") {
+      alert("Motorista sem carro atrelado");
       return;
     }
 
-    if(configSaida.habilitado === true && configSaida.carroId === ""){
-      alert("Motorista sem carro atrelado")
+    if (configSaida.habilitado === true && configSaida.carroId === "") {
+      alert("Motorista sem carro atrelado");
       return;
     }
 
-    console.log(payload);
+    await criarModeloFixo(payload);
 
-    const lancado = await criarModeloFixo(payload);
-
-    navigate("/modelosvouchersfixos")
-
-    console.log("Retorno: ", lancado);
+    navigate("/modelosvouchersfixos");
   }
 
   return (

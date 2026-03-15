@@ -162,7 +162,7 @@ function Filtros({
       const decoded = jwtDecode<JwtPayload>(token);
       return decoded.operadoraId;
     } else {
-      console.log("Nenhum token encontrado");
+      return
     }
   }
 

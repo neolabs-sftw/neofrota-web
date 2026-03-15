@@ -234,3 +234,5 @@ export function useEditarModeloVoucherFixo() {
     error,
   };
 }
+
+console.log("a");
