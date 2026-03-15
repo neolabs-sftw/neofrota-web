@@ -14,7 +14,7 @@ import { useCarroAtrelado } from "../../../hooks/useCarros";
 import {
   useEditarModeloVoucherFixo,
   useModeloFixoId,
-} from "../../../hooks/useModelosFixos";
+} from "../../../hooks/useModelosFixosTemp";
 import { useNavigate, useParams } from "react-router-dom";
 import CircularProgress from "@mui/material/CircularProgress";
 

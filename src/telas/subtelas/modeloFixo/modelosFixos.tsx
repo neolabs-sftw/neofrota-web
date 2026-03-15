@@ -9,7 +9,7 @@ import { useMotorista } from "../../../hooks/useMotorista";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { useAdminLogado } from "../../../hooks/AdminLogado";
-import { useModelosFixos } from "../../../hooks/useModelosFixos";
+import { useModelosFixos } from "../../../hooks/useModelosFixosTemp";
 
 export function ModelosFixos() {
   return BaseTelas({
