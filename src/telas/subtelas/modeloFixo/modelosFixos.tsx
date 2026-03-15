@@ -9,7 +9,11 @@ import { useMotorista } from "../../../hooks/useMotorista";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { useAdminLogado } from "../../../hooks/AdminLogado";
-import { useModelosFixos } from "../../../hooks/useModelosFixosTemp";
+import {
+  useEditarModeloVoucherFixo,
+  useModelosFixos,
+} from "../../../hooks/useModelosFixos";
+import CircularProgress from "@mui/material/CircularProgress";
 
 export function ModelosFixos() {
   return BaseTelas({
@@ -162,7 +166,7 @@ function Filtros({
       const decoded = jwtDecode<JwtPayload>(token);
       return decoded.operadoraId;
     } else {
-      return
+      return;
     }
   }
 
@@ -601,8 +605,14 @@ const LinhaModeloFixoStyled = styled.div<LinhaModeloFixoProps>`
 function LinhaModeloFixo({ mv }: { mv: any }) {
   const navigate = useNavigate();
 
+  const operId = useAdminLogado()?.operadora.id;
+
   const [statusVoucher, setStatusVoucher] = useState<boolean>(mv.ativo);
   const { Cor } = useTema();
+
+  const { editarModeloVoucherFixo, loading } = useEditarModeloVoucherFixo(
+    String(operId),
+  );
 
   const configEntrada = mv.configuracoes?.find(
     (c: any) => c.tipo === "Entrada",
@@ -773,11 +783,25 @@ function LinhaModeloFixo({ mv }: { mv: any }) {
           onClick={(e) => {
             e.stopPropagation();
             setStatusVoucher(!statusVoucher);
+            editarModeloVoucherFixo(mv.id, { ativo: !statusVoucher });
           }}
         >
-          <p style={{ fontFamily: "Icone", userSelect: "none" }}>
-            {statusVoucher ? "autoplay" : "autopause"}
-          </p>
+          {loading ? (
+            <CircularProgress
+              size={24}
+              thickness={5}
+              sx={{
+                color: statusVoucher ? Cor.ativo : Cor.atencao,
+                "& .MuiCircularProgress-circle": {
+                  strokeLinecap: "round",
+                },
+              }}
+            />
+          ) : (
+            <p style={{ fontFamily: "Icone", userSelect: "none" }}>
+              {statusVoucher ? "autoplay" : "autopause"}
+            </p>
+          )}
           {/* <p style={{ fontFamily: "Icone", userSelect: "none" }}>
             progress_activity
           </p> */}

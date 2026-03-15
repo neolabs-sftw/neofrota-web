@@ -185,6 +185,7 @@ function NovoVoucherConteudo() {
     // console.log(vouchers);
 
     setLancamentos(vouchers);
+    console.log(vouchers)
     setCxConfirmarVoucher(true);
   }
 

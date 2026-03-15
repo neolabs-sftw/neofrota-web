@@ -212,12 +212,14 @@ const UPDATE_MODELO_FIXO = gql`
   }
 `;
 
-export function useEditarModeloVoucherFixo() {
-  const [editar, { data, loading, error }] = useMutation(UPDATE_MODELO_FIXO);
+export function useEditarModeloVoucherFixo(operadoraId: string) {
+  const [editar, { data, loading, error }] = useMutation(UPDATE_MODELO_FIXO, {
+    refetchQueries: [{ query: GET_MODELOS_FIXOS, variables: { operadoraId } }],
+  });
 
   const editarModeloVoucherFixo = (
     updateModeloVoucherFixoId: string,
-    input: any,
+    input: Partial<any>,
   ) => {
     return editar({
       variables: {

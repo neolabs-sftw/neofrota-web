@@ -14,7 +14,7 @@ import { useCarroAtrelado } from "../../../hooks/useCarros";
 import {
   useEditarModeloVoucherFixo,
   useModeloFixoId,
-} from "../../../hooks/useModelosFixosTemp";
+} from "../../../hooks/useModelosFixos";
 import { useNavigate, useParams } from "react-router-dom";
 import CircularProgress from "@mui/material/CircularProgress";
 
@@ -271,7 +271,7 @@ function EditarVoucherFixoConteudo() {
   };
 
   const { editarModeloVoucherFixo, loading: atualizarModelo } =
-    useEditarModeloVoucherFixo();
+    useEditarModeloVoucherFixo(String(operadoraId));
 
   const navigate = useNavigate();
 
