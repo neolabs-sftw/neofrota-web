@@ -1,4 +1,3 @@
-import { jwtDecode } from "jwt-decode";
 import BaseTelas from "../../../componentes/baseTelas";
 import EditPerfil from "../../../componentes/editPerfil";
 import { useTema } from "../../../hooks/temaContext";
@@ -24,11 +23,6 @@ export function ModelosFixos() {
       </>
     ),
   });
-}
-
-interface JwtPayload {
-  adminUsuarioId?: string;
-  operadoraId?: string;
 }
 
 function ModeloFixosConteudo() {
@@ -159,18 +153,7 @@ function Filtros({
 }) {
   const { Cor } = useTema();
 
-  const token = localStorage.getItem("token");
-
-  function getOperadoraId() {
-    if (token) {
-      const decoded = jwtDecode<JwtPayload>(token);
-      return decoded.operadoraId;
-    } else {
-      return;
-    }
-  }
-
-  const operId = getOperadoraId();
+  const operId = useAdminLogado()?.operadora.id
 
   const { listaMotoristas } = useMotorista(operId);
   const { listaClientes } = useListaClientes(operId || "0");

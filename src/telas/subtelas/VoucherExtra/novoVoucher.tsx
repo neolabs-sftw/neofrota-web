@@ -1138,6 +1138,7 @@ function DetalhesDoVoucher({
             type="text"
             style={{
               width: "100%",
+              color: Cor.texto1,
               padding: 10,
               borderRadius: 14,
               border: `1px solid ${Cor.texto2 + 50}`,

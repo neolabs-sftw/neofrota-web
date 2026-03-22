@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import BtnProximaViagem from "../componentes/btnProximaViagem";
 import ListaProximasViagens from "../componentes/listaProximasViagens";
 import { useNavigate } from "react-router-dom";
-import { useVouchersData } from "../hooks/useVouchers";
+import { useVoucherPrev } from "../hooks/useVouchers";
 import ModalPreviewVoucher from "../componentes/modalPreviewVoucher";
 import { jwtDecode } from "jwt-decode";
 import styled from "styled-components";
@@ -97,27 +97,22 @@ function OperacaoConteudo() {
 
   const hoje = formatarData(new Date());
 
-  const {
-    listaVoucherData,
-    refetch: refetchVouchers,
-    loading,
-  } = useVouchersData(operadoraId, hoje);
+  const {listaVoucherPrevData, refetch: refetchVouchers, loading} = useVoucherPrev(operadoraId, hoje)
 
-  const listaVoucherDataFiltro = listaVoucherData.filter((v: any) => {
+  const listaVoucherDataFiltro = listaVoucherPrevData.filter((v: any) => {
     return v.status == "Concluido";
   });
 
   useEffect(() => {
     const atualizarOperacao = () => {
       refetchVouchers();
-      // refetchTotal();
     };
 
-    atualizarOperacao(); // chama na montagem
+    atualizarOperacao();
 
-    const intervalId = setInterval(atualizarOperacao, 300000); // a cada 5min
+    const intervalId = setInterval(atualizarOperacao, 300000);
 
-    return () => clearInterval(intervalId); // limpa ao desmontar
+    return () => clearInterval(intervalId);
   }, []);
 
   const Cor = useTema().Cor;
@@ -327,7 +322,7 @@ function OperacaoConteudo() {
             sx={{ color: Cor.primaria }}
           />
         ) : (
-          listaVoucherData.map((v: any) => (
+          listaVoucherPrevData.map((v: any) => (
             <ListaProximasViagens
               v={v}
               key={v.id}

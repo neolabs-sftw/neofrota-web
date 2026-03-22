@@ -1,3 +1,4 @@
+import { useAdminLogado } from "../hooks/AdminLogado";
 import { useTema } from "../hooks/temaContext";
 import { useFaturamentoParcialMes } from "../hooks/useFaturamento";
 
@@ -21,22 +22,22 @@ function CardInfosMenorFixos({}: {}) {
     return {
       inicioISO: start.toISOString(),
       fimISO: end.toISOString(),
-      // inicioISO: "2026-01-01T00:00:00.000Z",
-      // fimISO: "2026-01-31T23:59:59.999Z",
     };
   }
+
+  const operadoraId = useAdminLogado()?.operadora.id
 
   const { data: dataFixoAbertos } = useFaturamentoParcialMes(
     getMonthRangeISO().inicioISO,
     getMonthRangeISO().fimISO,
-    "1",
+    String(operadoraId),
     "Aberto",
     "Fixo",
   );
   const { data: dataFixoConcluidos } = useFaturamentoParcialMes(
     getMonthRangeISO().inicioISO,
     getMonthRangeISO().fimISO,
-    "1",
+    String(operadoraId),
     "Concluido",
     "Fixo",
   );

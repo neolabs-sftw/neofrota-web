@@ -1,7 +1,8 @@
+import { useAdminLogado } from "../hooks/AdminLogado";
 import { useTema } from "../hooks/temaContext";
 import { useFaturamentoParcialMes } from "../hooks/useFaturamento";
 
-function CardInfosMenorTurnos({}: {}) {
+function CardInfosMenorTurnos({ }: {}) {
   const Cor = useTema().Cor;
 
   const valorAnterior = 15;
@@ -21,22 +22,22 @@ function CardInfosMenorTurnos({}: {}) {
     return {
       inicioISO: start.toISOString(),
       fimISO: end.toISOString(),
-      // inicioISO: "2026-01-01T00:00:00.000Z",
-      // fimISO: "2026-01-31T23:59:59.999Z",
     };
   }
+
+  const operadoraId = useAdminLogado()?.operadora.id
 
   const { data: dataTurnoAbertos } = useFaturamentoParcialMes(
     getMonthRangeISO().inicioISO,
     getMonthRangeISO().fimISO,
-    "1",
+    String(operadoraId),
     "Aberto",
     "Turno",
   );
   const { data: dataTurnoConcluidos } = useFaturamentoParcialMes(
     getMonthRangeISO().inicioISO,
     getMonthRangeISO().fimISO,
-    "1",
+    String(operadoraId),
     "Concluido",
     "Turno",
   );
@@ -53,7 +54,7 @@ function CardInfosMenorTurnos({}: {}) {
         gap: "5px",
         padding: "15px",
         backgroundColor: Cor.base2,
-         boxShadow: `2px 2px 4px ${Cor.textoTurno + 10}`,
+        boxShadow: `2px 2px 4px ${Cor.textoTurno + 10}`,
         borderBottom: `1px solid ${Cor.turno + 35}`,
         borderRight: `1px solid ${Cor.turno + 35}`,
       }}

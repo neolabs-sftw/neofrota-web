@@ -154,21 +154,51 @@ function NovoVoucherFixoConteudo() {
   const navigate = useNavigate();
 
   async function criarModeloFixoFunc() {
-    const payload = gerarPayload();
-    if (payload.configuracoes.length === 0) {
+    if (
+      empresaCliente === "" ||
+      unidadeCliente === "" ||
+      nomeModelo === "" ||
+      origem === "" ||
+      destino === ""
+    ) {
+      alert(
+        "Os campos Origem, Destino, Cliente, Unidade e Código do Roteiro são obrigatórios, por vafor verifique!",
+      );
+      return;
+    }
+    if (!configEntrada.habilitado && !configSaida.habilitado) {
       alert("Habilite pelo menos uma configuração (Entrada ou Saída)!");
       return;
     }
 
-    if (configEntrada.habilitado === true && configEntrada.carroId === "") {
-      alert("Motorista sem carro atrelado");
-      return;
+    if (configEntrada.habilitado) {
+      // Verificamos por vazio, null, ou undefined usando a dupla negação ou typeof
+      if (!configEntrada.carroId || configEntrada.carroId === "") {
+        alert(
+          "Configuração de Entrada: O Motorista selecionado está sem carro atrelado!",
+        );
+        return;
+      }
+      if (!configEntrada.motoristaId || configEntrada.motoristaId === "") {
+        alert("Selecione um motorista para a Configuração de Entrada!");
+        return;
+      }
     }
 
-    if (configSaida.habilitado === true && configSaida.carroId === "") {
-      alert("Motorista sem carro atrelado");
-      return;
+    if (configSaida.habilitado) {
+      if (!configSaida.carroId || configSaida.carroId === "") {
+        alert(
+          "Configuração de Saída: O Motorista selecionado está sem carro atrelado!",
+        );
+        return;
+      }
+      if (!configSaida.motoristaId || configSaida.motoristaId === "") {
+        alert("Selecione um motorista para a Configuração de Saída!");
+        return;
+      }
     }
+
+    const payload = gerarPayload();
 
     await criarModeloFixo(payload);
 
@@ -1025,6 +1055,8 @@ function DetalhesEntrada({
   const operadora = useAdminLogado()?.operadora.id;
   const { listaMotoristas } = useMotorista(operadora);
 
+  const [carro, setCarro] = useState<any>();
+
   const { carroAtrelado, loading: carregandoCarro } = useCarroAtrelado(
     String(configEntrada.motoristaId),
   );
@@ -1036,301 +1068,374 @@ function DetalhesEntrada({
   useEffect(() => {
     const idDoCarro = Number(carroAtrelado?.[0]?.id) || 0;
     atualizarCampo("carroId", idDoCarro);
+    setCarro(carroAtrelado?.[0]);
   }, [carroAtrelado, configEntrada.motoristaId]);
 
   return (
-    <div
-      style={{
-        width: "100%",
-        padding: 15,
-        backgroundColor: Cor.base2,
-        borderRadius: 22,
-        boxShadow: Cor.sombra,
-        opacity: carregandoCarro ? 0.1 : !configEntrada.habilitado ? 0.8 : 1,
-        transition: "ease-in-out all 0.3s",
-      }}
-    >
-      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-        <p
-          style={{
-            fontSize: 14,
-            color: Cor.textoFixo,
-            fontWeight: "bold",
-          }}
-        >
-          Configurações Entrada
-        </p>
-        <p style={{ fontSize: 12, color: Cor.texto2, marginBottom: 5 }}>
-          <strong>Habilite</strong> e selecione o motorista, horários e dias da
-          semana o motorista deve chegar no destino.
-        </p>
-      </div>
+    <>
       <div
         style={{
-          display: "flex",
-          flexDirection: "row",
           width: "100%",
-          justifyContent: "space-between",
-          alignItems: "center",
-          gap: 15,
+          padding: 15,
+          backgroundColor: Cor.base2,
+          borderRadius: 22,
+          boxShadow: Cor.sombra,
+          opacity: carregandoCarro ? 0.1 : !configEntrada.habilitado ? 0.8 : 1,
+          transition: "ease-in-out all 0.3s",
+          zIndex: 2,
         }}
       >
-        <div style={{ display: "flex", flexDirection: "column" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
           <p
             style={{
               fontSize: 14,
-              color: !configEntrada.habilitado
-                ? Cor.texto1 + 50
-                : Cor.textoFixo + 90,
+              color: Cor.textoFixo,
               fontWeight: "bold",
-              margin: 5,
             }}
           >
-            Ativo:
+            Configurações Entrada
           </p>
-          <div
-            style={{
-              width: "100%",
-              border: `1px solid ${Cor.texto2 + 50}`,
-              padding: 5,
-              borderRadius: 14,
-            }}
-          >
-            <BtnAtivarStyled
-              $cor={configEntrada.habilitado ? Cor.textoFixo : Cor.texto1}
-              $bg={configEntrada.habilitado ? Cor.fixo : Cor.texto2}
-              onClick={() => {
-                atualizarCampo("habilitado", !configEntrada.habilitado);
-              }}
-              style={{ width: 100, justifyContent: "space-between" }}
-            >
-              <p>{configEntrada.habilitado ? "Habilitado" : "Habilitar"}</p>
-              <p style={{ fontFamily: "Icone", fontSize: 16 }}>
-                {configEntrada.habilitado
-                  ? "check_box"
-                  : "check_box_outline_blank"}
-              </p>
-            </BtnAtivarStyled>
-          </div>
+          <p style={{ fontSize: 12, color: Cor.texto2, marginBottom: 5 }}>
+            <strong>Habilite</strong> e selecione o motorista, horários e dias
+            da semana o motorista deve chegar no destino.
+          </p>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", width: "30%" }}>
-          <p
-            style={{
-              fontSize: 14,
-              color: !configEntrada.habilitado
-                ? Cor.texto1 + 50
-                : Cor.textoFixo + 90,
-              fontWeight: "bold",
-              margin: 5,
-            }}
-          >
-            Motorista:
-          </p>
-          <div
-            style={{
-              width: "100%",
-              border: `1px solid ${Cor.texto2 + 50}`,
-              padding: 10,
-              borderRadius: 14,
-              opacity: !configEntrada.habilitado ? 0.5 : 1,
-            }}
-          >
-            <select
-              disabled={!configEntrada.habilitado}
-              name=""
-              id=""
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            width: "100%",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 15,
+          }}
+        >
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <p
               style={{
-                outline: "none",
-                border: "none",
-                width: "100%",
-                backgroundColor: "transparent",
-                color: Cor.texto1,
-              }}
-              value={configEntrada.motoristaId}
-              onChange={(e) => {
-                atualizarCampo("motoristaId", String(e.target.value));
+                fontSize: 14,
+                color: !configEntrada.habilitado
+                  ? Cor.texto1 + 50
+                  : Cor.textoFixo + 90,
+                fontWeight: "bold",
+                margin: 5,
               }}
             >
-              <option
-                value={""}
-                style={{ backgroundColor: Cor.base2, color: Cor.texto2 + 70 }}
-              >
-                Selecione um Motorista
-              </option>
-              {listaMotoristas?.map((m: any) => {
-                return (
-                  <option
-                    value={m.id}
-                    key={m?.id}
-                    style={{
-                      backgroundColor: Cor.base2,
-                      padding: 15,
-                      margin: 10,
-                    }}
-                  >
-                    {m?.nome}
-                  </option>
-                );
-              })}
-            </select>
-          </div>
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", width: "10%" }}>
-          <p
-            style={{
-              fontSize: 14,
-              color: !configEntrada.habilitado
-                ? Cor.texto1 + 50
-                : Cor.textoFixo + 90,
-              fontWeight: "bold",
-              margin: 5,
-            }}
-          >
-            Horário:
-          </p>
-          <div
-            style={{
-              width: "100%",
-              border: `1px solid ${Cor.texto2 + 50}`,
-              padding: 10,
-              borderRadius: 14,
-              opacity: !configEntrada.habilitado ? 0.5 : 1,
-            }}
-          >
-            <input
-              disabled={!configEntrada.habilitado}
-              type="time"
+              Ativo:
+            </p>
+            <div
               style={{
-                border: "none",
-                outline: "none",
                 width: "100%",
-                backgroundColor: "transparent",
-                color: Cor.texto1,
+                border: `1px solid ${Cor.texto2 + 50}`,
+                padding: 5,
+                borderRadius: 14,
               }}
-              value={configEntrada.horario}
-              onChange={(e) => {
-                atualizarCampo("horario", e.target.value);
-              }}
-            />
-          </div>
-        </div>
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <p
-            style={{
-              fontSize: 14,
-              color: !configEntrada.habilitado
-                ? Cor.texto1 + 50
-                : Cor.textoFixo + 90,
-              fontWeight: "bold",
-              margin: 5,
-            }}
-          >
-            Dias da Semana:
-          </p>
-          <div
-            style={{
-              width: "100%",
-              border: `1px solid ${Cor.texto2 + 50}`,
-              padding: 5,
-              borderRadius: 14,
-              opacity: !configEntrada.habilitado ? 0.3 : 1,
-              pointerEvents: !configEntrada.habilitado ? "none" : "auto",
-            }}
-          >
-            <div style={{ display: "flex", flexDirection: "row", gap: 10 }}>
+            >
               <BtnAtivarStyled
-                $cor={configEntrada.domingo ? Cor.textoFixo : Cor.texto1}
-                $bg={configEntrada.domingo ? Cor.fixo : Cor.texto2}
-                onClick={() =>
-                  atualizarCampo("domingo", !configEntrada.domingo)
-                }
+                $cor={configEntrada.habilitado ? Cor.textoFixo : Cor.texto1}
+                $bg={configEntrada.habilitado ? Cor.fixo : Cor.texto2}
+                onClick={() => {
+                  atualizarCampo("habilitado", !configEntrada.habilitado);
+                }}
+                style={{ width: 100, justifyContent: "space-between" }}
               >
-                <p>Dom</p>
+                <p>{configEntrada.habilitado ? "Habilitado" : "Habilitar"}</p>
                 <p style={{ fontFamily: "Icone", fontSize: 16 }}>
-                  {configEntrada.domingo
-                    ? "check_box"
-                    : "check_box_outline_blank"}
-                </p>
-              </BtnAtivarStyled>
-              <BtnAtivarStyled
-                $cor={configEntrada.segunda ? Cor.textoFixo : Cor.texto1}
-                $bg={configEntrada.segunda ? Cor.fixo : Cor.texto2}
-                onClick={() =>
-                  atualizarCampo("segunda", !configEntrada.segunda)
-                }
-              >
-                <p>Seg</p>
-                <p style={{ fontFamily: "Icone", fontSize: 16 }}>
-                  {configEntrada.segunda
-                    ? "check_box"
-                    : "check_box_outline_blank"}
-                </p>
-              </BtnAtivarStyled>
-              <BtnAtivarStyled
-                $cor={configEntrada.terca ? Cor.textoFixo : Cor.texto1}
-                $bg={configEntrada.terca ? Cor.fixo : Cor.texto2}
-                onClick={() => atualizarCampo("terca", !configEntrada.terca)}
-              >
-                <p>Ter</p>
-                <p style={{ fontFamily: "Icone", fontSize: 16 }}>
-                  {configEntrada.terca
-                    ? "check_box"
-                    : "check_box_outline_blank"}
-                </p>
-              </BtnAtivarStyled>
-              <BtnAtivarStyled
-                $cor={configEntrada.quarta ? Cor.textoFixo : Cor.texto1}
-                $bg={configEntrada.quarta ? Cor.fixo : Cor.texto2}
-                onClick={() => atualizarCampo("quarta", !configEntrada.quarta)}
-              >
-                <p>Qua</p>
-                <p style={{ fontFamily: "Icone", fontSize: 16 }}>
-                  {configEntrada.quarta
-                    ? "check_box"
-                    : "check_box_outline_blank"}
-                </p>
-              </BtnAtivarStyled>
-              <BtnAtivarStyled
-                $cor={configEntrada.quinta ? Cor.textoFixo : Cor.texto1}
-                $bg={configEntrada.quinta ? Cor.fixo : Cor.texto2}
-                onClick={() => atualizarCampo("quinta", !configEntrada.quinta)}
-              >
-                <p>Qui</p>
-                <p style={{ fontFamily: "Icone", fontSize: 16 }}>
-                  {configEntrada.quinta
-                    ? "check_box"
-                    : "check_box_outline_blank"}
-                </p>
-              </BtnAtivarStyled>
-              <BtnAtivarStyled
-                $cor={configEntrada.sexta ? Cor.textoFixo : Cor.texto1}
-                $bg={configEntrada.sexta ? Cor.fixo : Cor.texto2}
-                onClick={() => atualizarCampo("sexta", !configEntrada.sexta)}
-              >
-                <p>Sex</p>
-                <p style={{ fontFamily: "Icone", fontSize: 16 }}>
-                  {configEntrada.sexta
-                    ? "check_box"
-                    : "check_box_outline_blank"}
-                </p>
-              </BtnAtivarStyled>
-              <BtnAtivarStyled
-                $cor={configEntrada.sabado ? Cor.textoFixo : Cor.texto1}
-                $bg={configEntrada.sabado ? Cor.fixo : Cor.texto2}
-                onClick={() => atualizarCampo("sabado", !configEntrada.sabado)}
-              >
-                <p>Sab</p>
-                <p style={{ fontFamily: "Icone", fontSize: 16 }}>
-                  {configEntrada.sabado
+                  {configEntrada.habilitado
                     ? "check_box"
                     : "check_box_outline_blank"}
                 </p>
               </BtnAtivarStyled>
             </div>
           </div>
+          <div
+            style={{ display: "flex", flexDirection: "column", width: "30%" }}
+          >
+            <p
+              style={{
+                fontSize: 14,
+                color: !configEntrada.habilitado
+                  ? Cor.texto1 + 50
+                  : Cor.textoFixo + 90,
+                fontWeight: "bold",
+                margin: 5,
+              }}
+            >
+              Motorista:
+            </p>
+            <div
+              style={{
+                width: "100%",
+                border: `1px solid ${Cor.texto2 + 50}`,
+                padding: 10,
+                borderRadius: 14,
+                opacity: !configEntrada.habilitado ? 0.5 : 1,
+              }}
+            >
+              <select
+                disabled={!configEntrada.habilitado}
+                name=""
+                id=""
+                style={{
+                  outline: "none",
+                  border: "none",
+                  width: "100%",
+                  backgroundColor: "transparent",
+                  color: Cor.texto1,
+                }}
+                value={configEntrada.motoristaId}
+                onChange={(e) => {
+                  atualizarCampo("motoristaId", String(e.target.value));
+                }}
+              >
+                <option
+                  value={""}
+                  style={{ backgroundColor: Cor.base2, color: Cor.texto2 + 70 }}
+                >
+                  Selecione um Motorista
+                </option>
+                {listaMotoristas?.map((m: any) => {
+                  return (
+                    <option
+                      value={m.id}
+                      key={m?.id}
+                      style={{
+                        backgroundColor: Cor.base2,
+                        padding: 15,
+                        margin: 10,
+                      }}
+                    >
+                      {m?.nome}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+          </div>
+          <div
+            style={{ display: "flex", flexDirection: "column", width: "10%" }}
+          >
+            <p
+              style={{
+                fontSize: 14,
+                color: !configEntrada.habilitado
+                  ? Cor.texto1 + 50
+                  : Cor.textoFixo + 90,
+                fontWeight: "bold",
+                margin: 5,
+              }}
+            >
+              Horário:
+            </p>
+            <div
+              style={{
+                width: "100%",
+                border: `1px solid ${Cor.texto2 + 50}`,
+                padding: 10,
+                borderRadius: 14,
+                opacity: !configEntrada.habilitado ? 0.5 : 1,
+              }}
+            >
+              <input
+                disabled={!configEntrada.habilitado}
+                type="time"
+                style={{
+                  border: "none",
+                  outline: "none",
+                  width: "100%",
+                  backgroundColor: "transparent",
+                  color: Cor.texto1,
+                }}
+                value={configEntrada.horario}
+                onChange={(e) => {
+                  atualizarCampo("horario", e.target.value);
+                }}
+              />
+            </div>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <p
+              style={{
+                fontSize: 14,
+                color: !configEntrada.habilitado
+                  ? Cor.texto1 + 50
+                  : Cor.textoFixo + 90,
+                fontWeight: "bold",
+                margin: 5,
+              }}
+            >
+              Dias da Semana:
+            </p>
+            <div
+              style={{
+                width: "100%",
+                border: `1px solid ${Cor.texto2 + 50}`,
+                padding: 5,
+                borderRadius: 14,
+                opacity: !configEntrada.habilitado ? 0.3 : 1,
+                pointerEvents: !configEntrada.habilitado ? "none" : "auto",
+              }}
+            >
+              <div style={{ display: "flex", flexDirection: "row", gap: 10 }}>
+                <BtnAtivarStyled
+                  $cor={configEntrada.domingo ? Cor.textoFixo : Cor.texto1}
+                  $bg={configEntrada.domingo ? Cor.fixo : Cor.texto2}
+                  onClick={() =>
+                    atualizarCampo("domingo", !configEntrada.domingo)
+                  }
+                >
+                  <p>Dom</p>
+                  <p style={{ fontFamily: "Icone", fontSize: 16 }}>
+                    {configEntrada.domingo
+                      ? "check_box"
+                      : "check_box_outline_blank"}
+                  </p>
+                </BtnAtivarStyled>
+                <BtnAtivarStyled
+                  $cor={configEntrada.segunda ? Cor.textoFixo : Cor.texto1}
+                  $bg={configEntrada.segunda ? Cor.fixo : Cor.texto2}
+                  onClick={() =>
+                    atualizarCampo("segunda", !configEntrada.segunda)
+                  }
+                >
+                  <p>Seg</p>
+                  <p style={{ fontFamily: "Icone", fontSize: 16 }}>
+                    {configEntrada.segunda
+                      ? "check_box"
+                      : "check_box_outline_blank"}
+                  </p>
+                </BtnAtivarStyled>
+                <BtnAtivarStyled
+                  $cor={configEntrada.terca ? Cor.textoFixo : Cor.texto1}
+                  $bg={configEntrada.terca ? Cor.fixo : Cor.texto2}
+                  onClick={() => atualizarCampo("terca", !configEntrada.terca)}
+                >
+                  <p>Ter</p>
+                  <p style={{ fontFamily: "Icone", fontSize: 16 }}>
+                    {configEntrada.terca
+                      ? "check_box"
+                      : "check_box_outline_blank"}
+                  </p>
+                </BtnAtivarStyled>
+                <BtnAtivarStyled
+                  $cor={configEntrada.quarta ? Cor.textoFixo : Cor.texto1}
+                  $bg={configEntrada.quarta ? Cor.fixo : Cor.texto2}
+                  onClick={() =>
+                    atualizarCampo("quarta", !configEntrada.quarta)
+                  }
+                >
+                  <p>Qua</p>
+                  <p style={{ fontFamily: "Icone", fontSize: 16 }}>
+                    {configEntrada.quarta
+                      ? "check_box"
+                      : "check_box_outline_blank"}
+                  </p>
+                </BtnAtivarStyled>
+                <BtnAtivarStyled
+                  $cor={configEntrada.quinta ? Cor.textoFixo : Cor.texto1}
+                  $bg={configEntrada.quinta ? Cor.fixo : Cor.texto2}
+                  onClick={() =>
+                    atualizarCampo("quinta", !configEntrada.quinta)
+                  }
+                >
+                  <p>Qui</p>
+                  <p style={{ fontFamily: "Icone", fontSize: 16 }}>
+                    {configEntrada.quinta
+                      ? "check_box"
+                      : "check_box_outline_blank"}
+                  </p>
+                </BtnAtivarStyled>
+                <BtnAtivarStyled
+                  $cor={configEntrada.sexta ? Cor.textoFixo : Cor.texto1}
+                  $bg={configEntrada.sexta ? Cor.fixo : Cor.texto2}
+                  onClick={() => atualizarCampo("sexta", !configEntrada.sexta)}
+                >
+                  <p>Sex</p>
+                  <p style={{ fontFamily: "Icone", fontSize: 16 }}>
+                    {configEntrada.sexta
+                      ? "check_box"
+                      : "check_box_outline_blank"}
+                  </p>
+                </BtnAtivarStyled>
+                <BtnAtivarStyled
+                  $cor={configEntrada.sabado ? Cor.textoFixo : Cor.texto1}
+                  $bg={configEntrada.sabado ? Cor.fixo : Cor.texto2}
+                  onClick={() =>
+                    atualizarCampo("sabado", !configEntrada.sabado)
+                  }
+                >
+                  <p>Sab</p>
+                  <p style={{ fontFamily: "Icone", fontSize: 16 }}>
+                    {configEntrada.sabado
+                      ? "check_box"
+                      : "check_box_outline_blank"}
+                  </p>
+                </BtnAtivarStyled>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+      <div
+        style={{
+          width: "95%",
+          display: "flex",
+          flexDirection: "row",
+          gap: 5,
+          justifyContent: "flex-start",
+          alignItems: "center",
+          padding: 8,
+          backgroundColor: Cor.texto1 + 10,
+          borderRadius: "0px 0px 14px 14px",
+          transition: "ease-in-out all 0.3s",
+          marginTop: !configEntrada.habilitado ? -50 : -10,
+          opacity: !configEntrada.habilitado ? 0 : 1,
+        }}
+      >
+        <p
+          style={{
+            fontSize: 14,
+            color: !configEntrada.habilitado
+              ? Cor.texto1 + 50
+              : Cor.textoFixo + 90,
+            fontWeight: "bold",
+            margin: 5,
+          }}
+        >
+          Carro :
+        </p>
+        {carro ? (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              gap: 10,
+              justifyContent: "flex-start",
+              alignItems: "center",
+              fontSize: 14,
+              color: Cor.texto2,
+            }}
+          >
+            <p style={{ fontWeight: "bold", color: Cor.textoFixo }}>
+              {carro?.marca} - {carro?.modelo}
+            </p>
+            <p>cor: <strong style={{ color: Cor.texto1 }}>{carro?.cor.toUpperCase()}</strong></p>
+            <p>placa: <strong style={{ color: Cor.texto1 }}>{carro?.placa.toUpperCase()}</strong></p>
+          </div>
+        ) : (
+          <p
+            style={{
+              fontSize: 14,
+              color: Cor.atencao,
+              fontStyle: "italic",
+              fontWeight: "800",
+            }}
+          >
+            Sem Carro
+          </p>
+        )}
+      </div>
+    </>
   );
 }
 
@@ -1345,6 +1450,8 @@ function DetalhesSaida({
   const operadora = useAdminLogado()?.operadora.id;
   const { listaMotoristas } = useMotorista(operadora);
 
+  const [carro, setCarro] = useState<any>();
+
   const { carroAtrelado, loading: carregandoCarro } = useCarroAtrelado(
     String(configSaida.motoristaId),
   );
@@ -1356,293 +1463,375 @@ function DetalhesSaida({
   useEffect(() => {
     const idDoCarro = Number(carroAtrelado?.[0]?.id) || 0;
     atualizarCampo("carroId", idDoCarro);
+    setCarro(carroAtrelado?.[0]);
   }, [carroAtrelado, configSaida.motoristaId]);
 
   return (
-    <div
-      style={{
-        width: "100%",
-        padding: 15,
-        backgroundColor: Cor.base2,
-        borderRadius: 22,
-        boxShadow: Cor.sombra,
-        opacity: carregandoCarro ? 0.1 : !configSaida.habilitado ? 0.8 : 1,
-        transition: "ease-in-out all 0.3s",
-      }}
-    >
-      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-        <p
-          style={{
-            fontSize: 14,
-            color: Cor.textoFixo,
-            fontWeight: "bold",
-          }}
-        >
-          Configurações Saída
-        </p>
-        <p style={{ fontSize: 12, color: Cor.texto2, marginBottom: 5 }}>
-          <strong>Habilite</strong> e selecione o motorista, horários e dias da
-          semana o motorista deve sair do destino.
-        </p>
-      </div>
+    <>
       <div
         style={{
-          display: "flex",
-          flexDirection: "row",
           width: "100%",
-          justifyContent: "space-between",
-          alignItems: "center",
-          gap: 15,
+          padding: 15,
+          backgroundColor: Cor.base2,
+          borderRadius: 22,
+          boxShadow: Cor.sombra,
+          opacity: carregandoCarro ? 0.1 : !configSaida.habilitado ? 0.8 : 1,
+          transition: "ease-in-out all 0.3s",
+          zIndex: 2,
         }}
       >
-        <div style={{ display: "flex", flexDirection: "column" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
           <p
             style={{
               fontSize: 14,
-              color: !configSaida.habilitado
-                ? Cor.texto1 + 50
-                : Cor.textoFixo + 90,
+              color: Cor.textoFixo,
               fontWeight: "bold",
-              margin: 5,
             }}
           >
-            Ativo:
+            Configurações Saída
           </p>
-          <div
-            style={{
-              width: "100%",
-              border: `1px solid ${Cor.texto2 + 50}`,
-              padding: 5,
-              borderRadius: 14,
-            }}
-          >
-            <BtnAtivarStyled
-              $cor={configSaida.habilitado ? Cor.textoFixo : Cor.texto1}
-              $bg={configSaida.habilitado ? Cor.fixo : Cor.texto2}
-              onClick={() =>
-                atualizarCampo("habilitado", !configSaida.habilitado)
-              }
-              style={{ width: 100, justifyContent: "space-between" }}
-            >
-              <p>{configSaida.habilitado ? "Habilitado" : "Habilitar"}</p>
-              <p style={{ fontFamily: "Icone", fontSize: 16 }}>
-                {configSaida.habilitado
-                  ? "check_box"
-                  : "check_box_outline_blank"}
-              </p>
-            </BtnAtivarStyled>
-          </div>
+          <p style={{ fontSize: 12, color: Cor.texto2, marginBottom: 5 }}>
+            <strong>Habilite</strong> e selecione o motorista, horários e dias
+            da semana o motorista deve sair do destino.
+          </p>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", width: "30%" }}>
-          <p
-            style={{
-              fontSize: 14,
-              color: !configSaida.habilitado
-                ? Cor.texto1 + 50
-                : Cor.textoFixo + 90,
-              fontWeight: "bold",
-              margin: 5,
-            }}
-          >
-            Motorista:
-          </p>
-          <div
-            style={{
-              width: "100%",
-              border: `1px solid ${Cor.texto2 + 50}`,
-              padding: 10,
-              borderRadius: 14,
-              opacity: !configSaida.habilitado ? 0.5 : 1,
-            }}
-          >
-            <select
-              disabled={!configSaida.habilitado}
-              name=""
-              id=""
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            width: "100%",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 15,
+          }}
+        >
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <p
               style={{
-                outline: "none",
-                border: "none",
-                width: "100%",
-                backgroundColor: "transparent",
-                color: Cor.texto1,
-              }}
-              value={configSaida.motoristaId}
-              onChange={(e) => {
-                atualizarCampo("motoristaId", String(e.target.value));
+                fontSize: 14,
+                color: !configSaida.habilitado
+                  ? Cor.texto1 + 50
+                  : Cor.textoFixo + 90,
+                fontWeight: "bold",
+                margin: 5,
               }}
             >
-              <option
-                value={""}
-                style={{ backgroundColor: Cor.base2, color: Cor.texto2 + 70 }}
-              >
-                Selecione um Motorista
-              </option>
-              {listaMotoristas?.map((m: any) => {
-                return (
-                  <option
-                    value={m.id}
-                    key={m?.id}
-                    style={{
-                      backgroundColor: Cor.base2,
-                      padding: 15,
-                      margin: 10,
-                    }}
-                  >
-                    {m?.nome}
-                  </option>
-                );
-              })}
-            </select>
-          </div>
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", width: "10%" }}>
-          <p
-            style={{
-              fontSize: 14,
-              color: !configSaida.habilitado
-                ? Cor.texto1 + 50
-                : Cor.textoFixo + 90,
-              fontWeight: "bold",
-              margin: 5,
-            }}
-          >
-            Horário:
-          </p>
-          <div
-            style={{
-              width: "100%",
-              border: `1px solid ${Cor.texto2 + 50}`,
-              padding: 10,
-              borderRadius: 14,
-              opacity: !configSaida.habilitado ? 0.5 : 1,
-            }}
-          >
-            <input
-              disabled={!configSaida.habilitado}
-              type="time"
-              style={{
-                border: "none",
-                outline: "none",
-                width: "100%",
-                backgroundColor: "transparent",
-                color: Cor.texto1,
-              }}
-              value={configSaida.horario}
-              onChange={(e) => {
-                atualizarCampo("horario", e.target.value);
-              }}
-            />
-          </div>
-        </div>
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <p
-            style={{
-              fontSize: 14,
-              color: !configSaida.habilitado
-                ? Cor.texto1 + 50
-                : Cor.textoFixo + 90,
-              fontWeight: "bold",
-              margin: 5,
-            }}
-          >
-            Dias da Semana:
-          </p>
-          <div
-            style={{
-              width: "100%",
-              border: `1px solid ${Cor.texto2 + 50}`,
-              padding: 5,
-              borderRadius: 14,
-              pointerEvents: !configSaida.habilitado ? "none" : "auto",
-            }}
-          >
+              Ativo:
+            </p>
             <div
               style={{
-                display: "flex",
-                flexDirection: "row",
-                gap: 10,
-                opacity: !configSaida.habilitado ? 0.3 : 1,
+                width: "100%",
+                border: `1px solid ${Cor.texto2 + 50}`,
+                padding: 5,
+                borderRadius: 14,
               }}
             >
               <BtnAtivarStyled
-                $cor={configSaida.domingo ? Cor.textoFixo : Cor.texto1}
-                $bg={configSaida.domingo ? Cor.fixo : Cor.texto2}
-                onClick={() => atualizarCampo("domingo", !configSaida.domingo)}
+                $cor={configSaida.habilitado ? Cor.textoFixo : Cor.texto1}
+                $bg={configSaida.habilitado ? Cor.fixo : Cor.texto2}
+                onClick={() =>
+                  atualizarCampo("habilitado", !configSaida.habilitado)
+                }
+                style={{ width: 100, justifyContent: "space-between" }}
               >
-                <p>Dom</p>
+                <p>{configSaida.habilitado ? "Habilitado" : "Habilitar"}</p>
                 <p style={{ fontFamily: "Icone", fontSize: 16 }}>
-                  {configSaida.domingo
+                  {configSaida.habilitado
                     ? "check_box"
                     : "check_box_outline_blank"}
-                </p>
-              </BtnAtivarStyled>
-              <BtnAtivarStyled
-                $cor={configSaida.segunda ? Cor.textoFixo : Cor.texto1}
-                $bg={configSaida.segunda ? Cor.fixo : Cor.texto2}
-                onClick={() => atualizarCampo("segunda", !configSaida.segunda)}
-              >
-                <p>Seg</p>
-                <p style={{ fontFamily: "Icone", fontSize: 16 }}>
-                  {configSaida.segunda
-                    ? "check_box"
-                    : "check_box_outline_blank"}
-                </p>
-              </BtnAtivarStyled>
-              <BtnAtivarStyled
-                $cor={configSaida.terca ? Cor.textoFixo : Cor.texto1}
-                $bg={configSaida.terca ? Cor.fixo : Cor.texto2}
-                onClick={() => atualizarCampo("terca", !configSaida.ter)}
-              >
-                <p>Ter</p>
-                <p style={{ fontFamily: "Icone", fontSize: 16 }}>
-                  {configSaida.terca ? "check_box" : "check_box_outline_blank"}
-                </p>
-              </BtnAtivarStyled>
-              <BtnAtivarStyled
-                $cor={configSaida.quarta ? Cor.textoFixo : Cor.texto1}
-                $bg={configSaida.quarta ? Cor.fixo : Cor.texto2}
-                onClick={() => atualizarCampo("quarta", !configSaida.quarta)}
-              >
-                <p>Qua</p>
-                <p style={{ fontFamily: "Icone", fontSize: 16 }}>
-                  {configSaida.quarta ? "check_box" : "check_box_outline_blank"}
-                </p>
-              </BtnAtivarStyled>
-              <BtnAtivarStyled
-                $cor={configSaida.quinta ? Cor.textoFixo : Cor.texto1}
-                $bg={configSaida.quinta ? Cor.fixo : Cor.texto2}
-                onClick={() => atualizarCampo("quinta", !configSaida.quinta)}
-              >
-                <p>Qui</p>
-                <p style={{ fontFamily: "Icone", fontSize: 16 }}>
-                  {configSaida.quinta ? "check_box" : "check_box_outline_blank"}
-                </p>
-              </BtnAtivarStyled>
-              <BtnAtivarStyled
-                $cor={configSaida.sexta ? Cor.textoFixo : Cor.texto1}
-                $bg={configSaida.sexta ? Cor.fixo : Cor.texto2}
-                onClick={() => atualizarCampo("sexta", !configSaida.sexta)}
-              >
-                <p>Sex</p>
-                <p style={{ fontFamily: "Icone", fontSize: 16 }}>
-                  {configSaida.sexta ? "check_box" : "check_box_outline_blank"}
-                </p>
-              </BtnAtivarStyled>
-              <BtnAtivarStyled
-                $cor={configSaida.sabado ? Cor.textoFixo : Cor.texto1}
-                $bg={configSaida.sabado ? Cor.fixo : Cor.texto2}
-                onClick={() => atualizarCampo("sabado", !configSaida.sabado)}
-              >
-                <p>Sab</p>
-                <p style={{ fontFamily: "Icone", fontSize: 16 }}>
-                  {configSaida.sabado ? "check_box" : "check_box_outline_blank"}
                 </p>
               </BtnAtivarStyled>
             </div>
           </div>
+          <div
+            style={{ display: "flex", flexDirection: "column", width: "30%" }}
+          >
+            <p
+              style={{
+                fontSize: 14,
+                color: !configSaida.habilitado
+                  ? Cor.texto1 + 50
+                  : Cor.textoFixo + 90,
+                fontWeight: "bold",
+                margin: 5,
+              }}
+            >
+              Motorista:
+            </p>
+            <div
+              style={{
+                width: "100%",
+                border: `1px solid ${Cor.texto2 + 50}`,
+                padding: 10,
+                borderRadius: 14,
+                opacity: !configSaida.habilitado ? 0.5 : 1,
+              }}
+            >
+              <select
+                disabled={!configSaida.habilitado}
+                name=""
+                id=""
+                style={{
+                  outline: "none",
+                  border: "none",
+                  width: "100%",
+                  backgroundColor: "transparent",
+                  color: Cor.texto1,
+                }}
+                value={configSaida.motoristaId}
+                onChange={(e) => {
+                  atualizarCampo("motoristaId", String(e.target.value));
+                }}
+              >
+                <option
+                  value={""}
+                  style={{ backgroundColor: Cor.base2, color: Cor.texto2 + 70 }}
+                >
+                  Selecione um Motorista
+                </option>
+                {listaMotoristas?.map((m: any) => {
+                  return (
+                    <option
+                      value={m.id}
+                      key={m?.id}
+                      style={{
+                        backgroundColor: Cor.base2,
+                        padding: 15,
+                        margin: 10,
+                      }}
+                    >
+                      {m?.nome}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+          </div>
+          <div
+            style={{ display: "flex", flexDirection: "column", width: "10%" }}
+          >
+            <p
+              style={{
+                fontSize: 14,
+                color: !configSaida.habilitado
+                  ? Cor.texto1 + 50
+                  : Cor.textoFixo + 90,
+                fontWeight: "bold",
+                margin: 5,
+              }}
+            >
+              Horário:
+            </p>
+            <div
+              style={{
+                width: "100%",
+                border: `1px solid ${Cor.texto2 + 50}`,
+                padding: 10,
+                borderRadius: 14,
+                opacity: !configSaida.habilitado ? 0.5 : 1,
+              }}
+            >
+              <input
+                disabled={!configSaida.habilitado}
+                type="time"
+                style={{
+                  border: "none",
+                  outline: "none",
+                  width: "100%",
+                  backgroundColor: "transparent",
+                  color: Cor.texto1,
+                }}
+                value={configSaida.horario}
+                onChange={(e) => {
+                  atualizarCampo("horario", e.target.value);
+                }}
+              />
+            </div>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <p
+              style={{
+                fontSize: 14,
+                color: !configSaida.habilitado
+                  ? Cor.texto1 + 50
+                  : Cor.textoFixo + 90,
+                fontWeight: "bold",
+                margin: 5,
+              }}
+            >
+              Dias da Semana:
+            </p>
+            <div
+              style={{
+                width: "100%",
+                border: `1px solid ${Cor.texto2 + 50}`,
+                padding: 5,
+                borderRadius: 14,
+                pointerEvents: !configSaida.habilitado ? "none" : "auto",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  gap: 10,
+                  opacity: !configSaida.habilitado ? 0.3 : 1,
+                }}
+              >
+                <BtnAtivarStyled
+                  $cor={configSaida.domingo ? Cor.textoFixo : Cor.texto1}
+                  $bg={configSaida.domingo ? Cor.fixo : Cor.texto2}
+                  onClick={() =>
+                    atualizarCampo("domingo", !configSaida.domingo)
+                  }
+                >
+                  <p>Dom</p>
+                  <p style={{ fontFamily: "Icone", fontSize: 16 }}>
+                    {configSaida.domingo
+                      ? "check_box"
+                      : "check_box_outline_blank"}
+                  </p>
+                </BtnAtivarStyled>
+                <BtnAtivarStyled
+                  $cor={configSaida.segunda ? Cor.textoFixo : Cor.texto1}
+                  $bg={configSaida.segunda ? Cor.fixo : Cor.texto2}
+                  onClick={() =>
+                    atualizarCampo("segunda", !configSaida.segunda)
+                  }
+                >
+                  <p>Seg</p>
+                  <p style={{ fontFamily: "Icone", fontSize: 16 }}>
+                    {configSaida.segunda
+                      ? "check_box"
+                      : "check_box_outline_blank"}
+                  </p>
+                </BtnAtivarStyled>
+                <BtnAtivarStyled
+                  $cor={configSaida.terca ? Cor.textoFixo : Cor.texto1}
+                  $bg={configSaida.terca ? Cor.fixo : Cor.texto2}
+                  onClick={() => atualizarCampo("terca", !configSaida.ter)}
+                >
+                  <p>Ter</p>
+                  <p style={{ fontFamily: "Icone", fontSize: 16 }}>
+                    {configSaida.terca
+                      ? "check_box"
+                      : "check_box_outline_blank"}
+                  </p>
+                </BtnAtivarStyled>
+                <BtnAtivarStyled
+                  $cor={configSaida.quarta ? Cor.textoFixo : Cor.texto1}
+                  $bg={configSaida.quarta ? Cor.fixo : Cor.texto2}
+                  onClick={() => atualizarCampo("quarta", !configSaida.quarta)}
+                >
+                  <p>Qua</p>
+                  <p style={{ fontFamily: "Icone", fontSize: 16 }}>
+                    {configSaida.quarta
+                      ? "check_box"
+                      : "check_box_outline_blank"}
+                  </p>
+                </BtnAtivarStyled>
+                <BtnAtivarStyled
+                  $cor={configSaida.quinta ? Cor.textoFixo : Cor.texto1}
+                  $bg={configSaida.quinta ? Cor.fixo : Cor.texto2}
+                  onClick={() => atualizarCampo("quinta", !configSaida.quinta)}
+                >
+                  <p>Qui</p>
+                  <p style={{ fontFamily: "Icone", fontSize: 16 }}>
+                    {configSaida.quinta
+                      ? "check_box" 
+                      : "check_box_outline_blank"}
+                  </p>
+                </BtnAtivarStyled>
+                <BtnAtivarStyled
+                  $cor={configSaida.sexta ? Cor.textoFixo : Cor.texto1}
+                  $bg={configSaida.sexta ? Cor.fixo : Cor.texto2}
+                  onClick={() => atualizarCampo("sexta", !configSaida.sexta)}
+                >
+                  <p>Sex</p>
+                  <p style={{ fontFamily: "Icone", fontSize: 16 }}>
+                    {configSaida.sexta
+                      ? "check_box"
+                      : "check_box_outline_blank"}
+                  </p>
+                </BtnAtivarStyled>
+                <BtnAtivarStyled
+                  $cor={configSaida.sabado ? Cor.textoFixo : Cor.texto1}
+                  $bg={configSaida.sabado ? Cor.fixo : Cor.texto2}
+                  onClick={() => atualizarCampo("sabado", !configSaida.sabado)}
+                >
+                  <p>Sab</p>
+                  <p style={{ fontFamily: "Icone", fontSize: 16 }}>
+                    {configSaida.sabado
+                      ? "check_box"
+                      : "check_box_outline_blank"}
+                  </p>
+                </BtnAtivarStyled>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+      <div
+        style={{
+          width: "95%",
+          display: "flex",
+          flexDirection: "row",
+          gap: 5,
+          justifyContent: "flex-start",
+          alignItems: "center",
+          padding: 8,
+          backgroundColor: Cor.texto1 + 10,
+          borderRadius: "0px 0px 14px 14px",
+          transition: "ease-in-out all 0.3s",
+          marginTop: !configSaida.habilitado ? -50 : -10,
+          opacity: !configSaida.habilitado ? 0 : 1,
+        }}
+      >
+        <p
+          style={{
+            fontSize: 14,
+            color: !configSaida.habilitado
+              ? Cor.texto1 + 50
+              : Cor.textoFixo + 90,
+            fontWeight: "bold",
+            margin: 5,
+          }}
+        >
+          Carro :
+        </p>
+        {carro ? (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              gap: 5,
+              justifyContent: "flex-start",
+              alignItems: "center",
+              fontSize: 14,
+              fontWeight: 500,
+              color: Cor.texto2,
+            }}
+          >
+            <p style={{ fontWeight: "bold", color: Cor.textoFixo }}>
+              {carro?.marca} - {carro?.modelo}
+            </p>
+            <p>cor: <strong style={{ color: Cor.texto1 }}>{carro?.cor.toUpperCase()}</strong></p>
+            <p>placa: <strong style={{ color: Cor.texto1 }}>{carro?.placa.toUpperCase()}</strong></p>
+          </div>
+        ) : (
+          <p
+            style={{
+              fontSize: 14,
+              color: Cor.atencao,
+              fontStyle: "italic",
+              fontWeight: "800",
+            }}
+          >
+            Sem Carro
+          </p>
+        )}
+      </div>
+    </>
   );
 }
 

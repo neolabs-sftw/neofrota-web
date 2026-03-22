@@ -1,7 +1,8 @@
+import { useAdminLogado } from "../hooks/AdminLogado";
 import { useTema } from "../hooks/temaContext";
 import { useFaturamentoTotalMes } from "../hooks/useFaturamento";
 
-function CardInfosMenorTotal({}: {}) {
+function CardInfosMenorTotal({ }: {}) {
   const Cor = useTema().Cor;
 
   const valorAnterior = 15;
@@ -22,22 +23,22 @@ function CardInfosMenorTotal({}: {}) {
     return {
       inicioISO: start.toISOString(),
       fimISO: end.toISOString(),
-      // inicioISO: "2026-01-01T00:00:00.000Z",
-      // fimISO: "2026-01-31T23:59:59.999Z",
     };
   }
+
+  const operadoraId = useAdminLogado()?.operadora.id
 
   const { faturamentoTotal: faturamentoTotalAberto } = useFaturamentoTotalMes(
     getMonthRangeISO().inicioISO,
     getMonthRangeISO().fimISO,
-    "1",
+    String(operadoraId),
     "Aberto",
   );
   const { faturamentoTotal: faturamentoTotalConcluido } =
     useFaturamentoTotalMes(
       getMonthRangeISO().inicioISO,
       getMonthRangeISO().fimISO,
-      "1",
+      String(operadoraId),
       "Concluido",
     );
   return (

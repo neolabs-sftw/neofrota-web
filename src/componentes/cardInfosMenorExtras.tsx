@@ -1,7 +1,8 @@
+import { useAdminLogado } from "../hooks/AdminLogado";
 import { useTema } from "../hooks/temaContext";
 import { useFaturamentoParcialMes } from "../hooks/useFaturamento";
 
-function CardInfosMenorExtras({}: {}) {
+function CardInfosMenorExtras({ }: {}) {
   const Cor = useTema().Cor;
 
   const valorAnterior = 15;
@@ -21,22 +22,22 @@ function CardInfosMenorExtras({}: {}) {
     return {
       inicioISO: start.toISOString(),
       fimISO: end.toISOString(),
-      // inicioISO: "2026-01-01T00:00:00.000Z",
-      // fimISO: "2026-01-31T23:59:59.999Z",
     };
   }
+
+  const operadoraId = useAdminLogado()?.operadora.id
 
   const { data: dataExtraAbertos } = useFaturamentoParcialMes(
     getMonthRangeISO().inicioISO,
     getMonthRangeISO().fimISO,
-    "1",
+    String(operadoraId),
     "Aberto",
     "Extra",
   );
   const { data: dataExtraConcluidos } = useFaturamentoParcialMes(
     getMonthRangeISO().inicioISO,
     getMonthRangeISO().fimISO,
-    "1",
+    String(operadoraId),
     "Concluido",
     "Extra",
   );
@@ -174,7 +175,7 @@ function CardInfosMenorExtras({}: {}) {
           <p
             style={{
               color: Cor.texto1 + "CC",
-               fontSize: 12,
+              fontSize: 12,
               textWrap: "nowrap",
               textOverflow: "ellipsis",
               overflow: "hidden",
@@ -196,7 +197,7 @@ function CardInfosMenorExtras({}: {}) {
           <p
             style={{
               color: Cor.textoExtra + "BB",
-               fontSize: 14,
+              fontSize: 14,
               fontWeight: "bold",
               overflow: "hidden",
               textOverflow: "ellipsis",

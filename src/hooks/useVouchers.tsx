@@ -339,3 +339,407 @@ export function useVouchersData(operadoraId: any, diaSelecionado: string) {
     refetch: refetch || Promise.resolve(),
   };
 }
+
+const GET_VOUCHERS_FILTROS = gql`
+  query VouchersFiltrados($filtro: FiltroVouchersInput!) {
+  vouchersFiltrados(filtro: $filtro) {
+    id
+    origem
+    destino
+    dataHoraProgramado
+    dataHoraConclusao
+    valorViagem
+    valorViagemRepasse
+    valorDeslocamento
+    valorDeslocamentoRepasse
+    valorHoraParada
+    valorHoraParadaRepasse
+    valorPedagio
+    valorEstacionamento
+    natureza
+    tipoCorrida
+    status
+    empresaCliente {
+      id
+      nome
+    }
+    unidadeCliente {
+      id
+      nome
+    }
+    motorista {
+      id
+      nome
+    }
+    adminUsuario {
+      id
+      nome
+    }
+    solicitante {
+      id
+      nome
+    }
+    modeloFixo {
+      ativo
+      nomeModelo
+      configuracoes {
+       id
+      }
+    }
+    rota {
+      id
+      tributacao
+      origem
+      destino
+    }
+    observacaoMotorista
+  }
+}
+`
+
+export function useVouchersFiltrados(filtro: any) {
+  const { data, loading, error, refetch } = useQuery(GET_VOUCHERS_FILTROS, {
+    variables: {
+      filtro: filtro,
+    },
+    // fetchPolicy: "network-only" é bom para relatórios, para garantir dados atualizados
+    fetchPolicy: "network-only",
+    // Só roda a query se tiver o operadoraId
+    skip: !filtro?.operadoraId,
+  });
+
+  return {
+    listaRelatorio: data ? data.vouchersFiltrados : [],
+    loading,
+    error,
+    refetch,
+  };
+}
+
+const GET_VOUCHERS_PREV = gql`
+  query VoucherOperadoraData($operadoraId: ID!, $diaSelecionado: String!) {
+    voucherOperadoraData(
+      operadoraId: $operadoraId
+      diaSelecionado: $diaSelecionado
+    ) {
+      id
+      natureza
+      tipoCorrida
+      origem
+      destino
+      dataHoraProgramado
+      status
+      empresaCliente {
+        id
+        nome
+      }
+      motorista {
+        id
+        nome
+       }
+    }
+  }`
+
+
+export function useVoucherPrev(operadoraId: any, diaSelecionado: string) {
+  const { data, loading, error, refetch } = useQuery<any>(GET_VOUCHERS_PREV, {
+    variables: {
+      operadoraId,
+      diaSelecionado,
+    },
+    fetchPolicy: "cache-and-network",
+  });
+
+  return {
+    listaVoucherPrevData: data ? data.voucherOperadoraData : [],
+    loading,
+    error,
+    refetch: refetch || Promise.resolve(),
+  };
+}
+
+const GET_VOUCHER_FIXO_ID = gql`
+query Voucher($voucherId: ID!) {
+  voucher(id: $voucherId) {
+    carro {
+      id
+      placa
+      marca
+      modelo
+      cor
+      crlv
+      vCrlv
+      chassi
+      ano
+    }
+    modeloFixo {
+      id
+      nomeModelo
+      ativo
+      valorViagem
+      valorViagemRepasse
+      valorHoraParada
+      valorHoraParadaRepasse
+      valorDeslocamento
+      valorDeslocamentoRepasse
+      valorPedagio
+      
+    }
+    adminUsuario {
+      id
+      nome
+    }
+    assinatura
+    dataHoraConclusao
+    dataHoraCriacao
+    dataHoraProgramado
+    destino
+    empresaCliente {
+      id
+      nome
+      rSocial
+      statusCliente
+      fotoLogoCliente
+      cnpj
+    }
+    id
+    motorista {
+      id
+      nome
+      email
+      senha
+      fotoMotorista
+      cpf
+      cnh
+      vCnh
+      statusMotorista
+      tipoMotorista
+      dataCriacao
+      statusCnh
+    }
+    natureza
+    observacao
+    observacaoMotorista
+    origem
+    qntTempoParado
+    status
+    tipoCorrida
+    unidadeCliente {
+      id
+      nome
+      cnpj
+      endRua
+      endNumero
+      endBairro
+      endCep
+      endCidade
+      endComplemento
+      endUf
+      statusUnidadeCliente
+      matriz
+    }
+    valorDeslocamento
+    valorDeslocamentoRepasse
+    valorEstacionamento
+    valorHoraParada
+    valorHoraParadaRepasse
+    valorPedagio
+    valorViagem
+    valorViagemRepasse
+    passageiros {
+      id
+      horarioEmbarqueReal
+      passageiroId {
+        id
+        nome
+        matricula
+        telefone
+        email
+        ativo
+        fotoPerfilPassageiro
+        endRua
+        endNumero
+        endBairro
+        endCidade
+        pontoApanha
+        horarioEmbarque
+        centroCustoClienteId {
+          codigo
+          id
+          nome
+        }
+      }
+      rateio
+      statusPresenca
+    }
+  }
+}
+`
+
+export function useVoucherFixoId(voucherId: string) {
+  const { data, loading, error, refetch } = useQuery(GET_VOUCHER_FIXO_ID, {
+    variables: {
+      voucherId
+    },
+    skip: !voucherId,
+  })
+
+  return {
+    voucherFixoId: data?.voucher || null,
+    loading,
+    error,
+    refetch: refetch || Promise.resolve()
+  }
+}
+
+const GET_VOUCHER_EXTRA_ID = gql`
+query Voucher($voucherId: ID!) {
+  voucher(id: $voucherId) {
+    carro {
+      id
+      placa
+      marca
+      modelo
+      cor
+      crlv
+      vCrlv
+      chassi
+      ano
+    }
+    adminUsuario {
+      id
+      nome
+    }
+    assinatura
+    dataHoraConclusao
+    dataHoraCriacao
+    dataHoraProgramado
+    destino
+    empresaCliente {
+      id
+      nome
+      rSocial
+      statusCliente
+      fotoLogoCliente
+      cnpj
+    }
+    id
+    motorista {
+      id
+      nome
+      email
+      senha
+      fotoMotorista
+      cpf
+      cnh
+      vCnh
+      statusMotorista
+      tipoMotorista
+      dataCriacao
+      statusCnh
+    }
+    natureza
+    observacao
+    observacaoMotorista
+    origem
+    qntTempoParado
+    status
+    tipoCorrida
+    unidadeCliente {
+      id
+      nome
+      cnpj
+      endRua
+      endNumero
+      endBairro
+      endCep
+      endCidade
+      endComplemento
+      endUf
+      statusUnidadeCliente
+      matriz
+    }
+    valorDeslocamento
+    valorDeslocamentoRepasse
+    valorEstacionamento
+    valorHoraParada
+    valorHoraParadaRepasse
+    valorPedagio
+    valorViagem
+    valorViagemRepasse
+    solicitante {
+      id
+      nome
+      email
+      senha
+      funcao
+      telefone    
+      statusSolicitante   
+      fotoUrlSolicitante
+    }
+    passageiros {
+      id
+      horarioEmbarqueReal
+      passageiroId {
+        id
+        nome
+        matricula
+        telefone
+        email
+        ativo
+        fotoPerfilPassageiro
+        endRua
+        endNumero
+        endBairro
+        endCidade
+        pontoApanha
+        horarioEmbarque
+        centroCustoClienteId {
+          codigo
+          id
+          nome
+        }
+      }
+      rateio
+      statusPresenca
+    }
+    rota {
+      id
+      origem
+      destino
+      tributacao
+      rotaValor {
+        id
+        categoria
+        valorViagem
+        valorViagemRepasse
+        valorHoraParada
+        valorHoraParadaRepasse
+        valorDeslocamento
+        valorDeslocamentoRepasse
+        valorPedagio {
+          id
+          nome
+          valor
+        }
+      }
+    }
+  }
+}`
+
+export function useVoucherExtraId(voucherId: string) {
+  const { data, loading, error, refetch } = useQuery(GET_VOUCHER_EXTRA_ID, {
+    variables: {
+      voucherId
+
+    },
+    skip: !voucherId,
+  })
+
+  return {
+    voucherExtraId: data?.voucher || null,
+    loading,
+    error,
+    refetch: refetch || Promise.resolve()
+  }
+}

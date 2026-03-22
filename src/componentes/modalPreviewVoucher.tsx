@@ -3,6 +3,8 @@ import { useTema } from "../hooks/temaContext";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import assPadrao from "../assets/image/not_sing.png";
+import { useVoucherExtraId, useVoucherFixoId } from "../hooks/useVouchers";
+import CircularProgress from "@mui/material/CircularProgress";
 
 interface CxModalProps {
   $border: string;
@@ -70,7 +72,6 @@ const BtnEditarVoucher = styled.button<{ $bg: string }>`
     background-color: ${({ $bg }) => $bg};
   }
 `;
-
 function ModalPreviewVoucher({
   visivel,
   setVisivel,
@@ -81,134 +82,103 @@ function ModalPreviewVoucher({
   v: any;
 }) {
   const Cor = useTema().Cor;
-
   const navigate = useNavigate();
 
-  const border = Cor.texto2 + 50;
+  const { voucherExtraId, loading: loadingExtra } = useVoucherExtraId(
+    v?.natureza === "Extra" ? v?.id : null
+  );
 
+  const { voucherFixoId, loading: loadingFixo } = useVoucherFixoId(
+    v?.natureza === "Fixo" ? v?.id : null
+  );
+
+  const voucher = v?.natureza === "Extra" ? voucherExtraId : voucherFixoId;
+  const loading = loadingExtra || loadingFixo;
+
+  const border = Cor.texto2 + "50";
+
+  // 3. Atalhos de teclado
   useEffect(() => {
     const handleKeyDown = (event: any) => {
-      if (event.key === "Escape") {
-        setVisivel(false);
-      } else if (event.key === "Enter") {
+      if (event.key === "Escape") setVisivel(false);
+      if (event.key === "Enter" && v) {
         navigate(`/editar/${v.natureza}/${v.id}`);
       }
     };
+    if (visivel) document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [visivel, v, navigate, setVisivel]);
 
-    if (visivel) {
-      document.addEventListener("keydown", handleKeyDown);
-    }
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [visivel, setVisivel]); // Dependências: o efeito roda quando a visibilidade muda
+  // Se não estiver visível, não renderiza nada
+  if (!visivel) return null;
 
   return (
-    <Overlay
-      $visivel={visivel}
-      $bg={Cor.base}
-      onClick={() => setVisivel(false)}
-    >
+    <Overlay $visivel={visivel} $bg={Cor.base} onClick={() => setVisivel(false)}>
       <CxModal
         $visivel={visivel}
         $bg={Cor.base}
         $border={border}
-        onClick={(e) => {
-          e.stopPropagation();
-        }}
+        onClick={(e) => e.stopPropagation()}
       >
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "space-between",
-            width: "100%",
-            paddingBottom: 5,
-            borderBottom: `1px solid ${Cor.primaria}`,
-          }}
-        >
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <p style={{ fontSize: 14, fontWeight: "bold", color: Cor.texto1 }}>
-              Detalhes
-            </p>
-            <p style={{ fontSize: 12, color: Cor.texto2 }}>
-              Mais informações sobre o voucher programado.
-            </p>
+        {/* ESTADO DE CARREGAMENTO INTERNO DO MODAL */}
+        {loading ? (
+          <div style={{ display: 'flex', justifyContent: 'center', padding: 50 }}>
+            <CircularProgress sx={{ color: Cor.primaria }} />
           </div>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              gap: 10,
-              alignItems: "center",
-            }}
-          >
-            <p
-              style={{
-                fontSize: 18,
-                color:
-                  v?.natureza === "Fixo"
-                    ? Cor.textoFixo
-                    : v?.natureza === "Turno"
-                      ? Cor.textoTurno
-                      : Cor.textoExtra,
-              }}
-            >
-              ID: <strong>{v?.id}</strong>
-            </p>
-            <p
-              style={{
-                cursor: "pointer",
-                fontFamily: "Icone",
-                fontSize: 24,
-                color: Cor.primaria,
-              }}
-              onClick={() => setVisivel(false)}
-            >
-              close
-            </p>
+        ) : !voucher ? (
+          <div style={{ padding: 20, textAlign: 'center' }}>
+            <p>Erro ao carregar detalhes do voucher.</p>
+            <button onClick={() => setVisivel(false)}>Fechar</button>
           </div>
-        </div>
-        <PrimeiraLinha v={v} />
-        <DetalhesDaViagem v={v} />
-        <div
-          style={{ width: "100%", height: 1, backgroundColor: Cor.texto2 + 70 }}
-        />
-        <DetalhesDaViagem2 v={v} />
-        <div
-          style={{ width: "100%", height: 1, backgroundColor: Cor.texto2 + 70 }}
-        />
-        <DetalhesDoOperador v={v} />
-        <DetalhesDoMotorista v={v} />
-        <div
-          style={{
-            width: "100%",
-            height: 180,
-            display: "flex",
-            flexDirection: "row",
-            gap: 10,
-          }}
-        >
-          <ListaPassageirosVoucher v={v} />
-          <Assinatura v={v} />
-        </div>
-        <div
-          style={{
-            width: "100%",
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <ResultadoVoucher v={v} />
-          <BtnEditarVoucher $bg={Cor.primaria}>
-            <p style={{ color: Cor.base, fontWeight: "500", fontSize: 14 }}>
-              Editar Voucher
-            </p>
-          </BtnEditarVoucher>
-        </div>
+        ) : (
+          <>
+            <div style={{
+              display: "flex", flexDirection: "row", justifyContent: "space-between",
+              width: "100%", paddingBottom: 5, borderBottom: `1px solid ${Cor.primaria}`,
+            }}>
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                <p style={{ fontSize: 14, fontWeight: "bold", color: Cor.texto1 }}>Detalhes</p>
+                <p style={{ fontSize: 12, color: Cor.texto2 }}>Mais informações sobre o voucher completo.</p>
+              </div>
+              <div style={{ display: "flex", flexDirection: "row", gap: 10, alignItems: "center" }}>
+                <p style={{
+                  fontSize: 18,
+                  color: voucher.natureza === "Fixo" ? Cor.textoFixo : Cor.textoExtra
+                }}>
+                  ID: <strong>{btoa(voucher.id)}</strong>
+                </p>
+                <p style={{ cursor: "pointer", fontFamily: "Icone", fontSize: 24, color: Cor.primaria }}
+                  onClick={() => setVisivel(false)}>close</p>
+              </div>
+            </div>
+
+            {/* Renderização dos componentes filhos com o dado COMPLETO (voucher) */}
+            <PrimeiraLinha v={voucher} />
+            <DetalhesDaViagem v={voucher} />
+
+            <div style={{ width: "100%", height: 1, backgroundColor: Cor.texto2 + "70" }} />
+            <DetalhesDaViagem2 v={voucher} />
+
+            <div style={{ width: "100%", height: 1, backgroundColor: Cor.texto2 + "70" }} />
+
+            <div style={{ width: "100%", gap: 10, display: "flex", flexDirection: "row" }}>
+              <DetalhesDoOperador v={voucher} />
+              <DetalhesDoMotorista v={voucher} />
+            </div>
+
+            <div style={{ width: "100%", height: 180, display: "flex", flexDirection: "row", gap: 10 }}>
+              <ListaPassageirosVoucher v={voucher} />
+              <Assinatura v={voucher} />
+            </div>
+
+            <div style={{ width: "100%", display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+              <ResultadoVoucher v={voucher} />
+              <BtnEditarVoucher $bg={Cor.primaria} onClick={() => navigate(`/editar/${v.natureza}/${v.id}`)}>
+                <p style={{ color: Cor.base, fontWeight: "500", fontSize: 14 }}>Editar Voucher</p>
+              </BtnEditarVoucher>
+            </div>
+          </>
+        )}
       </CxModal>
     </Overlay>
   );
@@ -677,6 +647,28 @@ function DetalhesDaViagem({ v }: { v: any }) {
               year: "2-digit",
             })}
           </p>
+          {v?.dataHoraConclusao === null ? null : <p
+            style={{
+              fontSize: 12,
+              color: Cor.texto1
+            }}
+          >
+            Assinado em:{" "}<strong style={{
+              fontSize: 14,
+              color:
+                v?.natureza === "Fixo"
+                  ? Cor.textoFixo
+                  : v?.natureza === "Turno"
+                    ? Cor.textoTurno
+                    : Cor.textoExtra,
+            }}>{new Date(v?.dataHoraConclusao).toLocaleString("pt-BR", {
+              hour: "2-digit",
+              minute: "2-digit",
+              day: "2-digit",
+              month: "2-digit",
+              year: "2-digit",
+            })}</strong>
+          </p>}
         </div>
       </div>
     </div>
@@ -685,6 +677,8 @@ function DetalhesDaViagem({ v }: { v: any }) {
 
 function DetalhesDaViagem2({ v }: { v: any }) {
   const Cor = useTema().Cor;
+
+  console.log(v)
   return (
     <div
       style={{
@@ -695,7 +689,7 @@ function DetalhesDaViagem2({ v }: { v: any }) {
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
-        gap: 10,
+        gap: 5,
       }}
     >
       <div
@@ -730,11 +724,12 @@ function DetalhesDaViagem2({ v }: { v: any }) {
             request_quote
           </p>
         </div>
-        <div style={{ display: "flex", flexDirection: "column" }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
           <p style={{ fontSize: 12, color: Cor.texto2 }}>Valor Cobrança</p>
           <p
             style={{
               fontSize: 20,
+              fontWeight: "bold",
               color:
                 v?.natureza === "Fixo"
                   ? Cor.textoFixo
@@ -743,7 +738,10 @@ function DetalhesDaViagem2({ v }: { v: any }) {
                     : Cor.textoExtra,
             }}
           >
-            R$ <strong>{v?.valorViagem}</strong>
+            {Intl.NumberFormat("pt-BR", {
+              style: "currency",
+              currency: "BRL",
+            }).format(Number(v?.valorViagem))}
           </p>
         </div>
       </div>
@@ -791,6 +789,7 @@ function DetalhesDaViagem2({ v }: { v: any }) {
           <p
             style={{
               fontSize: 20,
+              fontWeight: "bold",
               color:
                 v?.natureza === "Fixo"
                   ? Cor.textoFixo
@@ -799,7 +798,10 @@ function DetalhesDaViagem2({ v }: { v: any }) {
                     : Cor.textoExtra,
             }}
           >
-            R$ <strong>{v?.valorViagemRepasse}</strong>
+            {Intl.NumberFormat("pt-BR", {
+              style: "currency",
+              currency: "BRL",
+            }).format(Number(v?.valorViagemRepasse))}
           </p>
         </div>
       </div>
@@ -815,48 +817,55 @@ function DetalhesDaViagem2({ v }: { v: any }) {
           display: "flex",
           flexDirection: "row",
           alignItems: "center",
+          width: "12%"
         }}
       >
-        <div
-          style={{
-            width: 35,
-            height: 35,
+        <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
+          <p style={{ fontSize: 12, color: Cor.texto2, textAlign: "center" }}>Deslocamento</p>
+          <div style={{
             display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <p
-            style={{
-              fontFamily: "Icone",
-              fontWeight: "bold",
-              color:
-                v?.natureza === "Fixo"
-                  ? Cor.fixo
-                  : v?.natureza === "Turno"
-                    ? Cor.turno
-                    : Cor.extra,
-              fontSize: 24,
-            }}
-          >
-            request_quote
-          </p>
-        </div>
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <p style={{ fontSize: 12, color: Cor.texto2 }}>Desloc. Cobrança</p>
-          <p
-            style={{
-              fontSize: 20,
-              color:
-                v?.natureza === "Fixo"
+            flexDirection: "column",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+          }}>
+            <p
+              style={{
+                fontSize: 12,
+                color: Cor.texto1
+              }}
+            >
+              Cobr.: <strong style={{
+                fontSize: 14,
+                color: v?.natureza === "Fixo"
                   ? Cor.textoFixo
                   : v?.natureza === "Turno"
                     ? Cor.textoTurno
                     : Cor.textoExtra,
-            }}
-          >
-            R$ <strong>15,00</strong>
-          </p>
+              }}>{Intl.NumberFormat("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              }).format(Number(v?.valorDeslocamento))}</strong>
+            </p>
+            <p
+              style={{
+                fontSize: 12,
+                color: Cor.texto1
+              }}
+            >
+              Repas.: <strong style={{
+                fontSize: 14,
+                color: v?.natureza === "Fixo"
+                  ? Cor.textoFixo
+                  : v?.natureza === "Turno"
+                    ? Cor.textoTurno
+                    : Cor.textoExtra,
+              }}>{Intl.NumberFormat("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              }).format(Number(v?.valorDeslocamentoRepasse))}</strong>
+            </p>
+          </div>
+
         </div>
       </div>
       <div
@@ -871,48 +880,55 @@ function DetalhesDaViagem2({ v }: { v: any }) {
           display: "flex",
           flexDirection: "row",
           alignItems: "center",
+          width: "12%"
         }}
       >
-        <div
-          style={{
-            width: 35,
-            height: 35,
+        <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
+          <p style={{ fontSize: 12, color: Cor.texto2, textAlign: "center" }}>Hora Parada</p>
+          <div style={{
             display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <p
-            style={{
-              fontFamily: "Icone",
-              fontWeight: "bold",
-              color:
-                v?.natureza === "Fixo"
-                  ? Cor.fixo
-                  : v?.natureza === "Turno"
-                    ? Cor.turno
-                    : Cor.extra,
-              fontSize: 24,
-            }}
-          >
-            mintmark
-          </p>
-        </div>
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <p style={{ fontSize: 12, color: Cor.texto2 }}>Desloc. Repasse</p>
-          <p
-            style={{
-              fontSize: 20,
-              color:
-                v?.natureza === "Fixo"
+            flexDirection: "column",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+          }}>
+            <p
+              style={{
+                fontSize: 12,
+                color: Cor.texto1
+              }}
+            >
+              Cobr.: <strong style={{
+                fontSize: 14,
+                color: v?.natureza === "Fixo"
                   ? Cor.textoFixo
                   : v?.natureza === "Turno"
                     ? Cor.textoTurno
                     : Cor.textoExtra,
-            }}
-          >
-            R$ <strong>11,00</strong>
-          </p>
+              }}>{Intl.NumberFormat("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              }).format(Number(v?.valorHoraParada * v?.qntTempoParado))}</strong>
+            </p>
+            <p
+              style={{
+                fontSize: 12,
+                color: Cor.texto1
+              }}
+            >
+              Repas.: <strong style={{
+                fontSize: 14,
+                color: v?.natureza === "Fixo"
+                  ? Cor.textoFixo
+                  : v?.natureza === "Turno"
+                    ? Cor.textoTurno
+                    : Cor.textoExtra,
+              }}>{Intl.NumberFormat("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+              }).format(Number(v?.valorHoraParadaRepasse * v?.qntTempoParado))}</strong>
+            </p>
+          </div>
+
         </div>
       </div>
       <div
@@ -997,13 +1013,12 @@ function CodigoRoteiro({ v }: { v: any }) {
         alignItems: "center",
         backgroundColor: Cor.texto2 + 20,
         padding: "5px 10px",
-        borderLeft: `12px solid ${
-          v?.natureza === "Fixo"
-            ? Cor.fixo
-            : v?.natureza === "Turno"
-              ? Cor.turno
-              : Cor.extra
-        }`,
+        borderLeft: `12px solid ${v?.natureza === "Fixo"
+          ? Cor.fixo
+          : v?.natureza === "Turno"
+            ? Cor.turno
+            : Cor.extra
+          }`,
         borderTop: `1px solid ${Cor.texto2 + 20}`,
         borderRight: `1px solid ${Cor.texto2 + 20}`,
         borderBottom: `1px solid ${Cor.texto2 + 20}`,
@@ -1045,7 +1060,7 @@ function CodigoRoteiro({ v }: { v: any }) {
                   : Cor.textoExtra,
           }}
         >
-          ADM 02
+          {v?.modeloFixo?.nomeModelo}
         </p>
       </div>
     </div>
@@ -1057,7 +1072,7 @@ function DetalhesDoOperador({ v }: { v: any }) {
   return (
     <div
       style={{
-        width: "100%",
+        width: "50%",
         backgroundColor: Cor.texto2 + 20,
         height: 35,
         borderRadius: 18,
@@ -1067,13 +1082,17 @@ function DetalhesDoOperador({ v }: { v: any }) {
         padding: 10,
       }}
     >
-      <p style={{ fontSize: 12, color: Cor.texto1 }}>Obs. Operador: </p>
+      <p style={{ fontSize: 12, color: Cor.texto1, whiteSpace: "nowrap" }}>Obs. Opr.: </p>
       <p
         style={{
-          fontSize: 14,
+          fontSize: 12,
           fontWeight: "500",
           color: Cor.texto1,
           marginLeft: 5,
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: "vertical",
+          overflow: 'hidden'
         }}
       >
         {v?.observacao || "Nenhuma observação registrada."}
@@ -1081,12 +1100,13 @@ function DetalhesDoOperador({ v }: { v: any }) {
     </div>
   );
 }
+
 function DetalhesDoMotorista({ v }: { v: any }) {
   const Cor = useTema().Cor;
   return (
     <div
       style={{
-        width: "100%",
+        width: "50%",
         backgroundColor: Cor.texto2 + 20,
         height: 35,
         borderRadius: 18,
@@ -1096,13 +1116,17 @@ function DetalhesDoMotorista({ v }: { v: any }) {
         padding: 10,
       }}
     >
-      <p style={{ fontSize: 12, color: Cor.texto1 }}>Obs. Motorista: </p>
+      <p style={{ fontSize: 12, color: Cor.texto1, whiteSpace: "noWrap" }}>Obs. Mot.: </p>
       <p
         style={{
-          fontSize: 14,
+          fontSize: 12,
           fontWeight: "500",
           color: Cor.texto1,
           marginLeft: 5,
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: "vertical",
+          overflow: 'hidden'
         }}
       >
         {v?.observacaoMotorista || "Nenhuma observação registrada."}
@@ -1113,6 +1137,7 @@ function DetalhesDoMotorista({ v }: { v: any }) {
 
 function ListaPassageirosVoucher({ v }: { v: any }) {
   const passageiros = v?.passageiros || [];
+
   const Cor = useTema().Cor;
   return (
     <div
@@ -1306,11 +1331,11 @@ function ResultadoVoucher({ v }: { v: any }) {
   const totalCobranca =
     Number(v?.valorViagem || 0) +
     Number(v?.valorDeslocamento || 0) +
-    Number(v?.valorHoraParada || 0);
+    Number(v?.valorHoraParada * v?.qntTempoParado || 0);
   const totalRepasse =
     Number(v?.valorViagemRepasse || 0) +
     Number(v?.valorDeslocamentoRepasse || 0) +
-    Number(v?.valorHoraParadaRepasse || 0);
+    Number(v?.valorHoraParadaRepasse * v?.qntTempoParado || 0);
   const Cor = useTema().Cor;
   return (
     <div
@@ -1342,7 +1367,10 @@ function ResultadoVoucher({ v }: { v: any }) {
                   : Cor.textoExtra,
           }}
         >
-          R$<strong>{String(totalCobranca) || ""}</strong>
+          <strong>{Intl.NumberFormat("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+          }).format(Number(totalCobranca))}</strong>
         </p>
       </div>
       <div
@@ -1371,7 +1399,39 @@ function ResultadoVoucher({ v }: { v: any }) {
                   : Cor.textoExtra,
           }}
         >
-          R$ <strong>{totalRepasse}</strong>
+          <strong>{Intl.NumberFormat("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+          }).format(Number(totalRepasse))}</strong>
+        </p>
+      </div>
+      <div
+        style={{
+          width: 1,
+          height: "80%",
+          backgroundColor: Cor.texto2 + 70,
+        }}
+      />
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <p style={{ fontSize: 12, color: Cor.texto2 }}>Tempo Parado</p>
+        <p
+          style={{
+            fontSize: 24,
+            fontWeight: "bold",
+            color:
+              v?.natureza === "Fixo"
+                ? Cor.textoFixo
+                : v?.natureza === "Turno"
+                  ? Cor.textoTurno
+                  : Cor.textoExtra,
+          }}
+        >
+          <strong>{v?.qntTempoParado || 0}h</strong>
         </p>
       </div>
     </div>
