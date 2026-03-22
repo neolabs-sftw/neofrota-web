@@ -14,7 +14,7 @@ export default defineConfig({
         name: "NeoFrota WebSistema",
         short_name: "NeoFrota",
         description: "Sistema de Voucher Digital",
-        theme_color: "#ffffff",
+        theme_color: "#f4f4f4",
         display: "standalone",
         start_url: "/",
         icons: [
@@ -22,13 +22,16 @@ export default defineConfig({
             src: "pwa-192x192.png",
             sizes: "192x192",
             type: "image/png",
+            purpose: "any"
           },
           {
             src: "pwa-512x512.png",
             sizes: "512x512",
             type: "image/png",
+            purpose: "maskable"
           },
         ],
+        background_color: "#f4f4f4"
       },
     }),
   ],
