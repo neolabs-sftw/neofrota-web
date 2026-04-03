@@ -164,6 +164,10 @@ function TabelaVouchersFiltrados({
 }) {
   const { Cor } = useTema();
 
+  const [voucherHoverId, setHoveredVoucherId] = useState<string | null>(null);
+
+  const [obsMotorista, setObsMotorista] = useState<string | null>(null);
+
   const Cabecalho = (
     <div
       style={{
@@ -223,7 +227,7 @@ function TabelaVouchersFiltrados({
           height: "88%",
           display: "flex",
           flexDirection: "column",
-          overflow: "auto",
+          overflow: "scroll",
           scrollbarWidth: "none",
         }}
       >
@@ -254,6 +258,7 @@ function TabelaVouchersFiltrados({
               v.valorViagem +
               v.valorDeslocamento +
               v.valorHoraParada * v.qntTempoParado;
+
             return (
               <div
                 style={{
@@ -351,13 +356,14 @@ function TabelaVouchersFiltrados({
                 >
                   {v.solicitante.nome}
                 </p>
-                <p
+                <div
                   style={{
                     width: "15%",
                     whiteSpace: "nowrap",
-                    overflow: "hidden",
                     textOverflow: "ellipsis",
                     display: "flex",
+                    flexDirection: "row",
+                    gap: 5,
                     justifyContent: "flex-start",
                     alignItems: "center",
                     height: "100%",
@@ -365,8 +371,78 @@ function TabelaVouchersFiltrados({
                     padding: 5,
                   }}
                 >
-                  {v.motorista.nome}
-                </p>
+                  <div
+                    style={{
+                      display: v.observacaoMotorista ? "flex" : "none",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      cursor: "pointer",
+                      position: "relative",
+                      width: "10%",
+                    }}
+                    onMouseEnter={() => setObsMotorista(v.id)}
+                    onMouseLeave={() => setObsMotorista(null)}
+                  >
+                    <p
+                      style={{
+                        fontFamily: "Icone",
+                        fontWeight: "bold",
+                        fontSize: 20,
+                        color: Cor.atencao,
+                      }}
+                    >
+                      circle_notifications
+                    </p>
+                    {obsMotorista === v.id && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          bottom: "120%",
+                          left: "50%",
+                          transform: "translateX(-50%)",
+                          backgroundColor: Cor.base2,
+                          color: Cor.texto1,
+                          border: `1px solid ${Cor.texto2}`,
+                          padding: "8px 12px",
+                          borderRadius: "6px",
+                          whiteSpace: "nowrap",
+                          fontSize: "12px",
+                          boxShadow: "0px 4px 6px rgba(0,0,0,0.1)",
+                          zIndex: 10, // Garante que fique por cima da tabela
+                        }}
+                      >
+                        {v.observacaoMotorista}
+                        <div
+                          style={{
+                            position: "absolute",
+                            bottom: "-8px",
+                            left: "50%",
+                            transform: "translateX(-50%)",
+                            width: "10px",
+                            height: "10px",
+                            backgroundColor: Cor.base2,
+                            borderBottom: `1px solid ${Cor.texto2}`,
+                            borderRight: `1px solid ${Cor.texto2}`,
+                            rotate: "45deg",
+                          }}
+                        ></div>
+                      </div>
+                    )}
+                  </div>
+                  <div
+                    style={{
+                      width: v.observacaoMotorista ? "90%" : "100%",
+                      overflow:"hidden",
+                      whiteSpace: "nowrap",
+                      textOverflow: "ellipsis",
+                      display: "flex",
+                      flexDirection: "row",
+                    }}
+                  >
+                    <p>{v.motorista.nome}</p>
+                  </div>
+                </div>
+
                 <p
                   style={{
                     width: "10%",
@@ -454,7 +530,7 @@ function TabelaVouchersFiltrados({
                   style={{
                     width: "10%",
                     whiteSpace: "nowrap",
-                    overflow: "hidden",
+                    // overflow: "hidden",
                     textOverflow: "ellipsis",
                     display: "flex",
                     justifyContent: "center",
@@ -472,8 +548,85 @@ function TabelaVouchersFiltrados({
                           ? Cor.ativo
                           : Cor.inativo
                     }
+                    style={{ position: "relative" }}
+                    onMouseEnter={() => setHoveredVoucherId(v.id)}
+                    onMouseLeave={() => setHoveredVoucherId(null)}
                   >
                     {v.status}
+                    {v.status === "Concluido" && voucherHoverId === v.id && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          bottom: "120%", // Joga o tooltip para cima do botão
+                          left: "50%",
+                          transform: "translateX(-50%)", // Centraliza
+                          backgroundColor: Cor.base2, // Usando suas variáveis de cor
+                          color: Cor.texto1,
+                          border: `1px solid ${Cor.texto2}`,
+                          padding: "8px 12px",
+                          borderRadius: "6px",
+                          whiteSpace: "nowrap",
+                          fontSize: "12px",
+                          boxShadow: "0px 4px 6px rgba(0,0,0,0.1)",
+                          zIndex: 10, // Garante que fique por cima da tabela
+                        }}
+                      >
+                        Assinado em:{" "}
+                        {new Date(v.dataHoraConclusao).toLocaleString("pt-BR")}
+                        {/* Opcional: Triângulo do tooltip apontando para baixo */}
+                        <div
+                          style={{
+                            position: "absolute",
+                            bottom: "-8px",
+                            left: "50%",
+                            transform: "translateX(-50%)",
+                            width: "10px",
+                            height: "10px",
+                            backgroundColor: Cor.base2,
+                            borderBottom: `1px solid ${Cor.texto2}`,
+                            borderRight: `1px solid ${Cor.texto2}`,
+                            rotate: "45deg",
+                          }}
+                        ></div>
+                      </div>
+                    )}
+                    {v.status === "Cancelado" && voucherHoverId === v.id && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          bottom: "120%",
+                          width: 150, // Joga o tooltip para cima do botão
+                          left: "50%",
+                          transform: "translateX(-50%)", // Centraliza
+                          backgroundColor: Cor.base2, // Usando suas variáveis de cor
+                          color: Cor.texto1,
+                          border: `1px solid ${Cor.texto2}`,
+                          padding: "8px 12px",
+                          borderRadius: "6px",
+                          whiteSpace: "pre-wrap",
+                          textAlign: "center",
+                          fontSize: "12px",
+                          boxShadow: "0px 4px 6px rgba(0,0,0,0.1)",
+                          zIndex: 10, // Garante que fique por cima da tabela
+                        }}
+                      >
+                        {v.observacao}
+                        <div
+                          style={{
+                            position: "absolute",
+                            bottom: "-8px",
+                            left: "50%",
+                            transform: "translateX(-50%)",
+                            width: "10px",
+                            height: "10px",
+                            backgroundColor: Cor.base2,
+                            borderBottom: `1px solid ${Cor.texto2}`,
+                            borderRight: `1px solid ${Cor.texto2}`,
+                            rotate: "45deg",
+                          }}
+                        ></div>
+                      </div>
+                    )}
                     <p
                       style={{
                         fontFamily: "Icone",

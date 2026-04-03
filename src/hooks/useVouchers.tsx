@@ -360,6 +360,8 @@ const GET_VOUCHERS_FILTROS = gql`
     natureza
     tipoCorrida
     status
+    observacaoMotorista
+    observacao
     empresaCliente {
       id
       nome
