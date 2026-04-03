@@ -9,7 +9,7 @@ function CardInfosMenorFixos({}: {}) {
 
   // console.log(ultimoDia.toISOString());
 
-  function getMonthRangeISO() {
+  function mesAtualISO() {
     const now = new Date();
 
     const start = new Date(
@@ -28,15 +28,15 @@ function CardInfosMenorFixos({}: {}) {
   const operadoraId = useAdminLogado()?.operadora.id
 
   const { data: dataFixoAbertos } = useFaturamentoParcialMes(
-    getMonthRangeISO().inicioISO,
-    getMonthRangeISO().fimISO,
+    mesAtualISO().inicioISO,
+    mesAtualISO().fimISO,
     String(operadoraId),
     "Aberto",
     "Fixo",
   );
   const { data: dataFixoConcluidos } = useFaturamentoParcialMes(
-    getMonthRangeISO().inicioISO,
-    getMonthRangeISO().fimISO,
+    mesAtualISO().inicioISO,
+    mesAtualISO().fimISO,
     String(operadoraId),
     "Concluido",
     "Fixo",

@@ -356,12 +356,14 @@ const GET_VOUCHERS_FILTROS = gql`
     valorHoraParadaRepasse
     valorPedagio
     valorEstacionamento
+    qntTempoParado
     natureza
     tipoCorrida
     status
     empresaCliente {
       id
       nome
+      fotoLogoCliente
     }
     unidadeCliente {
       id
