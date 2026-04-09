@@ -31,6 +31,7 @@ function RelatorioConteudo() {
   const operadoraId = useAdminLogado()?.operadora.id;
 
   const [visivel, setVisivel] = useState<boolean>(false);
+  console.log(visivel)
 
   const formatarParaYMD = (data: Date) => {
     const ano = data.getFullYear();
@@ -796,74 +797,74 @@ const BtnAcaoEmMassa = styled.div<BtnAcaoEmMassaProps>`
   }
 `;
 
-const Overlay = styled.div<{ $visivel: boolean; $bg: string }>`
-  width: 100vw;
-  height: 100vh;
-  background-color: ${({ $bg }) => `${$bg}90`};
-  position: absolute;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  alin-items: center;
-  top: 0;
-  left: 0;
-  padding: 1%;
-  z-index: 10;
-  backdrop-filter: blur(3px);
-  opacity: ${({ $visivel }) => ($visivel ? 1 : 0)};
-  pointer-events: ${({ $visivel }) => ($visivel ? "auto" : "none")};
-  transition: all 0.3s ease-in-out;
-`;
+// const Overlay = styled.div<{ $visivel: boolean; $bg: string }>`
+//   width: 100vw;
+//   height: 100vh;
+//   background-color: ${({ $bg }) => `${$bg}90`};
+//   position: absolute;
+//   display: flex;
+//   flex-direction: row;
+//   justify-content: center;
+//   alin-items: center;
+//   top: 0;
+//   left: 0;
+//   padding: 1%;
+//   z-index: 10;
+//   backdrop-filter: blur(3px);
+//   opacity: ${({ $visivel }) => ($visivel ? 1 : 0)};
+//   pointer-events: ${({ $visivel }) => ($visivel ? "auto" : "none")};
+//   transition: all 0.3s ease-in-out;
+// `;
 
-interface CxModalProps {
-  $border: string;
-  $visivel: boolean;
-  $bg: string;
-}
+// interface CxModalProps {
+//   $border: string;
+//   $visivel: boolean;
+//   $bg: string;
+// }
 
-const CxModal = styled.div<CxModalProps>`
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
-  gap: 7px;
-  padding: 15px;
-  width: 70%;
-  border-radius: 22px;
-  border: 1px solid ${({ $border }) => $border};
-  background-color: ${({ $bg }) => $bg};
-  position: absolute;
-  z-index: 11;
-  transform: ${({ $visivel }) => ($visivel ? "scale(1)" : "scale(0.6)")};
-  opacity: ${({ $visivel }) => ($visivel ? 1 : 0)};
-  pointer-events: ${({ $visivel }) => ($visivel ? "auto" : "none")};
-  transition: all 0.3s ease-in-out;
-  box-shadow: 4px 4px 8px #00000020;
-`;
+// const CxModal = styled.div<CxModalProps>`
+//   display: flex;
+//   flex-direction: column;
+//   justify-content: flex-start;
+//   align-items: center;
+//   gap: 7px;
+//   padding: 15px;
+//   width: 70%;
+//   border-radius: 22px;
+//   border: 1px solid ${({ $border }) => $border};
+//   background-color: ${({ $bg }) => $bg};
+//   position: absolute;
+//   z-index: 11;
+//   transform: ${({ $visivel }) => ($visivel ? "scale(1)" : "scale(0.6)")};
+//   opacity: ${({ $visivel }) => ($visivel ? 1 : 0)};
+//   pointer-events: ${({ $visivel }) => ($visivel ? "auto" : "none")};
+//   transition: all 0.3s ease-in-out;
+//   box-shadow: 4px 4px 8px #00000020;
+// `;
 
-function ModalEditarMassa({
-  visivel,
-  setVisivel,
-}: {
-  visivel: any;
-  setVisivel: any;
-}) {
-  const { Cor } = useTema();
-  return (
-    <Overlay
-      $visivel={visivel}
-      $bg={Cor.base}
-      onClick={() => setVisivel(false)}
-    >
-      <CxModal
-        $visivel={visivel}
-        $bg={Cor.base}
-        $border={Cor.texto2 + "50"}
-        onClick={(e) => e.stopPropagation()}
-      ></CxModal>
-    </Overlay>
-  );
-}
+// function ModalEditarMassa({
+//   visivel,
+//   setVisivel,
+// }: {
+//   visivel: any;
+//   setVisivel: any;
+// }) {
+//   const { Cor } = useTema();
+//   return (
+//     <Overlay
+//       $visivel={visivel}
+//       $bg={Cor.base}
+//       onClick={() => setVisivel(false)}
+//     >
+//       <CxModal
+//         $visivel={visivel}
+//         $bg={Cor.base}
+//         $border={Cor.texto2 + "50"}
+//         onClick={(e) => e.stopPropagation()}
+//       ></CxModal>
+//     </Overlay>
+//   );
+// }
 
 interface CardProps {
   $cor: string;
