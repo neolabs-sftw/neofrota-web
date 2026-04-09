@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import BaseTelas from "../componentes/baseTelas";
 import EditPerfil from "../componentes/editPerfil";
 import { useTema } from "../hooks/temaContext";
@@ -29,6 +29,8 @@ function RelatorioConteudo() {
   const { Cor } = useTema();
 
   const operadoraId = useAdminLogado()?.operadora.id;
+
+  const [visivel, setVisivel] = useState<boolean>(false);
 
   const formatarParaYMD = (data: Date) => {
     const ano = data.getFullYear();
@@ -96,7 +98,9 @@ function RelatorioConteudo() {
         <TabelaVouchersFiltrados
           listaFiltro={listaRelatorio}
           loading={loading}
+          setVisivel={setVisivel}
         />
+        {/* <ModalEditarMassa visivel={visivel} setVisivel={setVisivel}/> */}
       </div>
     </>
   );
@@ -155,18 +159,79 @@ const BtnStatus = styled.div<BtnStatusProps>`
   }
 `;
 
+interface LinhaTabelaProps {
+  $base: string;
+  $linha: string;
+  $texto: string;
+}
+
+const LinhaTabela = styled.div<LinhaTabelaProps>`
+  display: flex;
+  flex-direction: row;
+  padding-left: 5px;
+  padding-right: 5px;
+  width: 100%;
+  height: 35px;
+  justify-content: space-between;
+  align-items: center;
+  background-color: ${({ $base }) => $base};
+  border-bottom: 1px solid ${({ $linha }) => $linha};
+  color: ${({ $texto }) => $texto};
+  font-size: 14px;
+  cursor: pointer;
+  transition: ease-in-out all 0.1s;
+
+  &:hover {
+    background-color: ${({ $texto }) => $texto + 20};
+  }
+`;
+
 function TabelaVouchersFiltrados({
   listaFiltro,
   loading,
+  setVisivel,
 }: {
   listaFiltro: any;
   loading: any;
+  setVisivel: any;
 }) {
   const { Cor } = useTema();
 
   const [voucherHoverId, setHoveredVoucherId] = useState<string | null>(null);
 
   const [obsMotorista, setObsMotorista] = useState<string | null>(null);
+
+  const [selecionados, setSelecionados] = useState<any[]>([]);
+
+  useEffect(() => {
+    setSelecionados([]);
+    console.log(selecionados);
+  }, [listaFiltro]);
+
+  const selecionarLinhaVoucher = (id: any) => {
+    setSelecionados((prev) => {
+      const isSelecionado = prev.includes(id);
+
+      const novaLista = isSelecionado
+        ? prev.filter((itemId) => itemId !== id)
+        : [...prev, id];
+
+      console.log("Selecionados agora:", novaLista);
+
+      return novaLista;
+    });
+  };
+
+  const selecionarTodosVouchers = () => {
+    if (selecionados.length === listaFiltro.length) {
+      setSelecionados([]);
+      console.log("Selecionados agora: []");
+    } else {
+      const todosIds = listaFiltro.map((v: any) => v.id);
+      setSelecionados(todosIds);
+      console.log("Selecionados agora:", todosIds);
+    }
+  };
 
   const Cabecalho = (
     <div
@@ -190,19 +255,25 @@ function TabelaVouchersFiltrados({
           width: "2%",
           textAlign: "center",
           fontFamily: "Icone",
+          fontSize: 16,
+          fontWeight: 400,
+          cursor: "pointer",
         }}
+        onClick={selecionarTodosVouchers}
       >
-        square
+        {selecionados.length > 0 && selecionados.length === listaFiltro.length
+          ? "indeterminate_check_box"
+          : "square"}
       </p>
       <p style={{ width: "5%", textAlign: "center" }}>Id</p>
-      <p style={{ width: "18%" }}>Cliente / Unidade</p>
-      <p style={{ width: "10%" }}>Solicitante</p>
-      <p style={{ width: "17%" }}>Motorista</p>
+      <p style={{ width: "17%" }}>Cliente / Unidade</p>
+      <p style={{ width: "8%" }}>Solicitante</p>
+      <p style={{ width: "15%" }}>Motorista</p>
       <p style={{ width: "10%" }}>Data / Hora</p>
       <p style={{ width: "15%" }}>Origem - Destino</p>
-      <p style={{ width: "8%" }}>Natureza</p>
+      <p style={{ width: "10%" }}>Natureza</p>
       <p style={{ width: "10%" }}>Status</p>
-      <p style={{ width: "5%" }}>Valor</p>
+      <p style={{ width: "8%" }}>Valor</p>
     </div>
   );
 
@@ -260,21 +331,10 @@ function TabelaVouchersFiltrados({
               v.valorHoraParada * v.qntTempoParado;
 
             return (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  paddingLeft: 5,
-                  paddingRight: 5,
-                  width: "100%",
-                  height: 35,
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  backgroundColor: Cor.base2,
-                  borderBottom: `1px solid ${Cor.texto2 + 40}`,
-                  color: Cor.texto1,
-                  fontSize: 14,
-                }}
+              <LinhaTabela
+                $base={Cor.base2}
+                $linha={Cor.texto2 + 40}
+                $texto={Cor.texto1}
                 key={v.id}
               >
                 <p
@@ -289,14 +349,19 @@ function TabelaVouchersFiltrados({
                     borderRight: `1px solid ${Cor.texto2 + 40}`,
                     padding: 5,
                     fontSize: 18,
+                    cursor: "pointer",
                   }}
+                  onClick={() => selecionarLinhaVoucher(v.id)}
                 >
-                  square
+                  {selecionados.includes(v.id) ? "check_box" : "square"}
                 </p>
                 <p
                   style={{
                     width: "5%",
                     textAlign: "center",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
                     whiteSpace: "nowrap",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
@@ -408,7 +473,7 @@ function TabelaVouchersFiltrados({
                           whiteSpace: "nowrap",
                           fontSize: "12px",
                           boxShadow: "0px 4px 6px rgba(0,0,0,0.1)",
-                          zIndex: 10, // Garante que fique por cima da tabela
+                          zIndex: 10,
                         }}
                       >
                         {v.observacaoMotorista}
@@ -432,7 +497,7 @@ function TabelaVouchersFiltrados({
                   <div
                     style={{
                       width: v.observacaoMotorista ? "90%" : "100%",
-                      overflow:"hidden",
+                      overflow: "hidden",
                       whiteSpace: "nowrap",
                       textOverflow: "ellipsis",
                       display: "flex",
@@ -482,7 +547,7 @@ function TabelaVouchersFiltrados({
                 >
                   {v.origem} - {v.destino}
                 </p>
-                <p
+                <div
                   style={{
                     width: "10%",
                     whiteSpace: "nowrap",
@@ -512,21 +577,19 @@ function TabelaVouchersFiltrados({
                           : Cor.textoTurno
                     }
                   >
-                    {v.natureza}{" "}
+                    {v.natureza} -
                     <p
                       style={{
-                        fontFamily: "Icone",
-                        fontWeight: 100,
-                        fontSize: 18,
+                        // fontFamily: "Icone",
+                        fontWeight: "bolder",
+                        fontSize: 14,
                       }}
                     >
-                      {v.tipoCorrida === "Entrada"
-                        ? "expand_circle_down"
-                        : "expand_circle_up"}
+                      {v.tipoCorrida === "Entrada" ? "En" : "Sa"}
                     </p>
                   </BtnNatuzera>
-                </p>
-                <p
+                </div>
+                <div
                   style={{
                     width: "10%",
                     whiteSpace: "nowrap",
@@ -557,10 +620,10 @@ function TabelaVouchersFiltrados({
                       <div
                         style={{
                           position: "absolute",
-                          bottom: "120%", // Joga o tooltip para cima do botão
+                          bottom: "120%",
                           left: "50%",
-                          transform: "translateX(-50%)", // Centraliza
-                          backgroundColor: Cor.base2, // Usando suas variáveis de cor
+                          transform: "translateX(-50%)",
+                          backgroundColor: Cor.base2,
                           color: Cor.texto1,
                           border: `1px solid ${Cor.texto2}`,
                           padding: "8px 12px",
@@ -568,12 +631,11 @@ function TabelaVouchersFiltrados({
                           whiteSpace: "nowrap",
                           fontSize: "12px",
                           boxShadow: "0px 4px 6px rgba(0,0,0,0.1)",
-                          zIndex: 10, // Garante que fique por cima da tabela
+                          zIndex: 10,
                         }}
                       >
                         Assinado em:{" "}
                         {new Date(v.dataHoraConclusao).toLocaleString("pt-BR")}
-                        {/* Opcional: Triângulo do tooltip apontando para baixo */}
                         <div
                           style={{
                             position: "absolute",
@@ -595,10 +657,10 @@ function TabelaVouchersFiltrados({
                         style={{
                           position: "absolute",
                           bottom: "120%",
-                          width: 150, // Joga o tooltip para cima do botão
+                          width: 150,
                           left: "50%",
-                          transform: "translateX(-50%)", // Centraliza
-                          backgroundColor: Cor.base2, // Usando suas variáveis de cor
+                          transform: "translateX(-50%)",
+                          backgroundColor: Cor.base2,
                           color: Cor.texto1,
                           border: `1px solid ${Cor.texto2}`,
                           padding: "8px 12px",
@@ -607,7 +669,7 @@ function TabelaVouchersFiltrados({
                           textAlign: "center",
                           fontSize: "12px",
                           boxShadow: "0px 4px 6px rgba(0,0,0,0.1)",
-                          zIndex: 10, // Garante que fique por cima da tabela
+                          zIndex: 10,
                         }}
                       >
                         {v.observacao}
@@ -641,7 +703,7 @@ function TabelaVouchersFiltrados({
                           : "check_circle"}
                     </p>
                   </BtnStatus>
-                </p>
+                </div>
                 <p
                   style={{
                     width: "8%",
@@ -660,7 +722,7 @@ function TabelaVouchersFiltrados({
                     currency: "BRL",
                   }).format(Number(valorTotal))}
                 </p>
-              </div>
+              </LinhaTabela>
             );
           })
         )}
@@ -669,19 +731,137 @@ function TabelaVouchersFiltrados({
         style={{
           backgroundColor: Cor.texto2 + 90,
           width: "100%",
-          height: "6%",
           borderRadius: "0 0 16px 16px",
           display: "flex",
           flexDirection: "row",
           justifyContent: "space-between",
           alignItems: "center",
-          padding: 5,
+          padding: 10,
           fontSize: 12,
           fontWeight: "bold",
           color: Cor.texto1,
         }}
-      ></div>
+      >
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            width: "28%",
+            gap: 10,
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <p style={{ whiteSpace: "nowrap" }}>
+            {selecionados.length} - Vouchers Selecionados
+          </p>
+          <BtnAcaoEmMassa
+            $cor={selecionados.length > 0 ? Cor.primaria : Cor.texto2}
+            $cursor={selecionados.length > 0 ? "pointer" : "auto"}
+            onClick={setVisivel(true)}
+          >
+            Ação em Massa
+          </BtnAcaoEmMassa>
+        </div>
+      </div>
     </div>
+  );
+}
+
+interface BtnAcaoEmMassaProps {
+  $cor: string;
+  $cursor: string;
+}
+
+const BtnAcaoEmMassa = styled.div<BtnAcaoEmMassaProps>`
+  width: 150px;
+  background-color: ${({ $cor }) => $cor + 90};
+  padding: 5px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: ease-in-out all 0.1s;
+  user-select: none;
+  cursor: ${({ $cursor }) => $cursor};
+
+  &:hover {
+    scale: 1.02;
+    background-color: ${({ $cor }) => $cor + "CC"};
+  }
+
+  &:active {
+    background-color: ${({ $cor }) => $cor};
+    scale: 0.98;
+  }
+`;
+
+const Overlay = styled.div<{ $visivel: boolean; $bg: string }>`
+  width: 100vw;
+  height: 100vh;
+  background-color: ${({ $bg }) => `${$bg}90`};
+  position: absolute;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  alin-items: center;
+  top: 0;
+  left: 0;
+  padding: 1%;
+  z-index: 10;
+  backdrop-filter: blur(3px);
+  opacity: ${({ $visivel }) => ($visivel ? 1 : 0)};
+  pointer-events: ${({ $visivel }) => ($visivel ? "auto" : "none")};
+  transition: all 0.3s ease-in-out;
+`;
+
+interface CxModalProps {
+  $border: string;
+  $visivel: boolean;
+  $bg: string;
+}
+
+const CxModal = styled.div<CxModalProps>`
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 7px;
+  padding: 15px;
+  width: 70%;
+  border-radius: 22px;
+  border: 1px solid ${({ $border }) => $border};
+  background-color: ${({ $bg }) => $bg};
+  position: absolute;
+  z-index: 11;
+  transform: ${({ $visivel }) => ($visivel ? "scale(1)" : "scale(0.6)")};
+  opacity: ${({ $visivel }) => ($visivel ? 1 : 0)};
+  pointer-events: ${({ $visivel }) => ($visivel ? "auto" : "none")};
+  transition: all 0.3s ease-in-out;
+  box-shadow: 4px 4px 8px #00000020;
+`;
+
+function ModalEditarMassa({
+  visivel,
+  setVisivel,
+}: {
+  visivel: any;
+  setVisivel: any;
+}) {
+  const { Cor } = useTema();
+  return (
+    <Overlay
+      $visivel={visivel}
+      $bg={Cor.base}
+      onClick={() => setVisivel(false)}
+    >
+      <CxModal
+        $visivel={visivel}
+        $bg={Cor.base}
+        $border={Cor.texto2 + "50"}
+        onClick={(e) => e.stopPropagation()}
+      ></CxModal>
+    </Overlay>
   );
 }
 
@@ -745,25 +925,55 @@ function ResumoValores({
   listaRelatorio: any;
   filtro: any;
 }) {
-  const totalViagem = listaRelatorio.reduce((soma: any, voucher: any) => {
-    return soma + (voucher.valorViagem || 0);
-  }, 0);
+  const totais = listaRelatorio.reduce(
+    (soma: any, voucher: any) => {
+      const totalHoraParadaVoucher =
+        (voucher.valorHoraParada || 0) * (voucher.qntTempoParado || 0);
+      const totalHoraParadaRepasseVoucher =
+        (voucher.valorHoraParadaRepasse || 0) * (voucher.qntTempoParado || 0);
 
-  const totalRepasse = listaRelatorio.reduce((soma: any, voucher: any) => {
-    return soma + (voucher.valorViagemRepasse || 0);
-  }, 0);
+      return {
+        viagem: soma.viagem + (voucher.valorViagem || 0),
+        viagemRepasse: soma.viagemRepasse + (voucher.valorViagemRepasse || 0),
+        deslocamento: soma.deslocamento + (voucher.valorDeslocamento || 0),
+        deslocamentoRepasse:
+          soma.deslocamentoRepasse + (voucher.valorDeslocamentoRepasse || 0),
+        pedagio: soma.pedagio + (voucher.valorPedagio || 0),
+        // Aqui somamos os valores já calculados com o tempo parado
+        horaParada: soma.horaParada + totalHoraParadaVoucher,
+        horaParadaRepasse:
+          soma.horaParadaRepasse + totalHoraParadaRepasseVoucher,
+      };
+    },
+    {
+      // Inicialização do acumulador
+      viagem: 0,
+      viagemRepasse: 0,
+      deslocamento: 0,
+      deslocamentoRepasse: 0,
+      pedagio: 0,
+      horaParada: 0,
+      horaParadaRepasse: 0,
+    },
+  );
+
+  console.log(totais);
+  const totalViagem =
+    totais.viagem + totais.deslocamento + totais.pedagio + totais.horaParada;
+
+  const totalRepasse =
+    totais.viagemRepasse +
+    totais.deslocamentoRepasse +
+    totais.pedagio +
+    totais.horaParadaRepasse;
 
   function motoristasUnicos() {
     const totalMotoristas = new Set(
       listaRelatorio.map((v: any) => v.motorista.id),
     );
 
-    console.log("total", totalMotoristas);
-
     return totalMotoristas.size || 0;
   }
-
-  console.log(motoristasUnicos());
 
   const lucro = totalViagem - totalRepasse;
 
@@ -786,8 +996,6 @@ function ResumoValores({
   const totalFixos = listaRelatorio.filter((v: any) => v.natureza === "Fixo");
   const totalExtras = listaRelatorio.filter((v: any) => v.natureza === "Extra");
   const totalTurnos = listaRelatorio.filter((v: any) => v.natureza === "Turno");
-
-  console.log(totalFixos);
 
   function formatarValor(valor: any) {
     const valorFormatado = new Intl.NumberFormat("pt-BR", {

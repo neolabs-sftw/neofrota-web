@@ -89,13 +89,11 @@ function ModalPreviewVoucher({
   );
 
   const { voucherFixoId, loading: loadingFixo } = useVoucherFixoId(
-    v?.natureza === "Fixo" ? v?.id : null
+    v?.natureza === "Fixo" || v?.natureza === "Turno" ? v?.id : null
   );
 
   const voucher = v?.natureza === "Extra" ? voucherExtraId : voucherFixoId;
   const loading = loadingExtra || loadingFixo;
-
-  const border = Cor.texto2 + "50";
 
   // 3. Atalhos de teclado
   useEffect(() => {
@@ -117,7 +115,7 @@ function ModalPreviewVoucher({
       <CxModal
         $visivel={visivel}
         $bg={Cor.base}
-        $border={border}
+        $border={Cor.texto2 + "50"}
         onClick={(e) => e.stopPropagation()}
       >
         {/* ESTADO DE CARREGAMENTO INTERNO DO MODAL */}
