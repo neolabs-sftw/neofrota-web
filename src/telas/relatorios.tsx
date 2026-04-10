@@ -31,7 +31,6 @@ function RelatorioConteudo() {
   const operadoraId = useAdminLogado()?.operadora.id;
 
   const [visivel, setVisivel] = useState<boolean>(false);
-  console.log(visivel)
 
   const formatarParaYMD = (data: Date) => {
     const ano = data.getFullYear();
@@ -100,8 +99,8 @@ function RelatorioConteudo() {
           listaFiltro={listaRelatorio}
           loading={loading}
           setVisivel={setVisivel}
+          visivel={visivel}
         />
-        {/* <ModalEditarMassa visivel={visivel} setVisivel={setVisivel}/> */}
       </div>
     </>
   );
@@ -191,10 +190,12 @@ function TabelaVouchersFiltrados({
   listaFiltro,
   loading,
   setVisivel,
+  visivel,
 }: {
   listaFiltro: any;
   loading: any;
   setVisivel: any;
+  visivel: any;
 }) {
   const { Cor } = useTema();
 
@@ -759,10 +760,11 @@ function TabelaVouchersFiltrados({
           <BtnAcaoEmMassa
             $cor={selecionados.length > 0 ? Cor.primaria : Cor.texto2}
             $cursor={selecionados.length > 0 ? "pointer" : "auto"}
-            onClick={setVisivel(true)}
+            onClick={() => setVisivel(true)}
           >
             Ação em Massa
           </BtnAcaoEmMassa>
+          <ModalEditarMassa setVisivel={setVisivel} visivel={visivel} />
         </div>
       </div>
     </div>
@@ -797,74 +799,482 @@ const BtnAcaoEmMassa = styled.div<BtnAcaoEmMassaProps>`
   }
 `;
 
-// const Overlay = styled.div<{ $visivel: boolean; $bg: string }>`
-//   width: 100vw;
-//   height: 100vh;
-//   background-color: ${({ $bg }) => `${$bg}90`};
-//   position: absolute;
-//   display: flex;
-//   flex-direction: row;
-//   justify-content: center;
-//   alin-items: center;
-//   top: 0;
-//   left: 0;
-//   padding: 1%;
-//   z-index: 10;
-//   backdrop-filter: blur(3px);
-//   opacity: ${({ $visivel }) => ($visivel ? 1 : 0)};
-//   pointer-events: ${({ $visivel }) => ($visivel ? "auto" : "none")};
-//   transition: all 0.3s ease-in-out;
-// `;
+const Overlay = styled.div<{ $visivel: boolean; $bg: string }>`
+  width: 100vw;
+  height: 100vh;
+  background-color: ${({ $bg }) => `${$bg}90`};
+  position: fixed;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  alin-items: center;
+  top: 0;
+  left: 0;
+  padding: 1%;
+  z-index: 10;
+  backdrop-filter: blur(3px);
+  opacity: ${({ $visivel }) => ($visivel ? 1 : 0)};
+  pointer-events: ${({ $visivel }) => ($visivel ? "auto" : "none")};
+  transition: all 0.3s ease-in-out;
+`;
 
-// interface CxModalProps {
-//   $border: string;
-//   $visivel: boolean;
-//   $bg: string;
-// }
+interface CxModalProps {
+  $border: string;
+  $visivel: boolean;
+  $bg: string;
+}
 
-// const CxModal = styled.div<CxModalProps>`
-//   display: flex;
-//   flex-direction: column;
-//   justify-content: flex-start;
-//   align-items: center;
-//   gap: 7px;
-//   padding: 15px;
-//   width: 70%;
-//   border-radius: 22px;
-//   border: 1px solid ${({ $border }) => $border};
-//   background-color: ${({ $bg }) => $bg};
-//   position: absolute;
-//   z-index: 11;
-//   transform: ${({ $visivel }) => ($visivel ? "scale(1)" : "scale(0.6)")};
-//   opacity: ${({ $visivel }) => ($visivel ? 1 : 0)};
-//   pointer-events: ${({ $visivel }) => ($visivel ? "auto" : "none")};
-//   transition: all 0.3s ease-in-out;
-//   box-shadow: 4px 4px 8px #00000020;
-// `;
+const CxModal = styled.div<CxModalProps>`
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 7px;
+  padding: 15px;
+  width: 70%;
+  border-radius: 22px;
+  border: 1px solid ${({ $border }) => $border};
+  background-color: ${({ $bg }) => $bg};
+  position: absolute;
+  z-index: 11;
+  transform: ${({ $visivel }) => ($visivel ? "scale(1)" : "scale(0.6)")};
+  opacity: ${({ $visivel }) => ($visivel ? 1 : 0)};
+  pointer-events: ${({ $visivel }) => ($visivel ? "auto" : "none")};
+  transition: all 0.3s ease-in-out;
+  box-shadow: 4px 4px 8px #00000020;
+`;
 
-// function ModalEditarMassa({
-//   visivel,
-//   setVisivel,
-// }: {
-//   visivel: any;
-//   setVisivel: any;
-// }) {
-//   const { Cor } = useTema();
-//   return (
-//     <Overlay
-//       $visivel={visivel}
-//       $bg={Cor.base}
-//       onClick={() => setVisivel(false)}
-//     >
-//       <CxModal
-//         $visivel={visivel}
-//         $bg={Cor.base}
-//         $border={Cor.texto2 + "50"}
-//         onClick={(e) => e.stopPropagation()}
-//       ></CxModal>
-//     </Overlay>
-//   );
-// }
+function ModalEditarMassa({
+  visivel,
+  setVisivel,
+}: {
+  visivel: any;
+  setVisivel: any;
+}) {
+  const [carroId, setCarroId] = useState<any>();
+  const [dataHoraProgramado, setDataHoraProgramado] = useState<any>();
+  const [motoristaId, setMotoristaId] = useState<any>();
+  const [natureza, setNatureza] = useState<any>();
+  const [observacao, setObservacao] = useState<any>();
+  const [qntTempoParado, setQntTempoParado] = useState<any>();
+  const [solicitanteId, setSolicitanteId] = useState<any>();
+  const [status, setStatus] = useState<any>();
+  const [tipoCorrida, setTipoCorrida] = useState<any>("");
+  const [valorDeslocamento, setValorDeslocamento] = useState<any>();
+  const [valorDeslocamentoRepasse, setValorDeslocamentoRepasse] =
+    useState<any>();
+  const [valorEstacionamento, setValorEstacionamento] = useState<any>();
+  const [valorHoraParada, setValorHoraParada] = useState<any>();
+  const [valorHoraParadaRepasse, setValorHoraParadaRepasse] = useState<any>();
+  const [valorPedagio, setValorPedagio] = useState<any>();
+  const [valorViagem, setValorViagem] = useState<any>();
+  const [valorViagemRepasse, setValorViagemRepasse] = useState<any>();
+
+  const operId = useAdminLogado()?.operadora.id;
+
+  const { listaMotoristas } = useMotorista(operId);
+
+  const { Cor } = useTema();
+
+  return (
+    <Overlay
+      $visivel={visivel}
+      $bg={Cor.base}
+      onClick={() => setVisivel(false)}
+    >
+      <CxModal
+        $visivel={visivel}
+        $bg={Cor.base}
+        $border={Cor.texto2 + "50"}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div
+          style={{ display: "flex", flexDirection: "column", width: "100%" }}
+        >
+          <p
+            style={{
+              fontSize: 16,
+              fontWeight: "normal",
+              color: Cor.primariaTxt,
+            }}
+          >
+            Edição em <strong>Massa</strong> de Vouchers
+          </p>
+          <p style={{ fontSize: 12, fontWeight: "normal" }}>
+            Os Campos editados serão alterados em todos os vouchers anteriomente
+            selecionados.
+          </p>
+          <div
+            style={{
+              width: "100%",
+              height: 1,
+              backgroundColor: Cor.secundaria,
+            }}
+          />
+        </div>
+        {/* Primeira Linha de Opcionais */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            width: "100%",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <div
+            style={{ display: "flex", flexDirection: "column", width: "32%" }}
+          >
+            <p
+              style={{
+                fontSize: 14,
+                color: Cor.primariaTxt + 90,
+                fontWeight: "bold",
+                margin: 5,
+              }}
+            >
+              Natureza:
+            </p>
+            <div
+              style={{
+                width: "100%",
+                border: `1px solid ${Cor.texto2 + 50}`,
+                padding: 10,
+                borderRadius: 14,
+              }}
+            >
+              <select
+                name=""
+                id=""
+                style={{
+                  outline: "none",
+                  border: "none",
+                  width: "100%",
+                  backgroundColor: "transparent",
+                  color: Cor.texto1,
+                }}
+                onChange={(e) => setNatureza(e.target.value)}
+                value={natureza}
+              >
+                <option
+                  value={""}
+                  style={{ backgroundColor: Cor.base2, color: Cor.texto2 + 70 }}
+                >
+                  Defina a Natureza
+                </option>
+                <option
+                  value="Fixo"
+                  style={{ backgroundColor: Cor.base2, color: Cor.texto2 }}
+                >
+                  Fixo
+                </option>
+                <option
+                  value="Extra"
+                  style={{ backgroundColor: Cor.base2, color: Cor.texto2 }}
+                >
+                  Extra
+                </option>
+                <option
+                  value="Turno"
+                  style={{ backgroundColor: Cor.base2, color: Cor.texto2 }}
+                >
+                  Turno
+                </option>
+              </select>
+            </div>
+          </div>
+          <div
+            style={{ display: "flex", flexDirection: "column", width: "32%" }}
+          >
+            <p
+              style={{
+                fontSize: 14,
+                color: Cor.primariaTxt + 90,
+                fontWeight: "bold",
+                margin: 5,
+              }}
+            >
+              Tipo da Corrida:
+            </p>
+            <div
+              style={{
+                width: "100%",
+                border: `1px solid ${Cor.texto2 + 50}`,
+                padding: 10,
+                borderRadius: 14,
+              }}
+            >
+              <select
+                name=""
+                id=""
+                style={{
+                  outline: "none",
+                  border: "none",
+                  width: "100%",
+                  backgroundColor: "transparent",
+                  color: Cor.texto1,
+                }}
+                onChange={(e) => setTipoCorrida(e.target.value)}
+                value={tipoCorrida}
+              >
+                <option
+                  value={""}
+                  style={{ backgroundColor: Cor.base2, color: Cor.texto2 + 70 }}
+                >
+                  Defina o tipo da Corrida
+                </option>
+                <option
+                  value="Entrada"
+                  style={{ backgroundColor: Cor.base2, color: Cor.texto2 }}
+                >
+                  Entrada
+                </option>
+                <option
+                  value="Saida"
+                  style={{ backgroundColor: Cor.base2, color: Cor.texto2 }}
+                >
+                  Saída
+                </option>
+              </select>
+            </div>
+          </div>
+          <div
+            style={{ display: "flex", flexDirection: "column", width: "32%" }}
+          >
+            <p
+              style={{
+                fontSize: 14,
+                color: Cor.primariaTxt + 90,
+                fontWeight: "bold",
+                margin: 5,
+              }}
+            >
+              Status Voucher:
+            </p>
+            <div
+              style={{
+                width: "100%",
+                border: `1px solid ${Cor.texto2 + 50}`,
+                padding: 10,
+                borderRadius: 14,
+              }}
+            >
+              <select
+                name=""
+                id=""
+                style={{
+                  outline: "none",
+                  border: "none",
+                  width: "100%",
+                  backgroundColor: "transparent",
+                  color: Cor.texto1,
+                }}
+                onChange={(e) => setStatus(e.target.value)}
+                value={status}
+              >
+                <option
+                  value={""}
+                  style={{ backgroundColor: Cor.base2, color: Cor.texto2 + 70 }}
+                >
+                  Defina o status do Vouchers
+                </option>
+                <option
+                  value="Aberto"
+                  style={{ backgroundColor: Cor.base2, color: Cor.texto2 }}
+                >
+                  Aberto
+                </option>
+                <option
+                  value="Concluido"
+                  style={{ backgroundColor: Cor.base2, color: Cor.texto2 }}
+                >
+                  Concluido
+                </option>
+                <option
+                  value="Cancelado"
+                  style={{ backgroundColor: Cor.base2, color: Cor.texto2 }}
+                >
+                  Cancelado
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
+        {/* Primeira Linha de Opcionais */}
+        <div
+          style={{
+            width: "100%",
+            height: 1,
+            backgroundColor: Cor.texto2 + 90,
+          }}
+        />
+        {/* Segunda Linha de Opcionais */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            width: "100%",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <div
+            style={{ display: "flex", flexDirection: "column", width: "32%" }}
+          >
+            <p
+              style={{
+                fontSize: 14,
+                color: Cor.primariaTxt + 90,
+                fontWeight: "bold",
+                margin: 5,
+              }}
+            >
+              Motorista:
+            </p>
+            <div
+              style={{
+                width: "100%",
+                border: `1px solid ${Cor.texto2 + 50}`,
+                padding: 10,
+                borderRadius: 14,
+              }}
+            >
+              <select
+                name=""
+                id=""
+                style={{
+                  outline: "none",
+                  border: "none",
+                  width: "100%",
+                  backgroundColor: "transparent",
+                  color: Cor.texto1,
+                }}
+                onChange={(e) => setNatureza(e.target.value)}
+                defaultValue={""}
+              >
+                <option
+                  value={""}
+                  style={{ backgroundColor: Cor.base2, color: Cor.texto2 + 70 }}
+                >
+                  Selecione o Motorista
+                </option>
+                {listaMotoristas?.map((m: any) => {
+                  return (
+                    <option
+                      key={m.id}
+                      value={m.id}
+                      style={{
+                        backgroundColor: Cor.base2,
+                        color: Cor.texto2,
+                      }}
+                    >
+                      {m.nome}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+          </div>
+          <div
+            style={{ display: "flex", flexDirection: "column", width: "32%" }}
+          >
+            <p
+              style={{
+                fontSize: 14,
+                color: Cor.primariaTxt + 90,
+                fontWeight: "bold",
+                margin: 5,
+              }}
+            >
+              Data Programada:
+            </p>
+            <div
+              style={{
+                width: "100%",
+                border: `1px solid ${Cor.texto2 + 50}`,
+                padding: 10,
+                borderRadius: 14,
+              }}
+            >
+              <input
+                type="datetime-local"
+                style={{
+                  border: "none",
+                  outline: "none",
+                  backgroundColor: "transparent",
+                  width: "100%",
+                  color: Cor.texto1,
+                }}
+              />
+            </div>
+          </div>
+          <div
+            style={{ display: "flex", flexDirection: "column", width: "32%" }}
+          >
+            <p
+              style={{
+                fontSize: 14,
+                color: Cor.primariaTxt + 90,
+                fontWeight: "bold",
+                margin: 5,
+              }}
+            >
+              Status Voucher:
+            </p>
+            <div
+              style={{
+                width: "100%",
+                border: `1px solid ${Cor.texto2 + 50}`,
+                padding: 10,
+                borderRadius: 14,
+              }}
+            >
+              <select
+                name=""
+                id=""
+                style={{
+                  outline: "none",
+                  border: "none",
+                  width: "100%",
+                  backgroundColor: "transparent",
+                  color: Cor.texto1,
+                }}
+                onChange={(e) => setNatureza(e.target.value)}
+                defaultValue={""}
+              >
+                <option
+                  value={""}
+                  style={{ backgroundColor: Cor.base2, color: Cor.texto2 + 70 }}
+                >
+                  Defina o status do Vouchers
+                </option>
+                <option
+                  value="Aberto"
+                  style={{ backgroundColor: Cor.base2, color: Cor.texto2 }}
+                >
+                  Aberto
+                </option>
+                <option
+                  value="Concluido"
+                  style={{ backgroundColor: Cor.base2, color: Cor.texto2 }}
+                >
+                  Concluido
+                </option>
+                <option
+                  value="Cancelado"
+                  style={{ backgroundColor: Cor.base2, color: Cor.texto2 }}
+                >
+                  Cancelado
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
+        {/* Segunda Linha de Opcionais */}
+      </CxModal>
+    </Overlay>
+  );
+}
 
 interface CardProps {
   $cor: string;
