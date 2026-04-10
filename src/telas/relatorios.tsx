@@ -851,24 +851,25 @@ function ModalEditarMassa({
   visivel: any;
   setVisivel: any;
 }) {
-  const [carroId, setCarroId] = useState<any>();
-  const [dataHoraProgramado, setDataHoraProgramado] = useState<any>();
-  const [motoristaId, setMotoristaId] = useState<any>();
   const [natureza, setNatureza] = useState<any>();
-  const [observacao, setObservacao] = useState<any>();
-  const [qntTempoParado, setQntTempoParado] = useState<any>();
-  const [solicitanteId, setSolicitanteId] = useState<any>();
   const [status, setStatus] = useState<any>();
   const [tipoCorrida, setTipoCorrida] = useState<any>("");
-  const [valorDeslocamento, setValorDeslocamento] = useState<any>();
-  const [valorDeslocamentoRepasse, setValorDeslocamentoRepasse] =
-    useState<any>();
-  const [valorEstacionamento, setValorEstacionamento] = useState<any>();
-  const [valorHoraParada, setValorHoraParada] = useState<any>();
-  const [valorHoraParadaRepasse, setValorHoraParadaRepasse] = useState<any>();
-  const [valorPedagio, setValorPedagio] = useState<any>();
-  const [valorViagem, setValorViagem] = useState<any>();
-  const [valorViagemRepasse, setValorViagemRepasse] = useState<any>();
+
+  // const [carroId, setCarroId] = useState<any>();
+  // const [dataHoraProgramado, setDataHoraProgramado] = useState<any>();
+  // const [motoristaId, setMotoristaId] = useState<any>();
+  // const [observacao, setObservacao] = useState<any>();
+  // const [qntTempoParado, setQntTempoParado] = useState<any>();
+  // const [solicitanteId, setSolicitanteId] = useState<any>();
+  // const [valorDeslocamento, setValorDeslocamento] = useState<any>();
+  // const [valorDeslocamentoRepasse, setValorDeslocamentoRepasse] =
+  //   useState<any>();
+  // const [valorEstacionamento, setValorEstacionamento] = useState<any>();
+  // const [valorHoraParada, setValorHoraParada] = useState<any>();
+  // const [valorHoraParadaRepasse, setValorHoraParadaRepasse] = useState<any>();
+  // const [valorPedagio, setValorPedagio] = useState<any>();
+  // const [valorViagem, setValorViagem] = useState<any>();
+  // const [valorViagemRepasse, setValorViagemRepasse] = useState<any>();
 
   const operId = useAdminLogado()?.operadora.id;
 
