@@ -23,6 +23,7 @@ import { ModelosFixos } from "./telas/subtelas/modeloFixo/modelosFixos";
 import EditarFuncionario from "./telas/subtelas/funcionario/editarFuncionario";
 import { NovoFixo } from "./telas/subtelas/modeloFixo/novoFixo";
 import { EditarFixo } from "./telas/subtelas/modeloFixo/editarFixos";
+import { Lancamentos } from "./telas/subtelas/lancamentos/lancamentos";
 
 function App() {
   return (
@@ -39,7 +40,10 @@ function App() {
               <Route path="/empresas" element={<Empresas />} />
               <Route path="/financeiro" element={<Financeiro />} />
               <Route path="/funcionarios" element={<Funcionarios />} />
-              <Route path="/editarfuncionario/:adminId" element={<EditarFuncionario />} />
+              <Route
+                path="/editarfuncionario/:adminId"
+                element={<EditarFuncionario />}
+              />
               <Route path="/operacao" element={<Operacao />} />
               <Route path="/relatorios" element={<Relatorios />} />
               <Route path="/verempresa/:clienteId" element={<VerEmpresa />} />
@@ -64,6 +68,7 @@ function App() {
               <Route path="/modelosvouchersfixos" element={<ModelosFixos />} />
               <Route path="/novofixo" element={<NovoFixo />} />
               <Route path="/editarfixo/:FixoId" element={<EditarFixo />} />
+              <Route path="/lancamentos" element={<Lancamentos />} />
             </Route>
           </Routes>
         </BrowserRouter>

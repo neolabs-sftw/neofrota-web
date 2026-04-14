@@ -8,7 +8,10 @@ import { useListaClientes } from "../hooks/useEmpresaCliente";
 import { useUnidadeCliente } from "../hooks/useUnidadesClientes";
 import { useListaAdminFuncionario } from "../hooks/useAdminFuncionario";
 import { useSolicitante } from "../hooks/useSolicitantes";
-import { useVouchersFiltrados } from "../hooks/useVouchers";
+import {
+  useEditarVouchersEmMassa,
+  useVouchersFiltrados,
+} from "../hooks/useVouchers";
 import styled from "styled-components";
 import CircularProgress from "@mui/material/CircularProgress";
 
@@ -57,8 +60,7 @@ function RelatorioConteudo() {
     tipoCorrida: "",
     unidadeClienteId: "",
   });
-
-  const { listaRelatorio, loading } = useVouchersFiltrados(filtro);
+  const { listaRelatorio, loading, refetch } = useVouchersFiltrados(filtro);
   return (
     <>
       <div
@@ -100,6 +102,7 @@ function RelatorioConteudo() {
           loading={loading}
           setVisivel={setVisivel}
           visivel={visivel}
+          refetch={refetch}
         />
       </div>
     </>
@@ -191,11 +194,13 @@ function TabelaVouchersFiltrados({
   loading,
   setVisivel,
   visivel,
+  refetch,
 }: {
   listaFiltro: any;
   loading: any;
   setVisivel: any;
   visivel: any;
+  refetch: any;
 }) {
   const { Cor } = useTema();
 
@@ -207,7 +212,6 @@ function TabelaVouchersFiltrados({
 
   useEffect(() => {
     setSelecionados([]);
-    console.log(selecionados);
   }, [listaFiltro]);
 
   const selecionarLinhaVoucher = (id: any) => {
@@ -218,8 +222,6 @@ function TabelaVouchersFiltrados({
         ? prev.filter((itemId) => itemId !== id)
         : [...prev, id];
 
-      console.log("Selecionados agora:", novaLista);
-
       return novaLista;
     });
   };
@@ -227,11 +229,9 @@ function TabelaVouchersFiltrados({
   const selecionarTodosVouchers = () => {
     if (selecionados.length === listaFiltro.length) {
       setSelecionados([]);
-      console.log("Selecionados agora: []");
     } else {
       const todosIds = listaFiltro.map((v: any) => v.id);
       setSelecionados(todosIds);
-      console.log("Selecionados agora:", todosIds);
     }
   };
 
@@ -290,6 +290,7 @@ function TabelaVouchersFiltrados({
         justifyContent: "space-between",
         borderRadius: 20,
         padding: 5,
+        boxShadow: Cor.sombra,
       }}
     >
       {Cabecalho}
@@ -761,10 +762,18 @@ function TabelaVouchersFiltrados({
             $cor={selecionados.length > 0 ? Cor.primaria : Cor.texto2}
             $cursor={selecionados.length > 0 ? "pointer" : "auto"}
             onClick={() => setVisivel(true)}
+            style={{
+              pointerEvents: selecionados.length === 0 ? "none" : "auto",
+            }}
           >
             Ação em Massa
           </BtnAcaoEmMassa>
-          <ModalEditarMassa setVisivel={setVisivel} visivel={visivel} />
+          <ModalEditarMassa
+            setVisivel={setVisivel}
+            visivel={visivel}
+            idsSelecionados={selecionados}
+            refetch={refetch}
+          />
         </div>
       </div>
     </div>
@@ -803,11 +812,11 @@ const Overlay = styled.div<{ $visivel: boolean; $bg: string }>`
   width: 100vw;
   height: 100vh;
   background-color: ${({ $bg }) => `${$bg}90`};
-  position: fixed;
+  position: absolute;
   display: flex;
   flex-direction: row;
   justify-content: center;
-  alin-items: center;
+  align-items: center;
   top: 0;
   left: 0;
   padding: 1%;
@@ -847,31 +856,113 @@ const CxModal = styled.div<CxModalProps>`
 function ModalEditarMassa({
   visivel,
   setVisivel,
+  idsSelecionados,
+  refetch,
 }: {
-  visivel: any;
-  setVisivel: any;
+  visivel: boolean;
+  setVisivel: (v: boolean) => void;
+  idsSelecionados: string[];
+  refetch: any;
 }) {
   const [natureza, setNatureza] = useState<any>();
   const [status, setStatus] = useState<any>();
   const [tipoCorrida, setTipoCorrida] = useState<any>("");
+  const [motoristaId, setMotoristaId] = useState<any>();
+  const [dataHoraProgramado, setDataHoraProgramado] = useState<any>();
+  const [observacao, setObservacao] = useState<any>();
 
-  // const [carroId, setCarroId] = useState<any>();
-  // const [dataHoraProgramado, setDataHoraProgramado] = useState<any>();
-  // const [motoristaId, setMotoristaId] = useState<any>();
-  // const [observacao, setObservacao] = useState<any>();
-  // const [qntTempoParado, setQntTempoParado] = useState<any>();
-  // const [solicitanteId, setSolicitanteId] = useState<any>();
-  // const [valorDeslocamento, setValorDeslocamento] = useState<any>();
-  // const [valorDeslocamentoRepasse, setValorDeslocamentoRepasse] =
-  //   useState<any>();
-  // const [valorEstacionamento, setValorEstacionamento] = useState<any>();
-  // const [valorHoraParada, setValorHoraParada] = useState<any>();
-  // const [valorHoraParadaRepasse, setValorHoraParadaRepasse] = useState<any>();
-  // const [valorPedagio, setValorPedagio] = useState<any>();
-  // const [valorViagem, setValorViagem] = useState<any>();
-  // const [valorViagemRepasse, setValorViagemRepasse] = useState<any>();
+  const [qntTempoParado, setQntTempoParado] = useState<any>();
+  const [valorDeslocamento, setValorDeslocamento] = useState<any>();
+  const [valorDeslocamentoRepasse, setValorDeslocamentoRepasse] =
+    useState<any>();
+  const [valorEstacionamento, setValorEstacionamento] = useState<any>();
+  const [valorHoraParada, setValorHoraParada] = useState<any>();
+  const [valorHoraParadaRepasse, setValorHoraParadaRepasse] = useState<any>();
+  const [valorPedagio, setValorPedagio] = useState<any>();
+  const [valorViagem, setValorViagem] = useState<any>();
+  const [valorViagemRepasse, setValorViagemRepasse] = useState<any>();
 
   const operId = useAdminLogado()?.operadora.id;
+
+  const { editar, loading } = useEditarVouchersEmMassa();
+
+  const limparCampos = () => {
+    setNatureza("");
+    setStatus("");
+    setTipoCorrida("");
+    setMotoristaId("");
+    setDataHoraProgramado("");
+    setObservacao("");
+    setQntTempoParado("");
+    setValorDeslocamento("");
+    setValorDeslocamentoRepasse("");
+    setValorEstacionamento("");
+    setValorHoraParada("");
+    setValorHoraParadaRepasse("");
+    setValorPedagio("");
+    setValorViagem("");
+    setValorViagemRepasse("");
+  };
+
+  const editarEmMassaFunc = async () => {
+    if (idsSelecionados.length === 0) {
+      alert("Nenhum voucher selecionado preparado para Edição");
+      return;
+    }
+
+    const edit = {
+      natureza,
+      status,
+      tipoCorrida,
+      motoristaId,
+      dataHoraProgramado: dataHoraProgramado
+        ? new Date(dataHoraProgramado)
+        : undefined,
+      observacao,
+      qntTempoParado,
+      valorDeslocamento: valorDeslocamento
+        ? parseFloat(valorDeslocamento)
+        : undefined,
+      valorDeslocamentoRepasse: valorDeslocamentoRepasse
+        ? parseFloat(valorDeslocamentoRepasse)
+        : undefined,
+      valorEstacionamento: valorEstacionamento
+        ? parseFloat(valorEstacionamento)
+        : undefined,
+      valorHoraParada: valorHoraParada
+        ? parseFloat(valorHoraParada)
+        : undefined,
+      valorHoraParadaRepasse: valorHoraParadaRepasse
+        ? parseFloat(valorHoraParadaRepasse)
+        : undefined,
+      valorPedagio: valorPedagio ? parseFloat(valorPedagio) : undefined,
+      valorViagem: valorViagem ? parseFloat(valorViagem) : undefined,
+      valorViagemRepasse: valorViagemRepasse
+        ? parseFloat(valorViagemRepasse)
+        : undefined,
+    };
+
+    const inputLimpo = Object.fromEntries(
+      Object.entries(edit).filter(
+        ([_, valor]) => valor !== "" && valor !== undefined && valor !== null,
+      ),
+    );
+
+    if (Object.keys(inputLimpo).length === 0) {
+      alert("Preencha pelo menos um campo para aplicar a edição em massa.");
+      return;
+    }
+
+    const editFinal = { ids: idsSelecionados, ...inputLimpo };
+
+    await editar(editFinal);
+
+    setVisivel(false);
+    limparCampos();
+    refetch();
+
+    return;
+  };
 
   const { listaMotoristas } = useMotorista(operId);
 
@@ -1115,7 +1206,7 @@ function ModalEditarMassa({
             display: "flex",
             flexDirection: "row",
             width: "100%",
-            justifyContent: "space-between",
+            justifyContent: "space-evenly",
             alignItems: "center",
           }}
         >
@@ -1150,8 +1241,8 @@ function ModalEditarMassa({
                   backgroundColor: "transparent",
                   color: Cor.texto1,
                 }}
-                onChange={(e) => setNatureza(e.target.value)}
-                defaultValue={""}
+                onChange={(e) => setMotoristaId(e.target.value)}
+                value={motoristaId}
               >
                 <option
                   value={""}
@@ -1206,6 +1297,63 @@ function ModalEditarMassa({
                   width: "100%",
                   color: Cor.texto1,
                 }}
+                value={dataHoraProgramado}
+                onChange={(e) => setDataHoraProgramado(e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
+        {/* Segunda Linha de Opcionais */}
+        <div
+          style={{
+            width: "100%",
+            height: 1,
+            backgroundColor: Cor.texto2 + 90,
+          }}
+        />
+        {/* Terceira Linha Valores */}
+        {/* Parte 1 */}
+        <div
+          style={{
+            width: "100%",
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "space-between",
+          }}
+        >
+          <div
+            style={{ display: "flex", flexDirection: "column", width: "32%" }}
+          >
+            <p
+              style={{
+                fontSize: 14,
+                color: Cor.primariaTxt + 90,
+                fontWeight: "bold",
+                margin: 5,
+              }}
+            >
+              Valor Viagem:
+            </p>
+            <div
+              style={{
+                width: "100%",
+                border: `1px solid ${Cor.texto2 + 50}`,
+                padding: 10,
+                borderRadius: 14,
+              }}
+            >
+              <input
+                type="number"
+                style={{
+                  border: "none",
+                  outline: "none",
+                  backgroundColor: "transparent",
+                  width: "100%",
+                  color: Cor.texto1,
+                }}
+                value={valorViagem}
+                onChange={(e) => setValorViagem(e.target.value)}
+                placeholder="Digite aqui..."
               />
             </div>
           </div>
@@ -1220,7 +1368,7 @@ function ModalEditarMassa({
                 margin: 5,
               }}
             >
-              Status Voucher:
+              Valor Deslocamento:
             </p>
             <div
               style={{
@@ -1230,52 +1378,401 @@ function ModalEditarMassa({
                 borderRadius: 14,
               }}
             >
-              <select
-                name=""
-                id=""
+              <input
+                type="number"
                 style={{
-                  outline: "none",
                   border: "none",
-                  width: "100%",
+                  outline: "none",
                   backgroundColor: "transparent",
+                  width: "100%",
                   color: Cor.texto1,
                 }}
-                onChange={(e) => setNatureza(e.target.value)}
-                defaultValue={""}
-              >
-                <option
-                  value={""}
-                  style={{ backgroundColor: Cor.base2, color: Cor.texto2 + 70 }}
-                >
-                  Defina o status do Vouchers
-                </option>
-                <option
-                  value="Aberto"
-                  style={{ backgroundColor: Cor.base2, color: Cor.texto2 }}
-                >
-                  Aberto
-                </option>
-                <option
-                  value="Concluido"
-                  style={{ backgroundColor: Cor.base2, color: Cor.texto2 }}
-                >
-                  Concluido
-                </option>
-                <option
-                  value="Cancelado"
-                  style={{ backgroundColor: Cor.base2, color: Cor.texto2 }}
-                >
-                  Cancelado
-                </option>
-              </select>
+                value={valorDeslocamento}
+                onChange={(e) => setValorDeslocamento(e.target.value)}
+                placeholder="Digite aqui..."
+              />
+            </div>
+          </div>
+          <div
+            style={{ display: "flex", flexDirection: "column", width: "32%" }}
+          >
+            <p
+              style={{
+                fontSize: 14,
+                color: Cor.primariaTxt + 90,
+                fontWeight: "bold",
+                margin: 5,
+              }}
+            >
+              Valor Hora Parada:
+            </p>
+            <div
+              style={{
+                width: "100%",
+                border: `1px solid ${Cor.texto2 + 50}`,
+                padding: 10,
+                borderRadius: 14,
+              }}
+            >
+              <input
+                type="number"
+                style={{
+                  border: "none",
+                  outline: "none",
+                  backgroundColor: "transparent",
+                  width: "100%",
+                  color: Cor.texto1,
+                }}
+                value={valorHoraParada}
+                onChange={(e) => setValorHoraParada(e.target.value)}
+                placeholder="Digite aqui..."
+              />
             </div>
           </div>
         </div>
-        {/* Segunda Linha de Opcionais */}
+        {/* Parte 1 */}
+        {/* Parte 2 */}
+        <div
+          style={{
+            width: "100%",
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "space-between",
+          }}
+        >
+          <div
+            style={{ display: "flex", flexDirection: "column", width: "32%" }}
+          >
+            <p
+              style={{
+                fontSize: 14,
+                color: Cor.primariaTxt + 90,
+                fontWeight: "bold",
+                margin: 5,
+              }}
+            >
+              Valor Viagem Repasse:
+            </p>
+            <div
+              style={{
+                width: "100%",
+                border: `1px solid ${Cor.texto2 + 50}`,
+                padding: 10,
+                borderRadius: 14,
+              }}
+            >
+              <input
+                type="number"
+                style={{
+                  border: "none",
+                  outline: "none",
+                  backgroundColor: "transparent",
+                  width: "100%",
+                  color: Cor.texto1,
+                }}
+                value={valorViagemRepasse}
+                onChange={(e) => setValorViagemRepasse(e.target.value)}
+                placeholder="Digite aqui..."
+              />
+            </div>
+          </div>
+          <div
+            style={{ display: "flex", flexDirection: "column", width: "32%" }}
+          >
+            <p
+              style={{
+                fontSize: 14,
+                color: Cor.primariaTxt + 90,
+                fontWeight: "bold",
+                margin: 5,
+              }}
+            >
+              Valor Deslocamento Repasse:
+            </p>
+            <div
+              style={{
+                width: "100%",
+                border: `1px solid ${Cor.texto2 + 50}`,
+                padding: 10,
+                borderRadius: 14,
+              }}
+            >
+              <input
+                type="number"
+                style={{
+                  border: "none",
+                  outline: "none",
+                  backgroundColor: "transparent",
+                  width: "100%",
+                  color: Cor.texto1,
+                }}
+                value={valorDeslocamentoRepasse}
+                onChange={(e) => setValorDeslocamentoRepasse(e.target.value)}
+                placeholder="Digite aqui..."
+              />
+            </div>
+          </div>
+          <div
+            style={{ display: "flex", flexDirection: "column", width: "32%" }}
+          >
+            <p
+              style={{
+                fontSize: 14,
+                color: Cor.primariaTxt + 90,
+                fontWeight: "bold",
+                margin: 5,
+              }}
+            >
+              Valor Hora Parada Repasse:
+            </p>
+            <div
+              style={{
+                width: "100%",
+                border: `1px solid ${Cor.texto2 + 50}`,
+                padding: 10,
+                borderRadius: 14,
+              }}
+            >
+              <input
+                type="number"
+                style={{
+                  border: "none",
+                  outline: "none",
+                  backgroundColor: "transparent",
+                  width: "100%",
+                  color: Cor.texto1,
+                }}
+                value={valorHoraParadaRepasse}
+                onChange={(e) => setValorHoraParadaRepasse(e.target.value)}
+                placeholder="Digite aqui..."
+              />
+            </div>
+          </div>
+        </div>
+        {/* Parte 2 */}
+        {/* Parte 3 */}
+        <div
+          style={{
+            width: "100%",
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "space-between",
+          }}
+        >
+          <div
+            style={{ display: "flex", flexDirection: "column", width: "32%" }}
+          >
+            <p
+              style={{
+                fontSize: 14,
+                color: Cor.primariaTxt + 90,
+                fontWeight: "bold",
+                margin: 5,
+              }}
+            >
+              Valor Estacionamento:
+            </p>
+            <div
+              style={{
+                width: "100%",
+                border: `1px solid ${Cor.texto2 + 50}`,
+                padding: 10,
+                borderRadius: 14,
+              }}
+            >
+              <input
+                type="number"
+                style={{
+                  border: "none",
+                  outline: "none",
+                  backgroundColor: "transparent",
+                  width: "100%",
+                  color: Cor.texto1,
+                }}
+                value={valorEstacionamento}
+                onChange={(e) => setValorEstacionamento(e.target.value)}
+                placeholder="Digite aqui..."
+              />
+            </div>
+          </div>
+          <div
+            style={{ display: "flex", flexDirection: "column", width: "32%" }}
+          >
+            <p
+              style={{
+                fontSize: 14,
+                color: Cor.primariaTxt + 90,
+                fontWeight: "bold",
+                margin: 5,
+              }}
+            >
+              Valor Pedágio:
+            </p>
+            <div
+              style={{
+                width: "100%",
+                border: `1px solid ${Cor.texto2 + 50}`,
+                padding: 10,
+                borderRadius: 14,
+              }}
+            >
+              <input
+                type="number"
+                style={{
+                  border: "none",
+                  outline: "none",
+                  backgroundColor: "transparent",
+                  width: "100%",
+                  color: Cor.texto1,
+                }}
+                value={valorPedagio}
+                onChange={(e) => setValorPedagio(e.target.value)}
+                placeholder="Digite aqui..."
+              />
+            </div>
+          </div>
+          <div
+            style={{ display: "flex", flexDirection: "column", width: "32%" }}
+          >
+            <p
+              style={{
+                fontSize: 14,
+                color: Cor.primariaTxt + 90,
+                fontWeight: "bold",
+                margin: 5,
+              }}
+            >
+              Tempo Parado:
+            </p>
+            <div
+              style={{
+                width: "100%",
+                border: `1px solid ${Cor.texto2 + 50}`,
+                padding: 10,
+                borderRadius: 14,
+              }}
+            >
+              <input
+                type="number"
+                style={{
+                  border: "none",
+                  outline: "none",
+                  backgroundColor: "transparent",
+                  width: "100%",
+                  color: Cor.texto1,
+                }}
+                value={qntTempoParado}
+                onChange={(e) => setQntTempoParado(e.target.value)}
+                placeholder="Digite aqui..."
+              />
+            </div>
+          </div>
+        </div>
+        {/* Parte 3 */}
+        {/* Terceira Linha Valores */}
+        <div
+          style={{
+            width: "100%",
+            height: 1,
+            backgroundColor: Cor.texto2 + 90,
+          }}
+        />
+        {/* Observação do Operador */}
+        <div
+          style={{ display: "flex", flexDirection: "column", width: "100%" }}
+        >
+          <p
+            style={{
+              fontSize: 14,
+              color: Cor.primariaTxt + 90,
+              fontWeight: "bold",
+              margin: 5,
+            }}
+          >
+            Observação do Operador:
+          </p>
+          <div
+            style={{
+              width: "100%",
+              border: `1px solid ${Cor.texto2 + 50}`,
+              padding: 10,
+              borderRadius: 14,
+            }}
+          >
+            <input
+              type="text"
+              style={{
+                border: "none",
+                outline: "none",
+                backgroundColor: "transparent",
+                width: "100%",
+                color: Cor.texto1,
+              }}
+              value={observacao}
+              onChange={(e) => setObservacao(e.target.value)}
+              placeholder="Digite aqui..."
+            />
+          </div>
+        </div>
+        {/* Observação do Operador */}
+        <div
+          style={{
+            width: "100%",
+            height: 1,
+            backgroundColor: Cor.texto2 + 90,
+          }}
+        />
+        {/* Ações */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "space-between",
+            width: "100%",
+            gap: 10,
+          }}
+        >
+          <BtnVouchers $bg={Cor.atencao}>
+            <p>Cancelar Vouchers</p>
+          </BtnVouchers>
+          <BtnVouchers $bg={Cor.primaria} onClick={() => editarEmMassaFunc()}>
+            <p>{loading ? "Salvando..." : "Salvar para Todos"}</p>
+          </BtnVouchers>
+        </div>
+        {/* Ações */}
       </CxModal>
     </Overlay>
   );
 }
+
+interface BtnVouchersProps {
+  $bg: string;
+}
+
+const BtnVouchers = styled.div<BtnVouchersProps>`
+  width: 15%;
+  padding: 10px;
+  background-color: ${({ $bg }) => $bg + 50};
+  border-radius: 14px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: ${({ $bg }) => $bg};
+  border: 1px solid ${({ $bg }) => $bg + 50};
+  transition: all 0.3s ease-in-out;
+  cursor: pointer;
+  user-select: none;
+
+  &:hover {
+    background-color: ${({ $bg }) => $bg + 90};
+    scale: 1.02;
+  }
+
+  &:active {
+    background-color: ${({ $bg }) => $bg + 70};
+    scale: 0.98;
+  }
+`;
 
 interface CardProps {
   $cor: string;
@@ -1358,7 +1855,6 @@ function ResumoValores({
       };
     },
     {
-      // Inicialização do acumulador
       viagem: 0,
       viagemRepasse: 0,
       deslocamento: 0,
@@ -1369,7 +1865,6 @@ function ResumoValores({
     },
   );
 
-  console.log(totais);
   const totalViagem =
     totais.viagem + totais.deslocamento + totais.pedagio + totais.horaParada;
 
