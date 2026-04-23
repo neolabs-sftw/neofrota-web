@@ -9,11 +9,15 @@ import { useUnidadeCliente } from "../hooks/useUnidadesClientes";
 import { useListaAdminFuncionario } from "../hooks/useAdminFuncionario";
 import { useSolicitante } from "../hooks/useSolicitantes";
 import {
+  GET_VOUCHERS_EXPORTACAO,
   useEditarVouchersEmMassa,
   useVouchersFiltrados,
 } from "../hooks/useVouchers";
 import styled from "styled-components";
 import CircularProgress from "@mui/material/CircularProgress";
+import { useLazyQuery } from "@apollo/client";
+import { exportarPlanilhaFunc } from "../hooks/exportarPlanilha";
+import ModalPreviewVoucher from "../componentes/modalPreviewVoucher";
 
 function Relatorios() {
   return BaseTelas({
@@ -26,6 +30,97 @@ function Relatorios() {
   });
 }
 
+interface VoucherExportacao {
+  id: string;
+  origem: string;
+  destino: string;
+  dataHoraProgramado: string;
+  dataHoraCriacao: string;
+  dataHoraConclusao: string;
+  valorViagem: number;
+  valorViagemRepasse: number;
+  valorDeslocamento: number;
+  valorDeslocamentoRepasse: number;
+  valorHoraParada: number;
+  valorHoraParadaRepasse: number;
+  valorPedagio: number;
+  valorEstacionamento: number;
+  qntTempoParado: number;
+  natureza: string;
+  tipoCorrida: string;
+  status: string;
+  observacao: string;
+  observacaoMotorista: string;
+  carro: {
+    id: string;
+    placa: string;
+    marca: string;
+    modelo: string;
+    cor: string;
+    ano: string;
+  };
+  modeloFixo: {
+    id: string;
+    nomeModelo: string;
+    ativo: boolean;
+  };
+  adminUsuario: {
+    id: string;
+    nome: string;
+  };
+  empresaCliente: {
+    id: string;
+    nome: string;
+    statusCliente: string;
+  };
+  motorista: {
+    id: string;
+    nome: string;
+    tipoMotorista: string;
+    statusCnh: string;
+  };
+  unidadeCliente: {
+    id: string;
+    nome: string;
+    endRua: string;
+    endNumero: string;
+    endBairro: string;
+    endCep: string;
+    endCidade: string;
+    endComplemento: string;
+    endUf: string;
+  };
+  passageiros?: Array<{
+    id: string;
+    horarioEmbarqueReal: string;
+    passageiroId: {
+      id: string;
+      nome: string;
+      matricula: string;
+      endBairro: string;
+      endCidade: string;
+      centroCustoClienteId: {
+        codigo: string;
+        id: string;
+        nome: string;
+      };
+    };
+    rateio: number;
+    statusPresenca: string;
+  }>;
+  rota: {
+    id: string;
+    origem: string;
+    destino: string;
+    tributacao: string;
+  };
+  solicitante: {
+    id: string;
+    nome: string;
+    funcao: string;
+  };
+}
+
 export default Relatorios;
 
 function RelatorioConteudo() {
@@ -34,6 +129,9 @@ function RelatorioConteudo() {
   const operadoraId = useAdminLogado()?.operadora.id;
 
   const [visivel, setVisivel] = useState<boolean>(false);
+
+  const [modalPreveiw, setModalPreview] = useState(false);
+  const [voucherPreview, setVoucherPreview] = useState<any>(null);
 
   const formatarParaYMD = (data: Date) => {
     const ano = data.getFullYear();
@@ -60,7 +158,95 @@ function RelatorioConteudo() {
     tipoCorrida: "",
     unidadeClienteId: "",
   });
+
   const { listaRelatorio, loading, refetch } = useVouchersFiltrados(filtro);
+
+  const [buscarDadosExportacao, { loading: CarregandoExportacao }] =
+    useLazyQuery(GET_VOUCHERS_EXPORTACAO, {
+      fetchPolicy: "network-only",
+    });
+  // Passamos o array tipado com a interface que você já criou
+  const prepararDadosParaExcel = (vouchers: VoucherExportacao[]) => {
+    return vouchers.map((voucher) => {
+      // 1. Montamos um objeto base com os dados que vêm antes dos passageiros
+      const linhaExcel: any = {
+        ID: voucher.id,
+        Status: voucher.status,
+        "Data Programada": voucher.dataHoraProgramado,
+        "Data Conclusão": voucher.dataHoraConclusao || "-",
+        "Empresa Cliente": voucher.empresaCliente?.nome || "-",
+        "Unidade Cliente": voucher.unidadeCliente?.nome || "-",
+        Motorista: voucher.motorista?.nome || "Sem motorista",
+        "Veículo (Placa)": voucher.carro?.placa || "-",
+        Origem: voucher.rota?.origem || voucher.origem || "-",
+        Destino: voucher.rota?.destino || voucher.destino || "-",
+        Natureza: voucher.natureza,
+        "Tipo de Corrida": voucher.tipoCorrida,
+        "Valor Viagem": voucher.valorViagem || 0,
+        "Valor Deslocamento": voucher.valorDeslocamento || 0,
+        "Valor Hora Parada":
+          voucher.valorHoraParada * voucher.qntTempoParado || 0,
+        "Tempo Parado": voucher.qntTempoParado || 0,
+        "Valor Viagem Repasse": voucher.valorViagemRepasse || 0,
+        "Valor Deslocamento Repasse": voucher.valorDeslocamentoRepasse || 0,
+        "Valor Hora Parada Repasse":
+          voucher.valorHoraParadaRepasse * voucher.qntTempoParado || 0,
+        "Total Cobrança":
+          voucher.valorViagem +
+            voucher.valorDeslocamento +
+            voucher.qntTempoParado * voucher.valorHoraParada || 0,
+        "Total Repasse":
+          voucher.valorViagemRepasse +
+            voucher.valorDeslocamentoRepasse +
+            voucher.qntTempoParado * voucher.valorHoraParadaRepasse || 0,
+      };
+
+      // 2. Lógica dinâmica para criar as colunas "Passageiro 1", "Passageiro 2", etc.
+      if (voucher.passageiros && voucher.passageiros.length > 0) {
+        voucher.passageiros.forEach((p, index) => {
+          // Extraímos as informações garantindo que não quebre se vier nulo
+          const nome = p.passageiroId?.nome || "Sem nome";
+          const status = p.statusPresenca || "Sem status";
+          const centroCusto =
+            p.passageiroId?.centroCustoClienteId?.nome || "Sem Centro de Custo";
+
+          // Adicionamos uma nova chave ao objeto no formato "Passageiro X"
+          // E concatenamos os valores na mesma string
+          linhaExcel[`Passageiro ${index + 1}`] =
+            `${nome}, ${status}, ${centroCusto}`;
+        });
+      } else {
+        // Se não houver nenhum passageiro, garantimos que a coluna 1 exista com um aviso
+        linhaExcel["Passageiro 1"] = "Sem passageiros";
+      }
+
+      // 3. Adicionamos o restante dos dados que ficam após as colunas dos passageiros
+      linhaExcel["Solicitante"] = voucher.solicitante?.nome || "-";
+      linhaExcel["Observação"] = voucher.observacao || "-";
+      linhaExcel["Obs. Motorista"] = voucher.observacaoMotorista || "-";
+
+      return linhaExcel;
+    });
+  };
+
+  const ExportarPlanilha = async () => {
+    const { data } = await buscarDadosExportacao({
+      variables: { filtro },
+    });
+
+    if (data && data.vouchersFiltrados && data.vouchersFiltrados.length > 0) {
+      // 2. Transforma (achata) os dados para o formato do Excel
+      const dadosFormatados = prepararDadosParaExcel(data.vouchersFiltrados);
+
+      exportarPlanilhaFunc(
+        dadosFormatados,
+        `Relatorio_NeoFrota_Vouchers_${formatarParaYMD(hoje)}`,
+        "xlsx",
+      );
+    } else {
+      alert("Nenhum dado encontrado para os filtros selecionados.");
+    }
+  };
   return (
     <>
       <div
@@ -95,14 +281,26 @@ function RelatorioConteudo() {
             }}
           />
         </div>
+        <ModalPreviewVoucher
+          setVisivel={setModalPreview}
+          visivel={modalPreveiw}
+          v={voucherPreview}
+        />
         <ResumoValores listaRelatorio={listaRelatorio} filtro={filtro} />
-        <BaseFiltros filtroAtivo={filtro} setFiltroAtivo={setFiltro} />
+        <BaseFiltros
+          filtroAtivo={filtro}
+          setFiltroAtivo={setFiltro}
+          exportarPlanilha={ExportarPlanilha}
+          carregandoExportacao={CarregandoExportacao}
+        />
         <TabelaVouchersFiltrados
           listaFiltro={listaRelatorio}
           loading={loading}
           setVisivel={setVisivel}
           visivel={visivel}
           refetch={refetch}
+          setV={setVoucherPreview}
+          setM={setModalPreview}
         />
       </div>
     </>
@@ -195,12 +393,16 @@ function TabelaVouchersFiltrados({
   setVisivel,
   visivel,
   refetch,
+  setV,
+  setM,
 }: {
   listaFiltro: any;
   loading: any;
   setVisivel: any;
   visivel: any;
   refetch: any;
+  setV: any;
+  setM: any;
 }) {
   const { Cor } = useTema();
 
@@ -339,6 +541,9 @@ function TabelaVouchersFiltrados({
                 $linha={Cor.texto2 + 40}
                 $texto={Cor.texto1}
                 key={v.id}
+                onClick={() => {
+                  (setV(v), setM(true));
+                }}
               >
                 <p
                   style={{
@@ -354,7 +559,9 @@ function TabelaVouchersFiltrados({
                     fontSize: 18,
                     cursor: "pointer",
                   }}
-                  onClick={() => selecionarLinhaVoucher(v.id)}
+                  onClick={(e) => {
+                    (e.stopPropagation(), selecionarLinhaVoucher(v.id));
+                  }}
                 >
                   {selecionados.includes(v.id) ? "check_box" : "square"}
                 </p>
@@ -2286,9 +2493,13 @@ function ResumoValores({
 function BaseFiltros({
   filtroAtivo,
   setFiltroAtivo,
+  exportarPlanilha,
+  carregandoExportacao,
 }: {
   filtroAtivo: any;
   setFiltroAtivo: any;
+  exportarPlanilha: any;
+  carregandoExportacao: any;
 }) {
   const [filtro, setFiltro] = useState(filtroAtivo);
 
@@ -2698,7 +2909,7 @@ function BaseFiltros({
                 backgroundColor: "transparent",
                 color: Cor.texto1,
               }}
-              onChange={(e) => handleChange("operadorId", e.target.value)}
+              onChange={(e) => handleChange("adminUsuarioId", e.target.value)}
               value={filtro.operadorId}
             >
               <option
@@ -2939,7 +3150,7 @@ function BaseFiltros({
         </div>
         <div
           style={{
-            width: "10%",
+            width: "25%",
             display: "flex",
             flexDirection: "row",
             gap: 5,
@@ -2949,6 +3160,9 @@ function BaseFiltros({
         >
           <BtnFiltrar $cor={Cor.primaria} onClick={() => handleFiltrar()}>
             Filtrar
+          </BtnFiltrar>
+          <BtnFiltrar $cor={Cor.texto2} onClick={() => exportarPlanilha()}>
+            {carregandoExportacao ? "Exportando..." : "Exportar"}
           </BtnFiltrar>
         </div>
       </div>
@@ -2961,7 +3175,7 @@ interface BtnFiltrarProps {
 }
 
 const BtnFiltrar = styled.div<BtnFiltrarProps>`
-  width: 100%;
+  width: 48%;
   background-color: ${({ $cor }) => $cor};
   padding: 12px;
   border-radius: 14px;

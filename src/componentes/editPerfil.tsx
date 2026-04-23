@@ -23,7 +23,7 @@ function EditPerfil() {
           alignItems: "flex-end",
           position: "fixed",
           top: "10px",
-          right: "15px",
+          right: "20px",
           zIndex: 10,
         }}
       >

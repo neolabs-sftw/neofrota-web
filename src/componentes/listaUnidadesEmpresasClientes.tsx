@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { exportarPlanilha } from "../hooks/exportarPlanilha";
+import { exportarPlanilhaFunc } from "../hooks/exportarPlanilha";
 import { useTema } from "../hooks/temaContext";
 import { gql, useQuery } from "@apollo/client";
 import styled from "styled-components";
@@ -131,7 +131,7 @@ function ListaUnidadesEmpresasClientes({
               cursor: "pointer",
             }}
             onClick={() =>
-              exportarPlanilha(
+              exportarPlanilhaFunc(
                 lista_unidades,
                 `Unidades ${empresa?.nome}`,
                 "csv",

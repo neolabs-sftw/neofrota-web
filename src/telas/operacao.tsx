@@ -85,8 +85,6 @@ function OperacaoConteudo() {
   const [modalPreveiw, setModalPreview] = useState(false);
   const [voucherPreview, setVoucherPreview] = useState<any>(null);
 
-  // const { listaVouchers, refetch: refetchTotal, loading } = useVouchers({});
-
   const formatarData = (isoOrDate: string | Date) => {
     const d = new Date(isoOrDate);
     const y = d.getFullYear();
@@ -140,7 +138,6 @@ function OperacaoConteudo() {
         $cor={Cor.primaria}
         onClick={() => {
           refetchVouchers();
-          // refetchTotal();
         }}
       >
         <p

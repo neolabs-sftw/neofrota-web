@@ -72,6 +72,7 @@ const BtnEditarVoucher = styled.button<{ $bg: string }>`
     background-color: ${({ $bg }) => $bg};
   }
 `;
+
 function ModalPreviewVoucher({
   visivel,
   setVisivel,

@@ -401,14 +401,107 @@ const GET_VOUCHERS_FILTROS = gql`
   }
 `;
 
+export const GET_VOUCHERS_EXPORTACAO = gql`
+  query VouchersExportacao($filtro: FiltroVouchersInput!) {
+    vouchersFiltrados(filtro: $filtro) {
+      id
+      origem
+      destino
+      dataHoraProgramado
+      dataHoraCriacao
+      dataHoraConclusao
+      valorViagem
+      valorViagemRepasse
+      valorDeslocamento
+      valorDeslocamentoRepasse
+      valorHoraParada
+      valorHoraParadaRepasse
+      valorPedagio
+      valorEstacionamento
+      qntTempoParado
+      natureza
+      tipoCorrida
+      status
+      observacao
+      observacaoMotorista
+      carro {
+        id
+        placa
+        marca
+        modelo
+        cor
+        ano
+      }
+      modeloFixo {
+        id
+        nomeModelo
+        ativo
+      }
+      adminUsuario {
+        id
+        nome
+      }
+      empresaCliente {
+        id
+        nome
+        statusCliente
+      }
+      motorista {
+        id
+        nome
+        tipoMotorista
+        statusCnh
+      }
+      unidadeCliente {
+        id
+        nome
+        endRua
+        endNumero
+        endBairro
+        endCep
+        endCidade
+        endComplemento
+        endUf
+      }
+      passageiros {
+        id
+        horarioEmbarqueReal
+        passageiroId {
+          id
+          nome
+          matricula
+          endBairro
+          endCidade
+          centroCustoClienteId {
+            codigo
+            id
+            nome
+          }
+        }
+        rateio
+        statusPresenca
+      }
+      rota {
+        id
+        origem
+        destino
+        tributacao
+      }
+      solicitante {
+        id
+        nome
+        funcao
+      }
+    }
+  }
+`;
+
 export function useVouchersFiltrados(filtro: any) {
   const { data, loading, error, refetch } = useQuery(GET_VOUCHERS_FILTROS, {
     variables: {
       filtro: filtro,
     },
-    // fetchPolicy: "network-only" é bom para relatórios, para garantir dados atualizados
     fetchPolicy: "network-only",
-    // Só roda a query se tiver o operadoraId
     skip: !filtro?.operadoraId,
   });
 

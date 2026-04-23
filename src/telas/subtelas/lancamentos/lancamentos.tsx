@@ -1036,7 +1036,7 @@ function TabelaLancamentos() {
       >
         {lancamentos?.map((l: any) => {
           return (
-            <LinhaLancamentoStyled $texto={Cor.texto1} $bg={Cor.base2}>
+            <LinhaLancamentoStyled $texto={Cor.texto1} $bg={Cor.base2} key={l.id}>
               <p
                 style={{
                   width: "2%",

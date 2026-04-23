@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { gql, useQuery } from "@apollo/client";
 import { jwtDecode } from "jwt-decode";
 import { useEffect, useMemo, useState } from "react";
-import { exportarPlanilha } from "../hooks/exportarPlanilha";
+import { exportarPlanilhaFunc } from "../hooks/exportarPlanilha";
 import CircularProgress from "@mui/material/CircularProgress";
 import styled from "styled-components";
 import { useEditarEmpresaCliente } from "../hooks/useEmpresaCliente";
@@ -121,7 +121,7 @@ function ListaEmpresasCadastradas() {
               cursor: "pointer",
             }}
             onClick={() =>
-              exportarPlanilha(clientesFiltrados, "Clientes", "csv")
+              exportarPlanilhaFunc(clientesFiltrados, "Clientes", "csv")
             }
           >
             download
