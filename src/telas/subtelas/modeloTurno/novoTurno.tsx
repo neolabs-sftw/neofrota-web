@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import BaseTelas from "../../../componentes/baseTelas";
 import EditPerfil from "../../../componentes/editPerfil";
 import { useAdminLogado } from "../../../hooks/AdminLogado";
@@ -47,39 +47,19 @@ function NovoVoucherTurnoConteudo() {
   const [valorPedagio, setValorPedagio] = useState("");
 
   const [configEntrada, setConfigEntrada] = useState({
-    habilitado: false,
-    motoristaId: "",
-    carroId: "",
     tipo: "Entrada",
     natureza: "Turno",
     origem: "",
     destino: "",
-    horario: "",
-    domingo: false,
-    segunda: false,
-    terca: false,
-    quarta: false,
-    quinta: false,
-    sexta: false,
-    sabado: false,
+    programacoes: [],
   });
 
   const [configSaida, setConfigSaida] = useState({
-    habilitado: false,
-    motoristaId: "",
-    carroId: "",
     tipo: "Saida",
     natureza: "Turno",
     origem: "",
     destino: "",
-    horario: "",
-    domingo: false,
-    segunda: false,
-    terca: false,
-    quarta: false,
-    quinta: false,
-    sexta: false,
-    sabado: false,
+    programacoes: [],
   });
 
   const [passageirosVoucher, setPassageirosVoucher] = useState<any[]>([]);
@@ -91,51 +71,6 @@ function NovoVoucherTurnoConteudo() {
 
   const gerarPayload = () => {
     // Array vazio que vamos preencher
-    const configuracoesPayload = [];
-
-    const passageirosMapeados = passageirosVoucher.map((passageiro) => {
-      return {
-        passageiroId: String(passageiro.id),
-      };
-    });
-
-    // Se a entrada estiver habilitada, adiciona ao array
-    if (configEntrada.habilitado) {
-      configuracoesPayload.push({
-        carroId: configEntrada.carroId,
-        motoristaId: configEntrada.motoristaId,
-        tipo: "Entrada",
-        horario: configEntrada.horario,
-        destino: destino, // Vem do estado geral
-        origem: origem, // Vem do estado geral
-        domingo: configEntrada.domingo,
-        segunda: configEntrada.segunda,
-        terca: configEntrada.terca,
-        quarta: configEntrada.quarta,
-        quinta: configEntrada.quinta,
-        sexta: configEntrada.sexta,
-        sabado: configEntrada.sabado,
-      });
-    }
-
-    // Se a saída estiver habilitada, adiciona ao array
-    if (configSaida.habilitado) {
-      configuracoesPayload.push({
-        carroId: configSaida.carroId,
-        motoristaId: configSaida.motoristaId,
-        tipo: "Saida",
-        horario: configSaida.horario,
-        destino: origem,
-        origem: destino,
-        domingo: configSaida.domingo,
-        segunda: configSaida.segunda,
-        terca: configSaida.terca,
-        quarta: configSaida.quarta,
-        quinta: configSaida.quinta,
-        sexta: configSaida.sexta,
-        sabado: configSaida.sabado,
-      });
-    }
 
     // Retorna o objeto completo pronto para salvar
     return {
@@ -151,8 +86,8 @@ function NovoVoucherTurnoConteudo() {
       valorViagemRepasse: Number(valorViagemRepasse),
       valorDeslocamentoRepasse: Number(valorDeslocamentoRepasse),
       valorHoraParadaRepasse: Number(valorHoraParadaRepasse),
-      configuracoes: configuracoesPayload, // Envia o array que montamos
-      passageirosFixos: passageirosMapeados,
+      // configuracoes: configuracoesPayload,
+      // passageirosFixos: passageirosMapeados,
     };
   };
 
@@ -173,36 +108,15 @@ function NovoVoucherTurnoConteudo() {
       );
       return;
     }
-    if (!configEntrada.habilitado && !configSaida.habilitado) {
+    if (!configEntrada && !configSaida) {
       alert("Habilite pelo menos uma configuração (Entrada ou Saída)!");
       return;
     }
 
-    if (configEntrada.habilitado) {
-      // Verificamos por vazio, null, ou undefined usando a dupla negação ou typeof
-      if (!configEntrada.carroId || configEntrada.carroId === "") {
-        alert(
-          "Configuração de Entrada: O Motorista selecionado está sem carro atrelado!",
-        );
-        return;
-      }
-      if (!configEntrada.motoristaId || configEntrada.motoristaId === "") {
-        alert("Selecione um motorista para a Configuração de Entrada!");
-        return;
-      }
+    if (configEntrada) {
     }
 
-    if (configSaida.habilitado) {
-      if (!configSaida.carroId || configSaida.carroId === "") {
-        alert(
-          "Configuração de Saída: O Motorista selecionado está sem carro atrelado!",
-        );
-        return;
-      }
-      if (!configSaida.motoristaId || configSaida.motoristaId === "") {
-        alert("Selecione um motorista para a Configuração de Saída!");
-        return;
-      }
+    if (configSaida) {
     }
 
     const payload = gerarPayload();
@@ -1062,23 +976,64 @@ function DetalhesEntrada({
   const operadora = useAdminLogado()?.operadora.id;
   const { listaMotoristas } = useMotorista(operadora);
 
-  const [carro, setCarro] = useState<any>();
   const [selected, setSelected] = React.useState<Date[] | undefined>();
 
+  const [motoristaSelecionado, setMotoristaSelecionado] = useState<any>();
+
+  const [hora, setHora] = useState<string>("");
+
   const { carroAtrelado, loading: carregandoCarro } = useCarroAtrelado(
-    String(configEntrada.motoristaId),
+    String(motoristaSelecionado?.id || ""),
   );
 
   const atualizarCampo = (campo: string, valor: any) => {
     setConfigEntrada((prev: any) => ({ ...prev, [campo]: valor }));
   };
 
-  useEffect(() => {
-    console.log(carro)
-    const idDoCarro = Number(carroAtrelado?.[0]?.id) || 0;
-    atualizarCampo("carroId", idDoCarro);
-    setCarro(carroAtrelado?.[0]);
-  }, [carroAtrelado, configEntrada.motoristaId]);
+  const removerDataSelecionada = (dataParaRemover: Date) => {
+    setSelected((prev) =>
+      prev?.filter((d) => d.getTime() !== dataParaRemover.getTime()),
+    );
+  };
+
+  const adicionarProgramacoes = () => {
+    if (!motoristaSelecionado || !hora || !selected || selected.length === 0) {
+      alert(
+        "Selecione um motorista, defina o horário e escolha pelo menos uma data.",
+      );
+      return;
+    }
+
+    const [horas, minutos] = hora.split(":");
+
+    const novasProgramacoes = selected.map((data) => {
+      const ano = data.getFullYear();
+      const mes = String(data.getMonth() + 1).padStart(2, "0");
+      const dia = String(data.getDate()).padStart(2, "0");
+
+      const dataHoraProgramacaoLocal = `${ano}-${mes}-${dia}T${horas}:${minutos}:00.000Z`;
+      return {
+        motoristaId: motoristaSelecionado,
+        carroId: carroAtrelado?.[0],
+        dataHoraProgramação: dataHoraProgramacaoLocal,
+      };
+    });
+
+    const programacoesAtuais = configEntrada.programacoes || [];
+    atualizarCampo("programacoes", [
+      ...programacoesAtuais,
+      ...novasProgramacoes,
+    ]);
+
+    // Opcional: Limpar as datas selecionadas após adicionar
+    setSelected([]);
+  };
+
+  const removerProgramacao = (index: number) => {
+    const novasProgramacoes = [...(configEntrada.programacoes || [])];
+    novasProgramacoes.splice(index, 1);
+    atualizarCampo("programacoes", novasProgramacoes);
+  };
 
   return (
     <>
@@ -1116,8 +1071,12 @@ function DetalhesEntrada({
               Configurações Entrada
             </p>
             <p style={{ fontSize: 12, color: Cor.texto2, marginBottom: 5 }}>
-              <strong>Habilite</strong> e selecione o motorista, horários e dias
-              da semana o motorista deve chegar no destino.
+              <strong>Esolha o Motorista, defina o horário e as datas</strong>{" "}
+              depois clique em{" "}
+              <strong style={{ color: Cor.textoTurno + "AA" }}>
+                adicionar
+              </strong>
+              .
             </p>
           </div>
           <div
@@ -1152,7 +1111,6 @@ function DetalhesEntrada({
                 }}
               >
                 <select
-                  // disabled={!configEntrada.habilitado}
                   name=""
                   id=""
                   style={{
@@ -1162,9 +1120,18 @@ function DetalhesEntrada({
                     backgroundColor: "transparent",
                     color: Cor.texto1,
                   }}
-                  value={configEntrada.motoristaId}
+                  value={
+                    motoristaSelecionado
+                      ? JSON.stringify(motoristaSelecionado)
+                      : ""
+                  }
                   onChange={(e) => {
-                    atualizarCampo("motoristaId", String(e.target.value));
+                    const valor = e.target.value;
+                    if (valor) {
+                      setMotoristaSelecionado(JSON.parse(valor));
+                    } else {
+                      setMotoristaSelecionado(null);
+                    }
                   }}
                 >
                   <option
@@ -1179,7 +1146,7 @@ function DetalhesEntrada({
                   {listaMotoristas?.map((m: any) => {
                     return (
                       <option
-                        value={m.id}
+                        value={JSON.stringify(m)}
                         key={m?.id}
                         style={{
                           backgroundColor: Cor.base2,
@@ -1216,7 +1183,6 @@ function DetalhesEntrada({
                 }}
               >
                 <input
-                  // disabled={!configEntrada.habilitado}
                   type="time"
                   style={{
                     border: "none",
@@ -1225,9 +1191,9 @@ function DetalhesEntrada({
                     backgroundColor: "transparent",
                     color: Cor.texto1,
                   }}
-                  value={configEntrada.horario}
+                  value={hora}
                   onChange={(e) => {
-                    atualizarCampo("horario", e.target.value);
+                    setHora(e.target.value);
                   }}
                 />
               </div>
@@ -1271,8 +1237,8 @@ function DetalhesEntrada({
                   cursor: "pointer",
                 },
                 month_grid: {
-                  borderCollapse: "separate", // Garante que as células não se fundam
-                  borderSpacing: "3px", // Define o tamanho do "vão" entre os dias
+                  borderCollapse: "separate",
+                  borderSpacing: "3px",
                 },
                 button_next: {
                   color: Cor.turno,
@@ -1335,19 +1301,37 @@ function DetalhesEntrada({
                   flexDirection: "column",
                   alignItems: "center",
                   gap: 5,
-                  paddingBottom: 10
+                  paddingBottom: 10,
                 }}
               >
                 {selected?.map((d: any, i: number) => {
                   return (
-                    <BtnPrevData key={i} $cor={Cor.texto1}>
-                      <p>{d.getDate()}/{d.getMonth() + 1}/{d.getFullYear()}</p> 
-                      <p>x</p> 
+                    <BtnPrevData
+                      key={i}
+                      $cor={Cor.texto1}
+                      $corHover={Cor.turno}
+                      onClick={() => removerDataSelecionada(d)}
+                    >
+                      <p style={{ fontSize: 14 }}>
+                        {/* {d.getDate()}/{d.getMonth() + 1}/{d.getFullYear()} */}
+                        {Intl.DateTimeFormat("pt-BR", {
+                          timeZone: "UTC",
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        }).format(new Date(d))}
+                      </p>
+                      <p style={{ fontFamily: "Icone", color: Cor.atencao }}>
+                        delete
+                      </p>
                     </BtnPrevData>
                   );
                 })}
               </div>
-              <BtnAdicionarDatas $cor={Cor.textoTurno}>
+              <BtnAdicionarDatas
+                $cor={Cor.textoTurno}
+                onClick={() => adicionarProgramacoes()}
+              >
                 Adicionar
               </BtnAdicionarDatas>
             </div>
@@ -1356,49 +1340,663 @@ function DetalhesEntrada({
         <div
           style={{
             width: "50%",
+            height: 465,
             display: "flex",
-            flexDirection: "row",
-            gap: 5,
+            flexDirection: "column",
             justifyContent: "flex-start",
             alignItems: "center",
-            padding: 8,
             backgroundColor: Cor.texto1 + 10,
             borderRadius: 12,
-            transition: "ease-in-out all 0.3s",
           }}
         >
-          s
+          {/* Cabeçalho */}
+          <div
+            style={{
+              display: "flex",
+              width: "100%",
+              height: 35,
+              padding: 10,
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexDirection: "row",
+              borderRadius: "12px 12px 0 0 ",
+              gap: 2,
+              backgroundColor: Cor.texto2 + 20,
+              color: Cor.texto1,
+              fontWeight: 700,
+              fontSize: 14,
+            }}
+          >
+            <p style={{ width: "65%" }}>Motorista</p>
+            <p style={{ width: "20%" }}>Data</p>
+            <p
+              style={{
+                width: "15%",
+                textAlign: "center",
+              }}
+            >
+              Horário
+            </p>
+            <p
+              style={{
+                width: "10%",
+                textAlign: "center",
+              }}
+            >
+              Ação
+            </p>
+          </div>
+          {/* Conteúdo */}
+          <div
+            style={{
+              width: "100%",
+              height: `calc(100% - 35px)`,
+              borderRadius: "0 0 12px 12px",
+              padding: 10,
+              overflowY: "auto",
+              scrollbarWidth: "none",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 5,
+              // paddingRight: 10,
+            }}
+          >
+            {configEntrada?.programacoes?.map((d: any, i: number) => {
+              return (
+                <BtnConfData
+                  key={i}
+                  $cor={Cor.texto1}
+                  $bg={Cor.base2}
+                  $corHover={Cor.turno}
+                  onClick={() => removerProgramacao(d)}
+                >
+                  <p style={{ width: "65%" }}>{d.motoristaId.nome}</p>
+                  <p style={{ width: "20%" }}>
+                    {Intl.DateTimeFormat("pt-BR", {
+                      timeZone: "UTC",
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                    }).format(new Date(d.dataHoraProgramação))}
+                  </p>
+                  <p
+                    style={{
+                      width: "15%",
+                      textAlign: "center",
+                    }}
+                  >
+                    {Intl.DateTimeFormat("pt-BR", {
+                      timeZone: "UTC",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    }).format(new Date(d.dataHoraProgramação))}
+                  </p>
+                  <p
+                    style={{
+                      width: "10%",
+                      textAlign: "center",
+                      fontFamily: "Icone",
+                      color: Cor.atencao,
+                      fontSize: 18,
+                    }}
+                  >
+                    delete
+                  </p>
+                </BtnConfData>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+function DetalhesSaida({
+  configSaida,
+  setConfigSaida,
+}: {
+  configSaida: any;
+  setConfigSaida: any;
+}) {
+  const { Cor } = useTema();
+  const operadora = useAdminLogado()?.operadora.id;
+  const { listaMotoristas } = useMotorista(operadora);
+
+  const [selected, setSelected] = React.useState<Date[] | undefined>();
+
+  const [motoristaSelecionado, setMotoristaSelecionado] = useState<any>();
+
+  const [hora, setHora] = useState<string>("");
+
+  const { carroAtrelado, loading: carregandoCarro } = useCarroAtrelado(
+    String(motoristaSelecionado?.id || ""),
+  );
+
+  const atualizarCampo = (campo: string, valor: any) => {
+    setConfigSaida((prev: any) => ({ ...prev, [campo]: valor }));
+  };
+
+  const removerDataSelecionada = (dataParaRemover: Date) => {
+    setSelected((prev) =>
+      prev?.filter((d) => d.getTime() !== dataParaRemover.getTime()),
+    );
+  };
+
+  const adicionarProgramacoes = () => {
+    if (!motoristaSelecionado || !hora || !selected || selected.length === 0) {
+      alert(
+        "Selecione um motorista, defina o horário e escolha pelo menos uma data.",
+      );
+      return;
+    }
+
+    const [horas, minutos] = hora.split(":");
+
+    const novasProgramacoes = selected.map((data) => {
+      const ano = data.getFullYear();
+      const mes = String(data.getMonth() + 1).padStart(2, "0");
+      const dia = String(data.getDate()).padStart(2, "0");
+
+      const dataHoraProgramacaoLocal = `${ano}-${mes}-${dia}T${horas}:${minutos}:00.000Z`;
+      return {
+        motoristaId: motoristaSelecionado,
+        carroId: carroAtrelado?.[0],
+        dataHoraProgramação: dataHoraProgramacaoLocal,
+      };
+    });
+
+    const programacoesAtuais = configSaida.programacoes || [];
+    atualizarCampo("programacoes", [
+      ...programacoesAtuais,
+      ...novasProgramacoes,
+    ]);
+
+    setSelected([]);
+  };
+
+  const removerProgramacao = (index: number) => {
+    const novasProgramacoes = [...(configSaida.programacoes || [])];
+    novasProgramacoes.splice(index, 1);
+    atualizarCampo("programacoes", novasProgramacoes);
+  };
+
+  return (
+    <>
+      <div
+        style={{
+          width: "100%",
+          padding: 15,
+          backgroundColor: Cor.base2,
+          borderRadius: 22,
+          boxShadow: Cor.sombra,
+          opacity: carregandoCarro ? 0.1 : 1,
+          transition: "ease-in-out all 0.3s",
+          zIndex: 2,
+          display: "flex",
+          flexDirection: "row",
+          gap: 10,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            width: "50%",
+            flexDirection: "column",
+            gap: 10,
+          }}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <p
+              style={{
+                fontSize: 14,
+                color: Cor.textoTurno,
+                fontWeight: "bold",
+              }}
+            >
+              Configurações Saida
+            </p>
+            <p style={{ fontSize: 12, color: Cor.texto2, marginBottom: 5 }}>
+              <strong>Esolha o Motorista, defina o horário e as datas</strong>{" "}
+              depois clique em{" "}
+              <strong style={{ color: Cor.textoTurno + "AA" }}>
+                adicionar
+              </strong>
+              .
+            </p>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              width: "100%",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 10,
+            }}
+          >
+            <div
+              style={{ display: "flex", flexDirection: "column", width: "80%" }}
+            >
+              <p
+                style={{
+                  fontSize: 14,
+                  color: Cor.textoTurno + 90,
+                  fontWeight: "bold",
+                  margin: 5,
+                }}
+              >
+                Motorista:
+              </p>
+              <div
+                style={{
+                  width: "100%",
+                  border: `1px solid ${Cor.texto2 + 50}`,
+                  padding: 10,
+                  borderRadius: 14,
+                }}
+              >
+                <select
+                  name=""
+                  id=""
+                  style={{
+                    outline: "none",
+                    border: "none",
+                    width: "100%",
+                    backgroundColor: "transparent",
+                    color: Cor.texto1,
+                  }}
+                  value={
+                    motoristaSelecionado
+                      ? JSON.stringify(motoristaSelecionado)
+                      : ""
+                  }
+                  onChange={(e) => {
+                    const valor = e.target.value;
+                    if (valor) {
+                      setMotoristaSelecionado(JSON.parse(valor));
+                    } else {
+                      setMotoristaSelecionado(null);
+                    }
+                  }}
+                >
+                  <option
+                    value={""}
+                    style={{
+                      backgroundColor: Cor.base2,
+                      color: Cor.texto2 + 70,
+                    }}
+                  >
+                    Selecione um Motorista
+                  </option>
+                  {listaMotoristas?.map((m: any) => {
+                    return (
+                      <option
+                        value={JSON.stringify(m)}
+                        key={m?.id}
+                        style={{
+                          backgroundColor: Cor.base2,
+                          padding: 15,
+                          margin: 10,
+                        }}
+                      >
+                        {m?.nome}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+            </div>
+            <div
+              style={{ display: "flex", flexDirection: "column", width: "20%" }}
+            >
+              <p
+                style={{
+                  fontSize: 14,
+                  color: Cor.textoTurno + 90,
+                  fontWeight: "bold",
+                  margin: 5,
+                }}
+              >
+                Horário:
+              </p>
+              <div
+                style={{
+                  width: "100%",
+                  border: `1px solid ${Cor.texto2 + 50}`,
+                  padding: 10,
+                  borderRadius: 14,
+                }}
+              >
+                <input
+                  type="time"
+                  style={{
+                    border: "none",
+                    outline: "none",
+                    width: "100%",
+                    backgroundColor: "transparent",
+                    color: Cor.texto1,
+                  }}
+                  value={hora}
+                  onChange={(e) => {
+                    setHora(e.target.value);
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              gap: 10,
+            }}
+          >
+            <DayPicker
+              animate={true}
+              mode="multiple"
+              locale={ptBR}
+              selected={selected}
+              onSelect={setSelected}
+              navLayout="around"
+              showOutsideDays
+              styles={{
+                root: {
+                  "--rdp-accent-color": Cor.turno,
+                  borderRadius: "14px",
+                  border: `1px solid ${Cor.texto2}40`,
+                  padding: 10,
+                  backgroundColor: Cor.base,
+                  width: "70%",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                } as React.CSSProperties,
+                month_caption: {
+                  color: Cor.texto1,
+                  textTransform: "capitalize",
+                },
+                button_previous: {
+                  color: Cor.turno,
+                  backgroundColor: "transparent",
+                  border: "none",
+                  cursor: "pointer",
+                },
+                month_grid: {
+                  borderCollapse: "separate",
+                  borderSpacing: "3px",
+                },
+                button_next: {
+                  color: Cor.turno,
+                  backgroundColor: "transparent",
+                  border: "none",
+                  cursor: "pointer",
+                },
+                chevron: {
+                  fill: Cor.turno,
+                  height: "24px",
+                  width: "24px",
+                },
+                day: {
+                  color: Cor.texto1,
+                },
+                weekday: {
+                  fontSize: "0.75rem",
+                  fontWeight: "700",
+                  color: Cor.textoTurno + 90,
+                  textTransform: "capitalize",
+                  paddingBottom: "10px",
+                },
+                day_button: {
+                  cursor: "pointer",
+                  border: "none",
+                },
+              }}
+              modifiersStyles={{
+                selected: {
+                  color: Cor.textoTurno,
+                  fontWeight: "900",
+                  borderRadius: 16,
+                  backgroundColor: Cor.textoTurno + "1A",
+                },
+                today: {
+                  color: Cor.turno,
+                  fontWeight: "600",
+                },
+                outside: {
+                  color: Cor.textoTurno + "50",
+                },
+              }}
+            />
+            <div
+              style={{
+                height: "100%",
+                width: "30%",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+              }}
+            >
+              <div
+                style={{
+                  width: "100%",
+                  height: 300,
+                  overflowY: "auto",
+                  scrollbarWidth: "none",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 5,
+                  paddingBottom: 10,
+                }}
+              >
+                {selected?.map((d: any, i: number) => {
+                  return (
+                    <BtnPrevData
+                      key={i}
+                      $cor={Cor.texto1}
+                      $corHover={Cor.turno}
+                      onClick={() => removerDataSelecionada(d)}
+                    >
+                      <p style={{ fontSize: 14 }}>
+                        {/* {d.getDate()}/{d.getMonth() + 1}/{d.getFullYear()} */}
+                        {Intl.DateTimeFormat("pt-BR", {
+                          timeZone: "UTC",
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        }).format(new Date(d))}
+                      </p>
+                      <p style={{ fontFamily: "Icone", color: Cor.atencao }}>
+                        delete
+                      </p>
+                    </BtnPrevData>
+                  );
+                })}
+              </div>
+              <BtnAdicionarDatas
+                $cor={Cor.textoTurno}
+                onClick={() => adicionarProgramacoes()}
+              >
+                Adicionar
+              </BtnAdicionarDatas>
+            </div>
+          </div>
+        </div>
+        <div
+          style={{
+            width: "50%",
+            height: 465,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "flex-start",
+            alignItems: "center",
+            backgroundColor: Cor.texto1 + 10,
+            borderRadius: 12,
+          }}
+        >
+          {/* Cabeçalho */}
+          <div
+            style={{
+              display: "flex",
+              width: "100%",
+              height: 35,
+              padding: 10,
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexDirection: "row",
+              borderRadius: "12px 12px 0 0 ",
+              gap: 2,
+              backgroundColor: Cor.texto2 + 20,
+              color: Cor.texto1,
+              fontWeight: 700,
+              fontSize: 14,
+            }}
+          >
+            <p style={{ width: "65%" }}>Motorista</p>
+            <p style={{ width: "20%" }}>Data</p>
+            <p
+              style={{
+                width: "15%",
+                textAlign: "center",
+              }}
+            >
+              Horário
+            </p>
+            <p
+              style={{
+                width: "10%",
+                textAlign: "center",
+              }}
+            >
+              Ação
+            </p>
+          </div>
+          {/* Conteúdo */}
+          <div
+            style={{
+              width: "100%",
+              height: `calc(100% - 35px)`,
+              borderRadius: "0 0 12px 12px",
+              padding: 10,
+              overflowY: "auto",
+              scrollbarWidth: "none",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 5,
+              // paddingRight: 10,
+            }}
+          >
+            {configSaida?.programacoes?.map((d: any, i: number) => {
+              return (
+                <BtnConfData
+                  key={i}
+                  $cor={Cor.texto1}
+                  $bg={Cor.base2}
+                  $corHover={Cor.turno}
+                  onClick={() => removerProgramacao(d)}
+                >
+                  <p style={{ width: "65%" }}>{d.motoristaId.nome}</p>
+                  <p style={{ width: "20%" }}>
+                    {Intl.DateTimeFormat("pt-BR", {
+                      timeZone: "UTC",
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                    }).format(new Date(d.dataHoraProgramação))}
+                  </p>
+                  <p
+                    style={{
+                      width: "15%",
+                      textAlign: "center",
+                    }}
+                  >
+                    {Intl.DateTimeFormat("pt-BR", {
+                      timeZone: "UTC",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    }).format(new Date(d.dataHoraProgramação))}
+                  </p>
+                  <p
+                    style={{
+                      width: "10%",
+                      textAlign: "center",
+                      fontFamily: "Icone",
+                      color: Cor.atencao,
+                      fontSize: 18,
+                    }}
+                  >
+                    delete
+                  </p>
+                </BtnConfData>
+              );
+            })}
+          </div>
         </div>
       </div>
     </>
   );
 }
 
-interface BtnPrevDataProps {
+interface BtnConfDataProps {
   $cor: string;
+  $corHover: string;
+  $bg: string;
 }
 
-const BtnPrevData = styled.div<BtnPrevDataProps>`
-  border: 1px solid ${({ $cor }) => $cor + 99};
-  background-color: ${({ $cor }) => $cor + 20};
+const BtnConfData = styled.div<BtnConfDataProps>`
+  border: 1px solid ${({ $cor }) => $cor + 30};
+  background-color: ${({ $bg }) => $bg};
   color: ${({ $cor }) => $cor};
-  width: 90%;
-  min-height: 40px;
+  width: 100%;
   display: flex;
   padding: 8px;
   justify-content: space-between;
   align-items: center;
-  border-radius: 8px;
+  border-radius: 12px;
   transition: ease-in-out all 0.1s;
   cursor: pointer;
+  user-select: none;
+  font-size: 14px;
 
   &:hover {
-    background-color: ${({ $cor }) => $cor + 70};
+    background-color: ${({ $corHover }) => $corHover + 30};
+    scale: 1.01;
+  }
+
+  &:active {
+    background-color: ${({ $corHover }) => $corHover + 70};
+    scale: 0.99;
+  }
+`;
+
+interface BtnPrevDataProps {
+  $corHover: string;
+  $cor: string;
+}
+
+const BtnPrevData = styled.div<BtnPrevDataProps>`
+  border: 1px solid ${({ $cor }) => $cor + 30};
+  background-color: ${({ $cor }) => $cor + 20};
+  color: ${({ $cor }) => $cor};
+  width: 90%;
+  display: flex;
+  padding: 8px;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 12px;
+  transition: ease-in-out all 0.1s;
+  cursor: pointer;
+  user-select: none;
+
+  &:hover {
+    background-color: ${({ $corHover }) => $corHover + 10};
     scale: 1.02;
   }
 
   &:active {
-    background-color: ${({ $cor }) => $cor + "BB"};
+    background-color: ${({ $corHover }) => $corHover + 30};
     scale: 0.98;
   }
 `;
@@ -1431,442 +2029,6 @@ const BtnAdicionarDatas = styled.div<BtnAdicionarDatasProps>`
   }
 `;
 
-function DetalhesSaida({
-  configSaida,
-  setConfigSaida,
-}: {
-  configSaida: any;
-  setConfigSaida: any;
-}) {
-  const { Cor } = useTema();
-  const operadora = useAdminLogado()?.operadora.id;
-  const { listaMotoristas } = useMotorista(operadora);
-
-  const [carro, setCarro] = useState<any>();
-
-  const { carroAtrelado, loading: carregandoCarro } = useCarroAtrelado(
-    String(configSaida.motoristaId),
-  );
-
-  const atualizarCampo = (campo: string, valor: any) => {
-    setConfigSaida((prev: any) => ({ ...prev, [campo]: valor }));
-  };
-
-  useEffect(() => {
-    const idDoCarro = Number(carroAtrelado?.[0]?.id) || 0;
-    atualizarCampo("carroId", idDoCarro);
-    setCarro(carroAtrelado?.[0]);
-  }, [carroAtrelado, configSaida.motoristaId]);
-
-  return (
-    <>
-      <div
-        style={{
-          width: "100%",
-          padding: 15,
-          backgroundColor: Cor.base2,
-          borderRadius: 22,
-          boxShadow: Cor.sombra,
-          opacity: carregandoCarro ? 0.1 : !configSaida.habilitado ? 0.8 : 1,
-          transition: "ease-in-out all 0.3s",
-          zIndex: 2,
-        }}
-      >
-        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <p
-            style={{
-              fontSize: 14,
-              color: Cor.textoTurno,
-              fontWeight: "bold",
-            }}
-          >
-            Configurações Saída
-          </p>
-          <p style={{ fontSize: 12, color: Cor.texto2, marginBottom: 5 }}>
-            <strong>Habilite</strong> e selecione o motorista, horários e dias
-            da semana o motorista deve sair do destino.
-          </p>
-        </div>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            width: "100%",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: 15,
-          }}
-        >
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <p
-              style={{
-                fontSize: 14,
-                color: !configSaida.habilitado
-                  ? Cor.texto1 + 50
-                  : Cor.textoTurno + 90,
-                fontWeight: "bold",
-                margin: 5,
-              }}
-            >
-              Ativo:
-            </p>
-            <div
-              style={{
-                width: "100%",
-                border: `1px solid ${Cor.texto2 + 50}`,
-                padding: 5,
-                borderRadius: 14,
-              }}
-            >
-              <BtnAtivarStyled
-                $cor={configSaida.habilitado ? Cor.textoTurno : Cor.texto1}
-                $bg={configSaida.habilitado ? Cor.turno : Cor.texto2}
-                onClick={() =>
-                  atualizarCampo("habilitado", !configSaida.habilitado)
-                }
-                style={{ width: 100, justifyContent: "space-between" }}
-              >
-                <p>{configSaida.habilitado ? "Habilitado" : "Habilitar"}</p>
-                <p style={{ fontFamily: "Icone", fontSize: 16 }}>
-                  {configSaida.habilitado
-                    ? "check_box"
-                    : "check_box_outline_blank"}
-                </p>
-              </BtnAtivarStyled>
-            </div>
-          </div>
-          <div
-            style={{ display: "flex", flexDirection: "column", width: "30%" }}
-          >
-            <p
-              style={{
-                fontSize: 14,
-                color: !configSaida.habilitado
-                  ? Cor.texto1 + 50
-                  : Cor.textoTurno + 90,
-                fontWeight: "bold",
-                margin: 5,
-              }}
-            >
-              Motorista:
-            </p>
-            <div
-              style={{
-                width: "100%",
-                border: `1px solid ${Cor.texto2 + 50}`,
-                padding: 10,
-                borderRadius: 14,
-                opacity: !configSaida.habilitado ? 0.5 : 1,
-              }}
-            >
-              <select
-                disabled={!configSaida.habilitado}
-                name=""
-                id=""
-                style={{
-                  outline: "none",
-                  border: "none",
-                  width: "100%",
-                  backgroundColor: "transparent",
-                  color: Cor.texto1,
-                }}
-                value={configSaida.motoristaId}
-                onChange={(e) => {
-                  atualizarCampo("motoristaId", String(e.target.value));
-                }}
-              >
-                <option
-                  value={""}
-                  style={{ backgroundColor: Cor.base2, color: Cor.texto2 + 70 }}
-                >
-                  Selecione um Motorista
-                </option>
-                {listaMotoristas?.map((m: any) => {
-                  return (
-                    <option
-                      value={m.id}
-                      key={m?.id}
-                      style={{
-                        backgroundColor: Cor.base2,
-                        padding: 15,
-                        margin: 10,
-                      }}
-                    >
-                      {m?.nome}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
-          </div>
-          <div
-            style={{ display: "flex", flexDirection: "column", width: "10%" }}
-          >
-            <p
-              style={{
-                fontSize: 14,
-                color: !configSaida.habilitado
-                  ? Cor.texto1 + 50
-                  : Cor.textoTurno + 90,
-                fontWeight: "bold",
-                margin: 5,
-              }}
-            >
-              Horário:
-            </p>
-            <div
-              style={{
-                width: "100%",
-                border: `1px solid ${Cor.texto2 + 50}`,
-                padding: 10,
-                borderRadius: 14,
-                opacity: !configSaida.habilitado ? 0.5 : 1,
-              }}
-            >
-              <input
-                disabled={!configSaida.habilitado}
-                type="time"
-                style={{
-                  border: "none",
-                  outline: "none",
-                  width: "100%",
-                  backgroundColor: "transparent",
-                  color: Cor.texto1,
-                }}
-                value={configSaida.horario}
-                onChange={(e) => {
-                  atualizarCampo("horario", e.target.value);
-                }}
-              />
-            </div>
-          </div>
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <p
-              style={{
-                fontSize: 14,
-                color: !configSaida.habilitado
-                  ? Cor.texto1 + 50
-                  : Cor.textoTurno + 90,
-                fontWeight: "bold",
-                margin: 5,
-              }}
-            >
-              Dias da Semana:
-            </p>
-            <div
-              style={{
-                width: "100%",
-                border: `1px solid ${Cor.texto2 + 50}`,
-                padding: 5,
-                borderRadius: 14,
-                pointerEvents: !configSaida.habilitado ? "none" : "auto",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  gap: 10,
-                  opacity: !configSaida.habilitado ? 0.3 : 1,
-                }}
-              >
-                <BtnAtivarStyled
-                  $cor={configSaida.domingo ? Cor.textoTurno : Cor.texto1}
-                  $bg={configSaida.domingo ? Cor.turno : Cor.texto2}
-                  onClick={() =>
-                    atualizarCampo("domingo", !configSaida.domingo)
-                  }
-                >
-                  <p>Dom</p>
-                  <p style={{ fontFamily: "Icone", fontSize: 16 }}>
-                    {configSaida.domingo
-                      ? "check_box"
-                      : "check_box_outline_blank"}
-                  </p>
-                </BtnAtivarStyled>
-                <BtnAtivarStyled
-                  $cor={configSaida.segunda ? Cor.textoTurno : Cor.texto1}
-                  $bg={configSaida.segunda ? Cor.turno : Cor.texto2}
-                  onClick={() =>
-                    atualizarCampo("segunda", !configSaida.segunda)
-                  }
-                >
-                  <p>Seg</p>
-                  <p style={{ fontFamily: "Icone", fontSize: 16 }}>
-                    {configSaida.segunda
-                      ? "check_box"
-                      : "check_box_outline_blank"}
-                  </p>
-                </BtnAtivarStyled>
-                <BtnAtivarStyled
-                  $cor={configSaida.terca ? Cor.textoTurno : Cor.texto1}
-                  $bg={configSaida.terca ? Cor.turno : Cor.texto2}
-                  onClick={() => atualizarCampo("terca", !configSaida.ter)}
-                >
-                  <p>Ter</p>
-                  <p style={{ fontFamily: "Icone", fontSize: 16 }}>
-                    {configSaida.terca
-                      ? "check_box"
-                      : "check_box_outline_blank"}
-                  </p>
-                </BtnAtivarStyled>
-                <BtnAtivarStyled
-                  $cor={configSaida.quarta ? Cor.textoTurno : Cor.texto1}
-                  $bg={configSaida.quarta ? Cor.turno : Cor.texto2}
-                  onClick={() => atualizarCampo("quarta", !configSaida.quarta)}
-                >
-                  <p>Qua</p>
-                  <p style={{ fontFamily: "Icone", fontSize: 16 }}>
-                    {configSaida.quarta
-                      ? "check_box"
-                      : "check_box_outline_blank"}
-                  </p>
-                </BtnAtivarStyled>
-                <BtnAtivarStyled
-                  $cor={configSaida.quinta ? Cor.textoTurno : Cor.texto1}
-                  $bg={configSaida.quinta ? Cor.turno : Cor.texto2}
-                  onClick={() => atualizarCampo("quinta", !configSaida.quinta)}
-                >
-                  <p>Qui</p>
-                  <p style={{ fontFamily: "Icone", fontSize: 16 }}>
-                    {configSaida.quinta
-                      ? "check_box"
-                      : "check_box_outline_blank"}
-                  </p>
-                </BtnAtivarStyled>
-                <BtnAtivarStyled
-                  $cor={configSaida.sexta ? Cor.textoTurno : Cor.texto1}
-                  $bg={configSaida.sexta ? Cor.turno : Cor.texto2}
-                  onClick={() => atualizarCampo("sexta", !configSaida.sexta)}
-                >
-                  <p>Sex</p>
-                  <p style={{ fontFamily: "Icone", fontSize: 16 }}>
-                    {configSaida.sexta
-                      ? "check_box"
-                      : "check_box_outline_blank"}
-                  </p>
-                </BtnAtivarStyled>
-                <BtnAtivarStyled
-                  $cor={configSaida.sabado ? Cor.textoTurno : Cor.texto1}
-                  $bg={configSaida.sabado ? Cor.turno : Cor.texto2}
-                  onClick={() => atualizarCampo("sabado", !configSaida.sabado)}
-                >
-                  <p>Sab</p>
-                  <p style={{ fontFamily: "Icone", fontSize: 16 }}>
-                    {configSaida.sabado
-                      ? "check_box"
-                      : "check_box_outline_blank"}
-                  </p>
-                </BtnAtivarStyled>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div
-        style={{
-          width: "95%",
-          display: "flex",
-          flexDirection: "row",
-          gap: 5,
-          justifyContent: "flex-start",
-          alignItems: "center",
-          padding: 8,
-          backgroundColor: Cor.texto1 + 10,
-          borderRadius: "0px 0px 14px 14px",
-          transition: "ease-in-out all 0.3s",
-          marginTop: !configSaida.habilitado ? -50 : -10,
-          opacity: !configSaida.habilitado ? 0 : 1,
-        }}
-      >
-        <p
-          style={{
-            fontSize: 14,
-            color: !configSaida.habilitado
-              ? Cor.texto1 + 50
-              : Cor.textoTurno + 90,
-            fontWeight: "bold",
-            margin: 5,
-          }}
-        >
-          Carro :
-        </p>
-        {carro ? (
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              gap: 5,
-              justifyContent: "flex-start",
-              alignItems: "center",
-              fontSize: 14,
-              fontWeight: 500,
-              color: Cor.texto2,
-            }}
-          >
-            <p style={{ fontWeight: "bold", color: Cor.textoTurno }}>
-              {carro?.marca} - {carro?.modelo}
-            </p>
-            <p>
-              cor:{" "}
-              <strong style={{ color: Cor.texto1 }}>
-                {carro?.cor.toUpperCase()}
-              </strong>
-            </p>
-            <p>
-              placa:{" "}
-              <strong style={{ color: Cor.texto1 }}>
-                {carro?.placa.toUpperCase()}
-              </strong>
-            </p>
-          </div>
-        ) : (
-          <p
-            style={{
-              fontSize: 14,
-              color: Cor.atencao,
-              fontStyle: "italic",
-              fontWeight: "800",
-            }}
-          >
-            Sem Carro
-          </p>
-        )}
-      </div>
-    </>
-  );
-}
-
-interface BtnAtivarProps {
-  $cor: string;
-  $bg: string;
-}
-
-const BtnAtivarStyled = styled.div<BtnAtivarProps>`
-  font-size: 14px;
-  color: ${({ $cor }) => $cor};
-  padding: 5px 10px;
-  border-radius: 8px;
-  background-color: ${({ $bg }) => $bg}50;
-  cursor: pointer;
-  transition: ease-in-out all 0.1s;
-  user-select: none;
-  display: flex;
-  flex-direction: row;
-  gap: 5px;
-  align-items: center;
-  font-weight: 500;
-
-  &:hover {
-    scale: 1.04;
-    background-color: ${({ $bg }) => $bg}AA;
-  }
-
-  &:active {
-    scale: 0.98;
-    background-color: ${({ $bg }) => $bg}FF;
-  }
-`;
 
 function IncluirPassageiros({
   empresaCliente,
