@@ -10,6 +10,7 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "apple-touch-icon.png", "mask-icon.svg"],
+      workbox: { maximumFileSizeToCacheInBytes: 5000000 },
       manifest: {
         name: "NeoFrota WebSistema",
         short_name: "NeoFrota",
@@ -22,16 +23,16 @@ export default defineConfig({
             src: "pwa-192x192.png",
             sizes: "192x192",
             type: "image/png",
-            purpose: "any"
+            purpose: "any",
           },
           {
             src: "pwa-512x512.png",
             sizes: "512x512",
             type: "image/png",
-            purpose: "maskable"
+            purpose: "maskable",
           },
         ],
-        background_color: "#f4f4f4"
+        background_color: "#f4f4f4",
       },
     }),
   ],
