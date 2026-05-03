@@ -866,3 +866,29 @@ export function useEditarVouchersEmMassa() {
     error,
   };
 }
+
+const CREATE_VOUCHER_MASSA = gql`
+  mutation GerarVouchersEmMassa($inputs: [VoucherCreateInput!]!) {
+    gerarVouchersEmMassa(inputs: $inputs) {
+      id
+    }
+  }
+`;
+
+export function useGerarVouchersEmMassa() {
+  const [gerarVouchersEmMassa, { data, loading, error }] =
+    useMutation(CREATE_VOUCHER_MASSA);
+
+  const gerar = (inputs: any) => {
+    return gerarVouchersEmMassa({
+      variables: { inputs },
+    });
+  };
+
+  return {
+    gerar,
+    data,
+    loading,
+    error,
+  };
+}

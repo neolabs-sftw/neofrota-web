@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import BaseTelas from "../../../componentes/baseTelas";
 import EditPerfil from "../../../componentes/editPerfil";
 import { useAdminLogado } from "../../../hooks/AdminLogado";
@@ -9,16 +9,13 @@ import { usePedagios } from "../../../hooks/usePedagios";
 import styled from "styled-components";
 import { usePassageiros } from "../../../hooks/usePassageiros";
 import BtnCriarPassageiro from "../empresaCliente/btnComponentes/criarPassageiro";
-import {
-  useEditarTurno,
-  useModeloTurno,
-} from "../../../hooks/useModelosTurnos";
+import { useCriarModeloTurno } from "../../../hooks/useModelosTurnos";
 import CircularProgress from "@mui/material/CircularProgress";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import "react-day-picker/dist/style.css";
 import React from "react";
 
-export function EditarTurno() {
+export function NovoModeloTurno() {
   return BaseTelas({
     conteudo: (
       <>
@@ -30,12 +27,6 @@ export function EditarTurno() {
 }
 
 function NovoVoucherTurnoConteudo() {
-  const { TurnoId } = useParams();
-
-  const { mTurno, loading: CarregandoDados } = useModeloTurno(
-    atob(`${TurnoId}`),
-  );
-
   const [empresaCliente, setEmpresaCliente] = useState("");
   const [unidadeCliente, setUnidadeCliente] = useState("");
   const [nomeModelo, setNomeModelo] = useState("");
@@ -51,39 +42,11 @@ function NovoVoucherTurnoConteudo() {
 
   const [valorPedagio, setValorPedagio] = useState("");
 
-  const [passageirosVoucher, setPassageirosVoucher] = useState([]);
+  const [passageirosVoucher, setPassageirosVoucher] = useState<any[]>([]);
 
   const passageirosMapeados = passageirosVoucher.map((p: any) => {
     return p.id;
   });
-
-  useEffect(() => {
-    if (mTurno) {
-      setEmpresaCliente(mTurno.empresaCliente?.id || "");
-      setUnidadeCliente(mTurno.unidadeCliente?.id || "");
-      setNomeModelo(mTurno.nomeModelo || "");
-      setOrigem(mTurno.origem || "");
-      setDestino(mTurno.destino || "");
-
-      // Valores numéricos
-      setValorViagem(mTurno.valorViagem || 0);
-      setValorViagemRepasse(mTurno.valorViagemRepasse || 0);
-      setValorDeslocamento(mTurno?.valorDeslocamento || 0);
-      setValorDeslocamentoRepasse(mTurno?.valorDeslocamentoRepasse || 0);
-      setValorHoraParada(mTurno?.valorHoraParada || 0);
-      setValorHoraParadaRepasse(mTurno?.valorHoraParadaRepasse || 0);
-
-      // Correção Pedágio (pegando o ID)
-      setValorPedagio(mTurno.pedagio?.id || "");
-
-      // Correção Passageiros (extraindo IDs do array de objetos)
-      const passageirosAtual =
-        mTurno?.passageirosTurno?.map((p: any) => {
-          return p.passageiro;
-        }) || [];
-      setPassageirosVoucher(passageirosAtual);
-    }
-  }, [mTurno]);
 
   const { Cor } = useTema();
 
@@ -111,7 +74,7 @@ function NovoVoucherTurnoConteudo() {
     };
   };
 
-  const { editarTurno, loading } = useEditarTurno({ operadoraId });
+  const { criarModeloTurno, loading } = useCriarModeloTurno();
 
   const navigate = useNavigate();
 
@@ -131,126 +94,99 @@ function NovoVoucherTurnoConteudo() {
 
     const payload = gerarPayload();
 
-    await editarTurno(Number(atob(`${TurnoId}`)), payload);
+    await criarModeloTurno(payload);
 
     navigate("/modelosvouchersturnos");
   }
 
   return (
-    <>
+    <div
+      style={{
+        width: "100%",
+        display: "flex",
+        padding: "25px 15px 15px 15px",
+        flexDirection: "column",
+        justifyContent: "flex-start",
+        alignItems: "center",
+        gap: 10,
+      }}
+    >
       <div
         style={{
           width: "100%",
           display: "flex",
-          padding: "25px 15px 15px 15px",
-          flexDirection: "column",
+          flexDirection: "row",
           justifyContent: "flex-start",
           alignItems: "center",
           gap: 10,
         }}
       >
-        {CarregandoDados ?? (
-          <div
-            style={{
-              width: "100%",
-              height: "100%",
-              backgroundColor: Cor.base2 + 90,
-              position: "absolute",
-              backdropFilter: "blur(2px)",
-              display: "flex",
-              justifyContent: "center",
-              alignContent: "center",
-            }}
-          >
-            <CircularProgress
-              size={24}
-              thickness={8}
-              sx={{
-                color: Cor.turno,
-                "& .MuiCircularProgress-circle": {
-                  strokeLinecap: "round",
-                },
-              }}
-            />
-          </div>
-        )}
+        <h3 style={{ color: Cor.textoTurno, fontSize: "20px" }}>
+          Novo Roteiro Turno
+        </h3>
         <div
           style={{
-            width: "100%",
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "flex-start",
-            alignItems: "center",
-            gap: 10,
+            width: "75%",
+            height: 1,
+            backgroundColor: Cor.primaria,
           }}
-        >
-          <h3 style={{ color: Cor.textoTurno, fontSize: "20px" }}>
-            Novo Roteiro Turno
-          </h3>
-          <div
-            style={{
-              width: "75%",
-              height: 1,
-              backgroundColor: Cor.primaria,
+        />
+      </div>
+      <DadosGerais
+        empresaCliente={empresaCliente}
+        setEmpresaCliente={setEmpresaCliente}
+        unidadeCliente={unidadeCliente}
+        setUnidadeCliente={setUnidadeCliente}
+        nomeModelo={nomeModelo}
+        setNomeModelo={setNomeModelo}
+        origem={origem}
+        setOrigem={setOrigem}
+        destino={destino}
+        setDestino={setDestino}
+      />
+      <ValoresFixo
+        valorDeslocamento={valorDeslocamento}
+        valorDeslocamentoRepasse={valorDeslocamentoRepasse}
+        valorHoraParada={valorHoraParada}
+        valorHoraParadaRepasse={valorHoraParadaRepasse}
+        valorPedagio={valorPedagio}
+        valorViagem={valorViagem}
+        valorViagemRepasse={valorViagemRepasse}
+        setValorDeslocamento={setValorDeslocamento}
+        setValorDeslocamentoRepasse={setValorDeslocamentoRepasse}
+        setValorHoraParada={setValorHoraParada}
+        setValorHoraParadaRepasse={setValorHoraParadaRepasse}
+        setValorViagem={setValorViagem}
+        setValorViagemRepasse={setValorViagemRepasse}
+        setValorPedagio={setValorPedagio}
+      />
+      <IncluirPassageiros
+        empresaCliente={empresaCliente}
+        setPassageirosVoucher={setPassageirosVoucher}
+        passageirosVoucher={passageirosVoucher}
+      />
+      <BtnSalvar
+        $cor={Cor.turno}
+        $texto={Cor.textoTurno}
+        onClick={() => criarModeloTurnoFunc()}
+      >
+        <p>Salvar</p>
+        {loading ? (
+          <CircularProgress
+            size={24}
+            thickness={8}
+            sx={{
+              color: Cor.turno,
+              "& .MuiCircularProgress-circle": {
+                strokeLinecap: "round",
+              },
             }}
           />
-        </div>
-        <DadosGerais
-          empresaCliente={empresaCliente}
-          setEmpresaCliente={setEmpresaCliente}
-          unidadeCliente={unidadeCliente}
-          setUnidadeCliente={setUnidadeCliente}
-          nomeModelo={nomeModelo}
-          setNomeModelo={setNomeModelo}
-          origem={origem}
-          setOrigem={setOrigem}
-          destino={destino}
-          setDestino={setDestino}
-        />
-        <ValoresFixo
-          valorDeslocamento={valorDeslocamento}
-          valorDeslocamentoRepasse={valorDeslocamentoRepasse}
-          valorHoraParada={valorHoraParada}
-          valorHoraParadaRepasse={valorHoraParadaRepasse}
-          valorPedagio={valorPedagio}
-          valorViagem={valorViagem}
-          valorViagemRepasse={valorViagemRepasse}
-          setValorDeslocamento={setValorDeslocamento}
-          setValorDeslocamentoRepasse={setValorDeslocamentoRepasse}
-          setValorHoraParada={setValorHoraParada}
-          setValorHoraParadaRepasse={setValorHoraParadaRepasse}
-          setValorViagem={setValorViagem}
-          setValorViagemRepasse={setValorViagemRepasse}
-          setValorPedagio={setValorPedagio}
-        />
-        <IncluirPassageiros
-          empresaCliente={empresaCliente}
-          setPassageirosVoucher={setPassageirosVoucher}
-          passageirosVoucher={passageirosVoucher}
-        />
-        <BtnSalvar
-          $cor={Cor.turno}
-          $texto={Cor.textoTurno}
-          onClick={() => criarModeloTurnoFunc()}
-        >
-          <p>Salvar</p>
-          {loading ? (
-            <CircularProgress
-              size={24}
-              thickness={8}
-              sx={{
-                color: Cor.turno,
-                "& .MuiCircularProgress-circle": {
-                  strokeLinecap: "round",
-                },
-              }}
-            />
-          ) : (
-            <p style={{ fontFamily: "Icone", fontSize: 24 }}>save</p>
-          )}
-        </BtnSalvar>
-      </div>
-    </>
+        ) : (
+          <p style={{ fontFamily: "Icone", fontSize: 24 }}>save</p>
+        )}
+      </BtnSalvar>
+    </div>
   );
 }
 

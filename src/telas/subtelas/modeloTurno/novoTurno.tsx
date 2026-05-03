@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import BaseTelas from "../../../componentes/baseTelas";
 import EditPerfil from "../../../componentes/editPerfil";
 import { useAdminLogado } from "../../../hooks/AdminLogado";
@@ -11,15 +11,16 @@ import styled from "styled-components";
 import { usePassageiros } from "../../../hooks/usePassageiros";
 import BtnCriarPassageiro from "../empresaCliente/btnComponentes/criarPassageiro";
 import { useCarroAtrelado } from "../../../hooks/useCarros";
-import { useCriarModeloFixo } from "../../../hooks/useModelosFixos";
 import CircularProgress from "@mui/material/CircularProgress";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import React from "react";
 import { ptBR } from "date-fns/locale";
+import { useModeloTurno } from "../../../hooks/useModelosTurnos";
+import { useGerarVouchersEmMassa } from "../../../hooks/useVouchers";
 
-export function NovoTurno() {
+export function GerarVouchersTurno() {
   return BaseTelas({
     conteudo: (
       <>
@@ -31,6 +32,12 @@ export function NovoTurno() {
 }
 
 function NovoVoucherTurnoConteudo() {
+  const { TurnoId } = useParams();
+
+  const { mTurno, loading: CarregandoDados } = useModeloTurno(
+    atob(`${TurnoId}`),
+  );
+
   const [empresaCliente, setEmpresaCliente] = useState("");
   const [unidadeCliente, setUnidadeCliente] = useState("");
   const [nomeModelo, setNomeModelo] = useState("");
@@ -45,6 +52,49 @@ function NovoVoucherTurnoConteudo() {
   const [valorHoraParadaRepasse, setValorHoraParadaRepasse] = useState(0);
 
   const [valorPedagio, setValorPedagio] = useState("");
+
+  useEffect(() => {
+    if (mTurno) {
+      setEmpresaCliente(mTurno.empresaCliente?.id || "");
+      setUnidadeCliente(mTurno.unidadeCliente?.id || "");
+      setNomeModelo(mTurno.nomeModelo || "");
+      setOrigem(mTurno.origem || "");
+      setDestino(mTurno.destino || "");
+      const rotaOrigem = mTurno.origem || "";
+      const rotaDestino = mTurno.destino || "";
+
+      setConfigEntrada((prev) => ({
+        ...prev,
+        origem: rotaOrigem,
+        destino: rotaDestino,
+      }));
+
+      // Atualiza a Configuração de Saída (Rota Invertida)
+      setConfigSaida((prev) => ({
+        ...prev,
+        origem: rotaDestino, // O destino vira origem
+        destino: rotaOrigem, // A origem vira destino
+      }));
+
+      // Valores numéricos
+      setValorViagem(mTurno.valorViagem || 0);
+      setValorViagemRepasse(mTurno.valorViagemRepasse || 0);
+      setValorDeslocamento(mTurno?.valorDeslocamento || 0);
+      setValorDeslocamentoRepasse(mTurno?.valorDeslocamentoRepasse || 0);
+      setValorHoraParada(mTurno?.valorHoraParada || 0);
+      setValorHoraParadaRepasse(mTurno?.valorHoraParadaRepasse || 0);
+
+      // Correção Pedágio (pegando o ID)
+      setValorPedagio(mTurno.pedagio?.id || "");
+
+      // Correção Passageiros (extraindo IDs do array de objetos)
+      const passageirosAtual =
+        mTurno?.passageirosTurno?.map((p: any) => {
+          return p.passageiro;
+        }) || [];
+      setPassageirosVoucher(passageirosAtual);
+    }
+  }, [mTurno]);
 
   const [configEntrada, setConfigEntrada] = useState({
     tipo: "Entrada",
@@ -64,66 +114,77 @@ function NovoVoucherTurnoConteudo() {
 
   const [passageirosVoucher, setPassageirosVoucher] = useState<any[]>([]);
 
+  const passageirosMapeados = passageirosVoucher.map((p: any) => ({
+    passageiroId: String(p.id), // Envie apenas o ID, não o objeto completo
+  }));
+
   const { Cor } = useTema();
 
   const operadoraId = useAdminLogado()?.operadora.id;
   const adminId = useAdminLogado()?.id;
 
-  const gerarPayload = () => {
-    // Array vazio que vamos preencher
+  const gerarPayloadMassa = () => {
+    const vouchers: any = [];
 
-    // Retorna o objeto completo pronto para salvar
-    return {
-      adminUsuarioId: adminId,
-      empresaClienteId: empresaCliente,
-      nomeModelo: nomeModelo,
-      operadoraId: operadoraId,
-      unidadeClienteId: unidadeCliente,
+    // Função auxiliar para montar o objeto individual
+    const montarVoucher = (config: any, prog: any) => ({
+      adminUsuarioId: String(adminId),
+      operadoraId: String(operadoraId),
+      empresaClienteId: String(empresaCliente),
+      unidadeClienteId: String(unidadeCliente),
+      modeloTurnoId: String(mTurno?.id), // ID do modelo original
+      solicitanteId: String(adminId), // Adicione esta linha no objeto do voucher
+      origem: config.origem || origem, // Usa a da config ou a padrão do modelo
+      destino: config.destino || destino,
+      natureza: config.natureza,
+      tipoCorrida: config.tipo,
+
+      // Dados da Programação específica
+      motoristaId: prog.motoristaId?.id,
+      carroId: Number(prog.carroId?.id),
+      dataHoraProgramado: prog.dataHoraProgramação,
+
+      // Valores financeiros
       valorViagem: Number(valorViagem),
-      valorDeslocamento: Number(valorDeslocamento),
-      valorHoraParada: Number(valorHoraParada),
-      valorPedagio: valorPedagio ? Number(valorPedagio) : null,
       valorViagemRepasse: Number(valorViagemRepasse),
+      valorDeslocamento: Number(valorDeslocamento),
       valorDeslocamentoRepasse: Number(valorDeslocamentoRepasse),
+      valorHoraParada: Number(valorHoraParada),
       valorHoraParadaRepasse: Number(valorHoraParadaRepasse),
-      // configuracoes: configuracoesPayload,
-      // passageirosFixos: passageirosMapeados,
-    };
+      valorPedagio: valorPedagio ? Number(valorPedagio) : null,
+
+      // Passageiros
+      passageiros: passageirosMapeados, // [{ passageiroId: '4' }, ...]
+    });
+
+    // Processa Entrada
+    configEntrada.programacoes.forEach((prog) => {
+      vouchers.push(montarVoucher(configEntrada, prog));
+    });
+
+    // Processa Saída
+    configSaida.programacoes.forEach((prog) => {
+      vouchers.push(montarVoucher(configSaida, prog));
+    });
+
+    return vouchers;
   };
 
-  const { criarModeloFixo, loading } = useCriarModeloFixo(String(operadoraId));
+  const { gerar, loading } = useGerarVouchersEmMassa();
 
   const navigate = useNavigate();
 
-  async function criarModeloFixoFunc() {
-    if (
-      empresaCliente === "" ||
-      unidadeCliente === "" ||
-      nomeModelo === "" ||
-      origem === "" ||
-      destino === ""
-    ) {
-      alert(
-        "Os campos Origem, Destino, Cliente, Unidade e Código do Roteiro são obrigatórios, por vafor verifique!",
-      );
-      return;
-    }
-    if (!configEntrada && !configSaida) {
-      alert("Habilite pelo menos uma configuração (Entrada ou Saída)!");
+  async function criarVouchersEmMassaFunc() {
+    const listaVouchers = gerarPayloadMassa();
+
+    if (listaVouchers.length === 0) {
+      alert("Adicione pelo menos uma programação!");
       return;
     }
 
-    if (configEntrada) {
-    }
+    await gerar(listaVouchers);
 
-    if (configSaida) {
-    }
-
-    const payload = gerarPayload();
-
-    await criarModeloFixo(payload);
-
-    navigate("/modelosvouchersfixos");
+    navigate("/modelosvouchersturnos");
   }
 
   return (
@@ -138,6 +199,31 @@ function NovoVoucherTurnoConteudo() {
         gap: 10,
       }}
     >
+      {CarregandoDados ? (
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            backgroundColor: Cor.base2 + 90,
+            position: "absolute",
+            backdropFilter: "blur(2px)",
+            display: "flex",
+            justifyContent: "center",
+            alignContent: "center",
+          }}
+        >
+          <CircularProgress
+            size={24}
+            thickness={8}
+            sx={{
+              color: Cor.turno,
+              "& .MuiCircularProgress-circle": {
+                strokeLinecap: "round",
+              },
+            }}
+          />
+        </div>
+      ) : null}
       <div
         style={{
           width: "100%",
@@ -161,15 +247,10 @@ function NovoVoucherTurnoConteudo() {
       </div>
       <DadosGerais
         empresaCliente={empresaCliente}
-        setEmpresaCliente={setEmpresaCliente}
         unidadeCliente={unidadeCliente}
-        setUnidadeCliente={setUnidadeCliente}
         nomeModelo={nomeModelo}
-        setNomeModelo={setNomeModelo}
         origem={origem}
-        setOrigem={setOrigem}
         destino={destino}
-        setDestino={setDestino}
       />
       <ValoresFixo
         valorDeslocamento={valorDeslocamento}
@@ -181,11 +262,11 @@ function NovoVoucherTurnoConteudo() {
         valorViagemRepasse={valorViagemRepasse}
         setValorDeslocamento={setValorDeslocamento}
         setValorDeslocamentoRepasse={setValorDeslocamentoRepasse}
-        setValorHoraParada={setValorHoraParada}
-        setValorHoraParadaRepasse={setValorHoraParadaRepasse}
-        setValorViagem={setValorViagem}
-        setValorViagemRepasse={setValorViagemRepasse}
-        setValorPedagio={setValorPedagio}
+      />
+      <IncluirPassageiros
+        empresaCliente={empresaCliente}
+        setPassageirosVoucher={setPassageirosVoucher}
+        passageirosVoucher={passageirosVoucher}
       />
       <DetalhesEntrada
         configEntrada={configEntrada}
@@ -195,17 +276,12 @@ function NovoVoucherTurnoConteudo() {
         configSaida={configSaida}
         setConfigSaida={setConfigSaida}
       />
-      <IncluirPassageiros
-        empresaCliente={empresaCliente}
-        setPassageirosVoucher={setPassageirosVoucher}
-        passageirosVoucher={passageirosVoucher}
-      />
       <BtnSalvar
         $cor={Cor.turno}
         $texto={Cor.textoTurno}
-        onClick={() => criarModeloFixoFunc()}
+        onClick={() => criarVouchersEmMassaFunc()}
       >
-        <p>Salvar</p>
+        <p>Gerar</p>
         {loading ? (
           <CircularProgress
             size={24}
@@ -218,7 +294,7 @@ function NovoVoucherTurnoConteudo() {
             }}
           />
         ) : (
-          <p style={{ fontFamily: "Icone", fontSize: 24 }}>save</p>
+          <p style={{ fontFamily: "Icone", fontSize: 24 }}>resume</p>
         )}
       </BtnSalvar>
     </div>
@@ -260,26 +336,16 @@ const BtnSalvar = styled.div<BtnSalvarProps>`
 
 function DadosGerais({
   origem,
-  setOrigem,
   destino,
-  setDestino,
   empresaCliente,
-  setEmpresaCliente,
   unidadeCliente,
-  setUnidadeCliente,
   nomeModelo,
-  setNomeModelo,
 }: {
   origem: string;
-  setOrigem: any;
   destino: string;
-  setDestino: any;
   empresaCliente: string;
-  setEmpresaCliente: any;
   unidadeCliente: string;
-  setUnidadeCliente: any;
   nomeModelo: string;
-  setNomeModelo: any;
 }) {
   const { Cor } = useTema();
 
@@ -380,7 +446,7 @@ function DadosGerais({
                   color: Cor.texto1,
                 }}
                 value={origem}
-                onChange={(e) => setOrigem(e.target.value)}
+                readOnly
               />
             </div>
           </div>
@@ -431,7 +497,8 @@ function DadosGerais({
                   color: Cor.texto1,
                 }}
                 value={destino}
-                onChange={(e) => setDestino(e.target.value)}
+                readOnly
+                disabled
               />
             </div>
           </div>
@@ -475,8 +542,8 @@ function DadosGerais({
                 backgroundColor: "transparent",
                 color: Cor.texto1,
               }}
-              onChange={(e) => setEmpresaCliente(e.target.value)}
               value={empresaCliente}
+              disabled
             >
               <option
                 value={""}
@@ -531,9 +598,8 @@ function DadosGerais({
                 backgroundColor: "transparent",
                 color: Cor.texto1,
               }}
-              onChange={(e) => setUnidadeCliente(e.target.value)}
               value={unidadeCliente}
-              disabled={loading}
+              disabled
             >
               <option
                 value={""}
@@ -589,7 +655,7 @@ function DadosGerais({
                 color: Cor.texto1,
               }}
               value={nomeModelo}
-              onChange={(e) => setNomeModelo(e.target.value)}
+              disabled
             />
           </div>
         </div>
@@ -600,34 +666,24 @@ function DadosGerais({
 
 function ValoresFixo({
   valorViagem,
-  setValorViagem,
   valorViagemRepasse,
-  setValorViagemRepasse,
   valorDeslocamento,
   setValorDeslocamento,
   valorDeslocamentoRepasse,
   setValorDeslocamentoRepasse,
   valorHoraParada,
-  setValorHoraParada,
   valorHoraParadaRepasse,
-  setValorHoraParadaRepasse,
   valorPedagio,
-  setValorPedagio,
 }: {
   valorViagem: any;
-  setValorViagem: any;
   valorViagemRepasse: any;
-  setValorViagemRepasse: any;
   valorDeslocamento: any;
   setValorDeslocamento: any;
   valorDeslocamentoRepasse: any;
   setValorDeslocamentoRepasse: any;
   valorHoraParada: any;
-  setValorHoraParada: any;
   valorHoraParadaRepasse: any;
-  setValorHoraParadaRepasse: any;
   valorPedagio: any;
-  setValorPedagio: any;
 }) {
   const { Cor } = useTema();
 
@@ -714,7 +770,7 @@ function ValoresFixo({
                     fontSize: 14,
                   }}
                   value={valorViagem || ""}
-                  onChange={(e) => setValorViagem(e.target.value)}
+                  readOnly
                 />
               </div>
             </div>
@@ -744,7 +800,7 @@ function ValoresFixo({
                     backgroundColor: "transparent",
                   }}
                   value={valorViagemRepasse || ""}
-                  onChange={(e) => setValorViagemRepasse(e.target.value)}
+                  readOnly
                 />
               </div>
             </div>
@@ -879,7 +935,7 @@ function ValoresFixo({
                     backgroundColor: "transparent",
                   }}
                   value={valorHoraParada || ""}
-                  onChange={(e) => setValorHoraParada(e.target.value)}
+                  readOnly
                 />
               </div>
             </div>
@@ -909,7 +965,8 @@ function ValoresFixo({
                     backgroundColor: "transparent",
                   }}
                   value={valorHoraParadaRepasse || ""}
-                  onChange={(e) => setValorHoraParadaRepasse(e.target.value)}
+                  readOnly
+                  disabled
                 />
               </div>
             </div>
@@ -943,7 +1000,7 @@ function ValoresFixo({
                 color: Cor.texto1,
               }}
               value={valorPedagio || ""}
-              onChange={(e) => setValorPedagio(e.target.value)}
+              disabled
             >
               <option value="">Selecione</option>
               {listaPedagios.map((p: any) => {
@@ -1452,6 +1509,7 @@ function DetalhesEntrada({
     </>
   );
 }
+
 function DetalhesSaida({
   configSaida,
   setConfigSaida,
@@ -2028,7 +2086,6 @@ const BtnAdicionarDatas = styled.div<BtnAdicionarDatasProps>`
     scale: 0.98;
   }
 `;
-
 
 function IncluirPassageiros({
   empresaCliente,

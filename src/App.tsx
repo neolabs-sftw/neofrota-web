@@ -25,8 +25,9 @@ import { NovoFixo } from "./telas/subtelas/modeloFixo/novoFixo";
 import { EditarFixo } from "./telas/subtelas/modeloFixo/editarFixos";
 import { Lancamentos } from "./telas/subtelas/lancamentos/lancamentos";
 import { ModelosTurnos } from "./telas/subtelas/modeloTurno/modelosTurnos";
-import { NovoTurno } from "./telas/subtelas/modeloTurno/novoTurno";
+import { GerarVouchersTurno } from "./telas/subtelas/modeloTurno/novoTurno";
 import { EditarTurno } from "./telas/subtelas/modeloTurno/editarTurnos";
+import { NovoModeloTurno } from "./telas/subtelas/modeloTurno/novoModeloTurno";
 
 function App() {
   return (
@@ -65,14 +66,18 @@ function App() {
               />
               <Route path="/criarmotorista" element={<CriarMotorista />} />
               <Route path="/rotas" element={<Rotas />} />
-              <Route path="/criarfuncionario" element={<CriarFuncionario />} />  
+              <Route path="/criarfuncionario" element={<CriarFuncionario />} />
               <Route path="/passageiros/:clienteId" element={<Passageiros />} />
               <Route path="/novovoucher" element={<NovoVoucher />} />
               <Route path="/modelosvouchersfixos" element={<ModelosFixos />} />
               <Route path="/novofixo" element={<NovoFixo />} />
               <Route path="/editarfixo/:FixoId" element={<EditarFixo />} />
-              <Route path="/modelosvoucherstrunos" element={<ModelosTurnos />} />
-              <Route path="/novoturno" element={<NovoTurno />} />
+              <Route
+                path="/modelosvouchersturnos"
+                element={<ModelosTurnos />}
+              />
+              <Route path="/gerarcouchersturno/:TurnoId" element={<GerarVouchersTurno />} />
+              <Route path="/novomodeloturno" element={<NovoModeloTurno />} />
               <Route path="/editarturno/:TurnoId" element={<EditarTurno />} />
               <Route path="/lancamentos" element={<Lancamentos />} />
             </Route>

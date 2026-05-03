@@ -8,24 +8,20 @@ import { useMotorista } from "../../../hooks/useMotorista";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { useAdminLogado } from "../../../hooks/AdminLogado";
-import {
-  useEditarModeloVoucherFixo,
-  useModelosFixos,
-} from "../../../hooks/useModelosFixos";
-import CircularProgress from "@mui/material/CircularProgress";
+import { useListaModelosTurnoPrev } from "../../../hooks/useModelosTurnos";
 
 export function ModelosTurnos() {
   return BaseTelas({
     conteudo: (
       <>
         <EditPerfil />
-        <ModeloFixosConteudo />
+        <ModeloTurnosConteudo />
       </>
     ),
   });
 }
 
-function ModeloFixosConteudo() {
+function ModeloTurnosConteudo() {
   const { Cor } = useTema();
 
   const operadoraId = useAdminLogado()?.operadora.id;
@@ -33,7 +29,10 @@ function ModeloFixosConteudo() {
   const [empresaCliente, setEmpresaCliente] = useState<any>();
   const [unidadeEmpresaCliente, setUnidadeEmpresaCliente] = useState<any>();
   const [motorista, setMotorista] = useState<any>();
-  const { listaModelos } = useModelosFixos(String(operadoraId));
+
+  const { listaModelosTurno } = useListaModelosTurnoPrev({
+    operadoraId,
+  });
 
   return (
     <>
@@ -59,8 +58,8 @@ function ModeloFixosConteudo() {
             gap: 10,
           }}
         >
-          <h3 style={{ color: Cor.textoFixo, fontSize: "20px" }}>
-            Roteiros Fixos
+          <h3 style={{ color: Cor.textoTurno, fontSize: "20px" }}>
+            Roteiros Turnos
           </h3>
           <div
             style={{
@@ -90,13 +89,13 @@ function ModeloFixosConteudo() {
             gap: 5,
             paddingBottom: 15,
             overflowY: "auto",
-            borderTop: `1px solid ${Cor.fixo}`,
+            borderTop: `1px solid ${Cor.turno}`,
             overflow: "auto",
             scrollbarColor: `${Cor.secundaria} ${Cor.base + "00"}`,
           }}
         >
-          {listaModelos.map((mv: any) => {
-            return <LinhaModeloFixo key={mv.id} mv={mv} />;
+          {listaModelosTurno.map((mv: any) => {
+            return <LinhaModeloTurno key={mv.id} mv={mv} />;
           })}
         </div>
       </div>
@@ -104,12 +103,12 @@ function ModeloFixosConteudo() {
   );
 }
 
-interface BtnNovoRoteiroFixoProps {
+interface BtnNovoRoteiroTurnoProps {
   $cor: string;
   $texto: string;
 }
 
-const BtnNovoRoteiroFixo = styled.div<BtnNovoRoteiroFixoProps>`
+const BtnNovoRoteiroTurno = styled.div<BtnNovoRoteiroTurnoProps>`
   display: flex;
   flex-direction: row;
   gap: 5px;
@@ -153,7 +152,7 @@ function Filtros({
 }) {
   const { Cor } = useTema();
 
-  const operId = useAdminLogado()?.operadora.id
+  const operId = useAdminLogado()?.operadora.id;
 
   const { listaMotoristas } = useMotorista(operId);
   const { listaClientes } = useListaClientes(operId || "0");
@@ -189,17 +188,17 @@ function Filtros({
               fontWeight: "bold",
             }}
           >
-            Consulta Roteiros Fixos
+            Consulta Roteiros Turnos
           </p>
           <p style={{ fontSize: 12, color: Cor.texto2, marginBottom: 5 }}>
             Gerencie e acompanhe os modelos cadastrados filtrando por dados
             específicos.
           </p>
         </div>
-        <BtnNovoRoteiroFixo
-          $cor={Cor.fixo}
-          $texto={Cor.textoFixo}
-          onClick={() => navigate("/novofixo")}
+        <BtnNovoRoteiroTurno
+          $cor={Cor.turno}
+          $texto={Cor.textoTurno}
+          onClick={() => navigate("/novomodeloturno")}
         >
           <p
             style={{
@@ -209,8 +208,8 @@ function Filtros({
           >
             history
           </p>
-          <p style={{ fontWeight: 500 }}>Novo Roteiro Fixo</p>
-        </BtnNovoRoteiroFixo>
+          <p style={{ fontWeight: 500 }}>Novo Roteiro Turno</p>
+        </BtnNovoRoteiroTurno>
       </div>
 
       <div
@@ -226,7 +225,7 @@ function Filtros({
           <p
             style={{
               fontSize: 14,
-              color: Cor.textoFixo + "BB",
+              color: Cor.textoTurno + "BB",
               fontWeight: "bold",
               margin: 5,
             }}
@@ -257,7 +256,7 @@ function Filtros({
           <p
             style={{
               fontSize: 14,
-              color: Cor.textoFixo + "BB",
+              color: Cor.textoTurno + "BB",
               fontWeight: "bold",
               margin: 5,
             }}
@@ -313,7 +312,7 @@ function Filtros({
           <p
             style={{
               fontSize: 14,
-              color: Cor.textoFixo + "BB",
+              color: Cor.textoTurno + "BB",
               fontWeight: "bold",
               margin: 5,
             }}
@@ -370,7 +369,7 @@ function Filtros({
           <p
             style={{
               fontSize: 14,
-              color: Cor.textoFixo + "BB",
+              color: Cor.textoTurno + "BB",
               fontWeight: "bold",
               margin: 5,
             }}
@@ -440,7 +439,7 @@ function Cabecalho() {
         alignItems: "center",
         paddingLeft: 5,
         paddingRight: 20,
-        backgroundColor: Cor.fixo,
+        backgroundColor: Cor.turno,
         marginBottom: -8,
       }}
     >
@@ -585,36 +584,25 @@ const LinhaModeloFixoStyled = styled.div<LinhaModeloFixoProps>`
   }
 `;
 
-function LinhaModeloFixo({ mv }: { mv: any }) {
+function LinhaModeloTurno({ mv }: { mv: any }) {
   const navigate = useNavigate();
 
-  const operId = useAdminLogado()?.operadora.id;
-
-  const [statusVoucher, setStatusVoucher] = useState<boolean>(mv.ativo);
   const { Cor } = useTema();
 
-  const { editarModeloVoucherFixo, loading } = useEditarModeloVoucherFixo(
-    String(operId),
-  );
-
-  const configEntrada = mv.configuracoes?.find(
-    (c: any) => c.tipo === "Entrada",
-  );
-  const configSaida = mv.configuracoes?.find((c: any) => c.tipo === "Saida");
   return (
     <LinhaModeloFixoStyled
-      $cor={statusVoucher ? Cor.texto2 : Cor.atencao}
-      onClick={() => navigate(`/editarfixo/${btoa(mv.id)}`)}
+      $cor={Cor.texto2}
+      onClick={() => navigate(`/editarturno/${btoa(mv.id)}`)}
     >
       <div
         style={{
           width: "20%",
-          height: 60,
+          height: 40,
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          border: `1px solid ${statusVoucher ? Cor.fixo : Cor.atencao}AA`,
-          backgroundColor: statusVoucher ? Cor.fixo + 10 : Cor.atencao + 10,
+          border: `1px solid ${Cor.turno}AA`,
+          backgroundColor: Cor.turno + 10,
           borderRadius: 8,
           padding: 5,
           overflow: "hidden",
@@ -622,7 +610,7 @@ function LinhaModeloFixo({ mv }: { mv: any }) {
       >
         <h5
           style={{
-            color: statusVoucher ? Cor.textoFixo : Cor.atencao,
+            color: Cor.textoTurno,
             textAlign: "center",
             fontSize: 14,
           }}
@@ -632,61 +620,32 @@ function LinhaModeloFixo({ mv }: { mv: any }) {
       </div>
       <div
         style={{
-          width: "20%",
-          height: 60,
+          width: "30%",
           display: "flex",
-          flexDirection: "column",
+          flexDirection: "row",
           justifyContent: "center",
-          alignItems: "flex-start",
+          alignItems: "center",
           padding: 10,
-          gap: 2,
+          gap: 10,
         }}
       >
-        <p style={{ color: statusVoucher ? Cor.textoFixo : Cor.atencao }}>
-          Origem: <strong>{mv.configuracoes[0]?.origem}</strong>
+        <p style={{ color: Cor.textoTurno }}>
+          Origem: <strong>{mv?.origem}</strong>
         </p>
         <div
           style={{
-            width: "40%",
-            height: 1,
-            backgroundColor: statusVoucher ? Cor.textoFixo : Cor.atencao,
+            width: 1,
+            height: "80%",
+            backgroundColor: Cor.textoTurno,
           }}
         />
-        <p style={{ color: statusVoucher ? Cor.textoFixo : Cor.atencao }}>
-          Destino: <strong>{mv.configuracoes[0]?.destino}</strong>
+        <p style={{ color: Cor.textoTurno }}>
+          Destino: <strong>{mv?.destino}</strong>
         </p>
       </div>
       <div
         style={{
-          width: "5%",
-          height: 60,
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <p
-          style={{
-            color: statusVoucher ? Cor.textoFixo : Cor.atencao,
-            textAlign: "center",
-          }}
-        >
-          {configEntrada ? "Entrada" : "-"}
-        </p>
-        <p
-          style={{
-            color: statusVoucher ? Cor.textoFixo : Cor.atencao,
-            textAlign: "center",
-          }}
-        >
-          {configSaida ? "Saída" : "-"}
-        </p>
-      </div>
-      <div
-        style={{
-          width: "10%",
-          height: 60,
+          width: "15%",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
@@ -696,7 +655,7 @@ function LinhaModeloFixo({ mv }: { mv: any }) {
       >
         <p
           style={{
-            color: statusVoucher ? Cor.textoFixo : Cor.atencao,
+            color: Cor.textoTurno,
             textAlign: "center",
           }}
         >
@@ -706,7 +665,6 @@ function LinhaModeloFixo({ mv }: { mv: any }) {
       <div
         style={{
           width: "15%",
-          height: 60,
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
@@ -716,79 +674,43 @@ function LinhaModeloFixo({ mv }: { mv: any }) {
       >
         <p
           style={{
-            color: statusVoucher ? Cor.textoFixo : Cor.atencao,
+            color: Cor.textoTurno,
             textAlign: "center",
           }}
         >
           {mv.unidadeCliente.nome}
         </p>
       </div>
+
       <div
         style={{
-          width: "25%",
-          height: 60,
+          width: "20%",
           display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          padding: 5,
           gap: 5,
-        }}
-      >
-        <p
-          style={{
-            color: statusVoucher ? Cor.textoFixo : Cor.atencao,
-            textAlign: "center",
-          }}
-        >
-          {configEntrada ? configEntrada.motorista.nome : "-"}
-        </p>
-        <p
-          style={{
-            color: statusVoucher ? Cor.textoFixo : Cor.atencao,
-            textAlign: "center",
-          }}
-        >
-          {configSaida ? configSaida.motorista.nome : "-"}
-        </p>
-      </div>
-      <div
-        style={{
-          width: "5%",
-          height: 60,
-          display: "flex",
-          justifyContent: "center",
+          justifyContent: "flex-end",
           alignItems: "center",
         }}
       >
-        <BtnDesativerModelo
-          $cor={statusVoucher ? Cor.ativo : Cor.atencao}
+        <BtnEditarModelo
+          $cor={Cor.primaria}
           onClick={(e) => {
             e.stopPropagation();
-            setStatusVoucher(!statusVoucher);
-            editarModeloVoucherFixo(mv.id, { ativo: !statusVoucher });
+            navigate(`/editarturno/${btoa(mv.id)}`);
           }}
         >
-          {loading ? (
-            <CircularProgress
-              size={24}
-              thickness={5}
-              sx={{
-                color: statusVoucher ? Cor.ativo : Cor.atencao,
-                "& .MuiCircularProgress-circle": {
-                  strokeLinecap: "round",
-                },
-              }}
-            />
-          ) : (
-            <p style={{ fontFamily: "Icone", userSelect: "none" }}>
-              {statusVoucher ? "autoplay" : "autopause"}
-            </p>
-          )}
-          {/* <p style={{ fontFamily: "Icone", userSelect: "none" }}>
-            progress_activity
-          </p> */}
-        </BtnDesativerModelo>
+          <p style={{ fontFamily: "Icone", userSelect: "none" }}>edit</p>
+        </BtnEditarModelo>
+        <BtnEditarModelo
+          $cor={Cor.textoTurno}
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate(`/gerarcouchersturno/${btoa(mv.id)}`);
+          }}
+        >
+          <p style={{ fontFamily: "Icone", userSelect: "none" }}>
+            arrow_upload_ready
+          </p>
+        </BtnEditarModelo>
       </div>
     </LinhaModeloFixoStyled>
   );
@@ -798,9 +720,9 @@ interface BtnDesativerModeloProps {
   $cor: string;
 }
 
-const BtnDesativerModelo = styled.div<BtnDesativerModeloProps>`
-  width: 90%;
-  height: 50px;
+const BtnEditarModelo = styled.div<BtnDesativerModeloProps>`
+  width: 40px;
+  height: 40px;
   display: flex;
   justify-content: center;
   align-items: center;
