@@ -59,23 +59,22 @@ export function useFaturamentoParcialMes(
 
 const GET_FATU_TOTAL = gql`
   query FaturamentoTotalOperadoraID(
-  $inicio: DateTime!
-  $fim: DateTime!
-  $operadoraId: ID!
-  $status: String
-) {
-  faturamentoTotalOperadoraID(
-    inicio: $inicio
-    fim: $fim
-    operadoraId: $operadoraId
-    status: $status
+    $inicio: DateTime!
+    $fim: DateTime!
+    $operadoraId: ID!
+    $status: String
   ) {
-    operadoraId
-    qtdVouchers
-    totalFaturado
+    faturamentoTotalOperadoraID(
+      inicio: $inicio
+      fim: $fim
+      operadoraId: $operadoraId
+      status: $status
+    ) {
+      operadoraId
+      qtdVouchers
+      totalFaturado
+    }
   }
-}
-
 `;
 
 interface Fatu_Total_Mes {
@@ -103,6 +102,43 @@ export function useFaturamentoTotalMes(
 
   return {
     faturamentoTotal: data?.faturamentoTotalOperadoraID,
+    loading,
+    error,
+  };
+}
+
+const GET_FATURAMENTO_DIARIO = gql`
+  query FaturamentoDiarioOperadora(
+    $inicio: DateTime!
+    $fim: DateTime!
+    $operadoraId: ID!
+  ) {
+    faturamentoDiarioOperadora(
+      inicio: $inicio
+      fim: $fim
+      operadoraId: $operadoraId
+    ) {
+      dia
+      valor
+    }
+  }
+`;
+
+export function useFaturamentoDiario(
+  inicio: string,
+  fim: string,
+  operadoraId: string,
+) {
+  const { data, loading, error } = useQuery(GET_FATURAMENTO_DIARIO, {
+    variables: {
+      inicio,
+      fim,
+      operadoraId,
+    },
+  });
+
+  return {
+    faturamentoDiario: data?.faturamentoDiarioOperadora,
     loading,
     error,
   };

@@ -28,6 +28,7 @@ import { ModelosTurnos } from "./telas/subtelas/modeloTurno/modelosTurnos";
 import { GerarVouchersTurno } from "./telas/subtelas/modeloTurno/novoTurno";
 import { EditarTurno } from "./telas/subtelas/modeloTurno/editarTurnos";
 import { NovoModeloTurno } from "./telas/subtelas/modeloTurno/novoModeloTurno";
+import { Pagamentos } from "./telas/subtelas/pagamentos";
 
 function App() {
   return (
@@ -43,6 +44,7 @@ function App() {
               <Route path="/configuracoes" element={<Configuracoes />} />
               <Route path="/empresas" element={<Empresas />} />
               <Route path="/financeiro" element={<Financeiro />} />
+              <Route path="/pagamentos" element={<Pagamentos />} />
               <Route path="/funcionarios" element={<Funcionarios />} />
               <Route
                 path="/editarfuncionario/:adminId"

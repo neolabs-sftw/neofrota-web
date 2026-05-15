@@ -513,6 +513,36 @@ export function useVouchersFiltrados(filtro: any) {
   };
 }
 
+const GET_VOUCHERS_RANKING = gql`
+  query VouchersFiltrados($filtro: FiltroVouchersInput!) {
+    vouchersFiltrados(filtro: $filtro) {
+      id
+      motorista {
+        id
+        nome
+        fotoMotorista
+      }
+    }
+  }
+`;
+
+export function useVouchersRanking(filtro: any) {
+  const { data, loading, error, refetch } = useQuery(GET_VOUCHERS_RANKING, {
+    variables: {
+      filtro: filtro,
+    },
+    fetchPolicy: "network-only",
+    skip: !filtro?.operadoraId,
+  });
+
+  return {
+    listaRanking: data ? data.vouchersFiltrados : [],
+    loading,
+    error,
+    refetch,
+  };
+}
+
 const GET_VOUCHERS_PREV = gql`
   query VoucherOperadoraData($operadoraId: ID!, $diaSelecionado: String!) {
     voucherOperadoraData(

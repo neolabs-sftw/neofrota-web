@@ -56,7 +56,7 @@ function NavMenu({ sidebar, logado }: { sidebar: boolean; logado: any }) {
       submenu: true,
       itensSubMenu: [
         { tela: "Recebimentos", icone: "money_bag", path: "/financeiro" },
-        { tela: "Pagamentos", icone: "money_bag", path: "/financeiro" },
+        { tela: "Pagamentos", icone: "money_bag", path: "/pagamentos" },
         { tela: "Lancamentos", icone: "money_bag", path: "/lancamentos" },
       ],
     },
@@ -127,7 +127,7 @@ function NavMenu({ sidebar, logado }: { sidebar: boolean; logado: any }) {
       submenu: true,
       itensSubMenu: [
         { tela: "Recebimentos", icone: "money_bag", path: "/financeiro" },
-        { tela: "Pagamentos", icone: "money_bag", path: "/financeiro" },
+        { tela: "Pagamentos", icone: "money_bag", path: "/pagamentos" },
         { tela: "Lancamentos", icone: "money_bag", path: "/lancamentos" },
       ],
     },

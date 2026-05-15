@@ -163,53 +163,6 @@ function HomeConteudo() {
               }}
             >
               <CardHistFaturamento />
-
-              <div
-                style={{
-                  width: "40%",
-                  height: "100%",
-                  borderRadius: "22px",
-                  backgroundColor: Cor.base2,
-                  boxShadow: Cor.sombra,
-                }}
-              ></div>
-            </div>
-            <div
-              style={{
-                width: "100%",
-                height: 350,
-                display: "flex",
-                flexDirection: "row",
-                gap: 10,
-              }}
-            >
-              <div
-                style={{
-                  width: "33%",
-                  height: "100%",
-                  borderRadius: "22px",
-                  backgroundColor: Cor.base2,
-                  boxShadow: Cor.sombra,
-                }}
-              ></div>
-              <div
-                style={{
-                  width: "33%",
-                  height: "100%",
-                  borderRadius: "22px",
-                  backgroundColor: Cor.base2,
-                  boxShadow: Cor.sombra,
-                }}
-              ></div>
-              <div
-                style={{
-                  width: "33%",
-                  height: "100%",
-                  borderRadius: "22px",
-                  backgroundColor: Cor.base2,
-                  boxShadow: Cor.sombra,
-                }}
-              ></div>
             </div>
           </div>
           {/* Fim da Segunda linha Lado Esquedo do Main */}
@@ -224,7 +177,6 @@ function HomeConteudo() {
               gap: 10,
             }}
           >
-            <CardRankingMotoristas />
             <CardRankingMotoristas />
           </div>
         </div>

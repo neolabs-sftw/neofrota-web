@@ -14,9 +14,9 @@ import { registerSW } from 'virtual:pwa-register'
 registerSW({ immediate: true })
 
 const httpLink = new HttpLink({
-  // uri: 'http://localhost:4000/graphql',
-  uri: "https://neofrota-api.vercel.app/graphql",
-  credentials: "include", // se você usa cookies/auth
+  uri: 'http://localhost:4000/graphql',
+  // uri: "https://neofrota-api.vercel.app/graphql",
+  credentials: "include",
 });
 
 const client = new ApolloClient({
