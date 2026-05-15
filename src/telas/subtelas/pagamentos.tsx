@@ -260,7 +260,7 @@ const BtnFiltrar = styled.div<BtnFiltrarProps>`
 function ListaMotoristaPagamentos() {
   const { Cor } = useTema();
 
-  const listaMotoristasPagamentos: any = [];
+  // const listaMotoristasPagamentos: any = [];
   return (
     <div
       style={{
