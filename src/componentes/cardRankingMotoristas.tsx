@@ -1,4 +1,4 @@
-import { useState } from "react";
+
 import { useAdminLogado } from "../hooks/AdminLogado";
 import { useTema } from "../hooks/temaContext";
 import { useVouchersRanking } from "../hooks/useVouchers";
@@ -18,7 +18,7 @@ function CardRankingMotoristas() {
   const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
   const ultimoDia = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
 
-  const [filtro, setFiltro] = useState<any>({
+  const filtro = {
     operadoraId: String(operadoraId),
     adminUsuarioId: "",
     dataFim: formatarParaYMD(ultimoDia),
@@ -28,7 +28,7 @@ function CardRankingMotoristas() {
     natureza: "",
     solicitanteId: "",
     status: "Concluido",
-  });
+  };
   const { listaRanking } = useVouchersRanking(filtro);
 
   const rankingMotoristas = listaRanking.reduce((acc: any, voucher: any) => {
