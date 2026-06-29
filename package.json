@@ -30,6 +30,7 @@
     "react-spinners": "^0.17.0",
     "recharts": "^3.8.1",
     "styled-components": "^6.1.19",
+    "workbox-window": "^7.4.1",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
