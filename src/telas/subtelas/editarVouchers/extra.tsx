@@ -5,7 +5,6 @@ import { useAdminLogado } from "../../../hooks/AdminLogado";
 import { useListaClientes } from "../../../hooks/useEmpresaCliente";
 import { useUnidadeCliente } from "../../../hooks/useUnidadesClientes";
 import { useEffect, useState } from "react";
-import { useModelosFixos } from "../../../hooks/useModelosFixos";
 import { useMotorista } from "../../../hooks/useMotorista";
 import assPadrao from "../../../assets/image/not_sing.png";
 import { usePassageiros } from "../../../hooks/usePassageiros";
