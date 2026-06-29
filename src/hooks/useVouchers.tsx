@@ -870,6 +870,29 @@ export function useVoucherExtraId(voucherId: string) {
   };
 }
 
+const UPDATE_VOUCHER = gql`
+  mutation EditarVoucher($input: VoucherUpdateInput!) {
+    editarVoucher(input: $input) {
+      id
+    }
+  }
+`;
+
+export function useEditarVoucher() {
+  const [editarVoucher, { data, loading, error }] = useMutation(UPDATE_VOUCHER);
+
+  const editar = (input: any) => {
+    return editarVoucher({ variables: { input } });
+  };
+
+  return {
+    editar,
+    data,
+    loading,
+    error,
+  };
+}
+
 const UPDATE_VOUCHERS_EM_MASSA = gql`
   mutation EditarVouchersEmMassa($input: EditarVouchersEmMassaInput!) {
     editarVouchersEmMassa(input: $input) {

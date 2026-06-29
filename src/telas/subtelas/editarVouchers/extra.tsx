@@ -1,0 +1,2369 @@
+import { useParams } from "react-router-dom";
+import { useVoucherExtraId } from "../../../hooks/useVouchers";
+import { useTema } from "../../../hooks/temaContext";
+import { useAdminLogado } from "../../../hooks/AdminLogado";
+import { useListaClientes } from "../../../hooks/useEmpresaCliente";
+import { useUnidadeCliente } from "../../../hooks/useUnidadesClientes";
+import { useEffect, useState } from "react";
+import { useModelosFixos } from "../../../hooks/useModelosFixos";
+import { useMotorista } from "../../../hooks/useMotorista";
+import assPadrao from "../../../assets/image/not_sing.png";
+import { usePassageiros } from "../../../hooks/usePassageiros";
+import BtnCriarPassageiro from "../empresaCliente/btnComponentes/criarPassageiro";
+import { usePedagios } from "../../../hooks/usePedagios";
+import styled from "styled-components";
+import { useRotasExtas } from "../../../hooks/useRotasExtras";
+
+export default function EditarVoucherFixo() {
+  const { id } = useParams();
+  const Cor = useTema().Cor;
+
+  const { voucherExtraId, loading: loadingExtra } = useVoucherExtraId(
+    atob(String(id)),
+  );
+
+  const [empresaCliente, setEmpresaCliente] = useState<any>(0);
+  const [unidadeEmpresaCliente, setUnidadeEmpresaCliente] = useState<any>(0);
+  const [rota, setRota] = useState<any>(0);
+  const [motorista, setMotorista] = useState<any>(0);
+  const [dataHoraProgramada, setDataHoraProgramada] = useState<any>(0);
+  const [dataHoraFinalizcao, setDataHoraFinalizacao] = useState<any>(0);
+  const [observacao, setObservacao] = useState<any>("");
+  const [observacaoMotorista, setObservacaoMotorista] = useState<any>("");
+  const [carregandoEmpresa, setCarregandoEmpresa] = useState<boolean>(false);
+  const [passageirosVoucher, setPassageirosVoucher] = useState<any[]>([]);
+
+  const [valorViagem, setValorViagem] = useState(0);
+  const [valorViagemRepasse, setValorViagemRepasse] = useState(0);
+  const [valorDeslocamento, setValorDeslocamento] = useState(0);
+  const [valorDeslocamentoRepasse, setValorDeslocamentoRepasse] = useState(0);
+  const [valorHoraParada, setValorHoraParada] = useState(0);
+  const [valorHoraParadaRepasse, setValorHoraParadaRepasse] = useState(0);
+
+  const [qntTempoParado, setQntTempoParado] = useState(0);
+
+  const [valorPedagio, setValorPedagio] = useState("");
+
+  useEffect(() => {
+    setEmpresaCliente(voucherExtraId?.empresaCliente.id || 0);
+    setUnidadeEmpresaCliente(voucherExtraId?.unidadeCliente.id || 0);
+    setRota(voucherExtraId?.rota || null);
+    setMotorista(voucherExtraId?.motorista || null);
+    setDataHoraProgramada(voucherExtraId?.dataHoraProgramado || "");
+    setDataHoraFinalizacao(voucherExtraId?.dataHoraConclusao || "");
+    setObservacao(voucherExtraId?.observacao || "");
+    setObservacaoMotorista(voucherExtraId?.observacaoMotorista || "");
+    if (voucherExtraId?.status === "Concluido") {
+      setPassageirosVoucher(voucherExtraId.passageiros);
+    } else if (
+      voucherExtraId?.passageiros &&
+      Array.isArray(voucherExtraId?.passageiros)
+    ) {
+      const passageirosFormatados = voucherExtraId?.passageiros.map(
+        (item: any) => {
+          if (item.passageiroId) {
+            return item.passageiroId;
+          }
+          return item;
+        },
+      );
+
+      setPassageirosVoucher(passageirosFormatados);
+    } else {
+      setPassageirosVoucher([]);
+    }
+    setValorViagem(voucherExtraId?.valorViagem || 0);
+    setValorViagemRepasse(voucherExtraId?.valorViagemRepasse || 0);
+    setValorDeslocamento(voucherExtraId?.valorDeslocamento || 0);
+    setValorDeslocamentoRepasse(voucherExtraId?.valorDeslocamentoRepasse || 0);
+    setValorHoraParada(voucherExtraId?.valorHoraParada || 0);
+    setValorHoraParadaRepasse(voucherExtraId?.valorHoraParadaRepasse || 0);
+    setValorPedagio(voucherExtraId?.valorPedagio || 0);
+    setQntTempoParado(voucherExtraId?.qntTempoParado || 0);
+  }, [carregandoEmpresa, loadingExtra]);
+
+  console.log(voucherExtraId);
+
+  return (
+    <div
+      style={{
+        width: "100%",
+        display: "flex",
+        padding: "25px 15px 15px 15px",
+        flexDirection: "column",
+        justifyContent: "flex-start",
+        alignItems: "center",
+        gap: 10,
+      }}
+    >
+      <div
+        style={{
+          width: "100%",
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "flex-start",
+          alignItems: "center",
+          gap: 10,
+        }}
+      >
+        <h3 style={{ color: Cor.textoExtra, fontSize: "20px" }}>
+          Editar o Voucher {atob(String(id))}
+        </h3>
+        <div
+          style={{
+            width: "75%",
+            height: 1,
+            backgroundColor: Cor.primaria,
+          }}
+        />
+      </div>
+      <DadosGerais
+        empresaCliente={empresaCliente}
+        unidadeCliente={unidadeEmpresaCliente}
+        rota={rota}
+        setEmpresaCliente={setEmpresaCliente}
+        setUnidadeEmpresaCliente={setUnidadeEmpresaCliente}
+        setRota={setRota}
+        setCarregandoEmpresa={setCarregandoEmpresa}
+      />
+      <DetalhesDoVoucher
+        motorista={motorista}
+        setMotorista={setMotorista}
+        dataHoraProgramada={dataHoraProgramada}
+        setDataHoraProgramada={setDataHoraProgramada}
+        dataHoraFinalizacao={dataHoraFinalizcao}
+        observacao={observacao}
+        setObservacao={setObservacao}
+        observacaoMotorista={observacaoMotorista}
+        carregandoEmpresa={carregandoEmpresa}
+        assinatura={voucherExtraId?.assinatura || ""}
+        status={voucherExtraId?.status || false}
+        carro={voucherExtraId?.carro || ""}
+      />
+      <ValoresFixo
+        valorViagem={valorViagem}
+        setValorViagem={setValorViagem}
+        valorViagemRepasse={valorViagemRepasse}
+        setValorViagemRepasse={setValorViagemRepasse}
+        valorDeslocamento={valorDeslocamento}
+        setValorDeslocamento={setValorDeslocamento}
+        valorDeslocamentoRepasse={valorDeslocamentoRepasse}
+        setValorDeslocamentoRepasse={setValorDeslocamentoRepasse}
+        valorHoraParada={valorHoraParada}
+        setValorHoraParada={setValorHoraParada}
+        valorHoraParadaRepasse={valorHoraParadaRepasse}
+        setValorHoraParadaRepasse={setValorHoraParadaRepasse}
+        pedagio={valorPedagio}
+        setPedagio={setValorPedagio}
+        qntTempoParado={qntTempoParado}
+        setQntTempoParado={setQntTempoParado}
+      />
+      <IncluirPassageiros
+        empresaCliente={empresaCliente}
+        passageirosVoucher={passageirosVoucher}
+        setPassageirosVoucher={setPassageirosVoucher}
+        statusVoucher={voucherExtraId?.status || false}
+      />
+      <SalvarInformacoes v={voucherExtraId} />
+    </div>
+  );
+}
+
+function DadosGerais({
+  empresaCliente,
+  unidadeCliente,
+  rota,
+  setEmpresaCliente,
+  setUnidadeEmpresaCliente,
+  setRota,
+  setCarregandoEmpresa,
+}: {
+  empresaCliente: any;
+  unidadeCliente: any;
+  rota: any;
+  setEmpresaCliente: any;
+  setUnidadeEmpresaCliente: any;
+  setRota: any;
+  setCarregandoEmpresa: any;
+}) {
+  const Cor = useTema().Cor;
+
+  const operId = useAdminLogado()?.operadora.id;
+
+  const { listaClientes: listaClientesTotal } = useListaClientes(operId || "0");
+
+  const listaClientes = listaClientesTotal?.filter(
+    (c: any) => c.statusCliente === true,
+  );
+
+  const { listaUnidades: listaUnidadesTotal, loading } = useUnidadeCliente(
+    empresaCliente || "0",
+  );
+
+  const listaUnidades = listaUnidadesTotal?.filter(
+    (u: any) => u.statusUnidadeCliente === true,
+  );
+
+  useEffect(() => {
+    setCarregandoEmpresa(loading);
+  }, [loading]);
+
+  const { listaRotasExtras } = useRotasExtas(empresaCliente);
+
+  return (
+    <div
+      style={{
+        width: "100%",
+        padding: 15,
+        marginTop: 10,
+        backgroundColor: Cor.base2,
+        borderRadius: 22,
+        boxShadow: Cor.sombra,
+        opacity: loading ? 0.5 : 1,
+      }}
+    >
+      <div
+        style={{
+          width: "100%",
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "space-between",
+        }}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <p
+            style={{
+              fontSize: 14,
+              color: Cor.textoExtra,
+              fontWeight: "bold",
+            }}
+          >
+            Principais Informações do Voucher
+          </p>
+          <p style={{ fontSize: 12, color: Cor.texto2, marginBottom: 5 }}>
+            A baixo principais dados do voucher fixo.
+          </p>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "space-between",
+            gap: 35,
+          }}
+        >
+          <div
+            style={{
+              width: 200,
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <p
+              style={{
+                fontSize: 14,
+                color: Cor.textoExtra + 90,
+                fontWeight: "bold",
+                margin: 5,
+              }}
+            >
+              Natureza
+            </p>
+            <div
+              style={{
+                width: "100%",
+                border: `1px solid ${Cor.texto2 + 50}`,
+                padding: 10,
+                borderRadius: 14,
+              }}
+            >
+              <select
+                name=""
+                id=""
+                style={{
+                  outline: "none",
+                  border: "none",
+                  width: "100%",
+                  backgroundColor: "transparent",
+                  color: Cor.texto1,
+                }}
+                // onChange={(e) => setEmpresaCliente(e.target.value)}
+                // value={empresaCliente}
+              >
+                <option
+                  value={""}
+                  style={{ backgroundColor: Cor.base2, color: Cor.texto2 }}
+                >
+                  Fixo
+                </option>
+                <option
+                  value={""}
+                  style={{ backgroundColor: Cor.base2, color: Cor.texto2 }}
+                >
+                  Extra
+                </option>
+                <option
+                  value={""}
+                  style={{ backgroundColor: Cor.base2, color: Cor.texto2 }}
+                >
+                  Turno
+                </option>
+              </select>
+            </div>
+          </div>
+          <div
+            style={{
+              width: 200,
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <p
+              style={{
+                fontSize: 14,
+                color: Cor.textoExtra + 90,
+                fontWeight: "bold",
+                margin: 5,
+              }}
+            >
+             Tipo
+            </p>
+            <div
+              style={{
+                width: "100%",
+                border: `1px solid ${Cor.texto2 + 50}`,
+                padding: 10,
+                borderRadius: 14,
+              }}
+            >
+              <select
+                name=""
+                id=""
+                style={{
+                  outline: "none",
+                  border: "none",
+                  width: "100%",
+                  backgroundColor: "transparent",
+                  color: Cor.texto1,
+                }}
+                // onChange={(e) => setEmpresaCliente(e.target.value)}
+                // value={empresaCliente}
+              >
+                <option
+                  value={""}
+                  style={{ backgroundColor: Cor.base2, color: Cor.texto2 }}
+                >
+                  Fixo
+                </option>
+                <option
+                  value={""}
+                  style={{ backgroundColor: Cor.base2, color: Cor.texto2 }}
+                >
+                  Extra
+                </option>
+                <option
+                  value={""}
+                  style={{ backgroundColor: Cor.base2, color: Cor.texto2 }}
+                >
+                  Turno
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          width: "100%",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <div style={{ display: "flex", flexDirection: "column", width: "32%" }}>
+          <p
+            style={{
+              fontSize: 14,
+              color: Cor.textoExtra + 90,
+              fontWeight: "bold",
+              margin: 5,
+            }}
+          >
+            Cliente:
+          </p>
+          <div
+            style={{
+              width: "100%",
+              border: `1px solid ${Cor.texto2 + 50}`,
+              padding: 10,
+              borderRadius: 14,
+            }}
+          >
+            <select
+              name=""
+              id=""
+              style={{
+                outline: "none",
+                border: "none",
+                width: "100%",
+                backgroundColor: "transparent",
+                color: Cor.texto1,
+              }}
+              onChange={(e) => setEmpresaCliente(e.target.value)}
+              value={empresaCliente}
+              disabled
+            >
+              <option
+                value={""}
+                style={{ backgroundColor: Cor.base2, color: Cor.texto2 + 70 }}
+              >
+                Selecione uma Empresa
+              </option>
+              {listaClientes?.map((cliente: any) => {
+                return (
+                  <option
+                    value={cliente.id}
+                    key={cliente?.id}
+                    style={{
+                      backgroundColor: Cor.base2,
+                      padding: 15,
+                      margin: 10,
+                    }}
+                  >
+                    {cliente?.nome}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", width: "32%" }}>
+          <p
+            style={{
+              fontSize: 14,
+              color: Cor.textoExtra + 90,
+              fontWeight: "bold",
+              margin: 5,
+            }}
+          >
+            Unidade:
+          </p>
+          <div
+            style={{
+              width: "100%",
+              border: `1px solid ${Cor.texto2 + 50}`,
+              padding: 10,
+              borderRadius: 14,
+            }}
+          >
+            <select
+              name=""
+              id=""
+              style={{
+                outline: "none",
+                border: "none",
+                width: "100%",
+                backgroundColor: "transparent",
+                color: Cor.texto1,
+              }}
+              onChange={(e) => setUnidadeEmpresaCliente(e.target.value)}
+              value={unidadeCliente}
+              disabled
+            >
+              <option
+                value={""}
+                style={{ backgroundColor: Cor.base2, color: Cor.texto2 + 70 }}
+              >
+                Selecione uma Unidade
+              </option>
+              {listaUnidades?.map((Unidade: any) => {
+                return (
+                  <option
+                    value={Unidade?.id}
+                    key={Unidade?.id}
+                    style={{
+                      backgroundColor: Cor.base2,
+                      padding: 15,
+                      margin: 10,
+                    }}
+                  >
+                    {Unidade?.nome}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", width: "32%" }}>
+          <p
+            style={{
+              fontSize: 14,
+              color: Cor.textoExtra + 90,
+              fontWeight: "bold",
+              margin: 5,
+            }}
+          >
+            Rota:
+          </p>
+          <div
+            style={{
+              width: "100%",
+              border: `1px solid ${Cor.texto2 + 50}`,
+              padding: 10,
+              borderRadius: 14,
+            }}
+          >
+            <select
+              name=""
+              id=""
+              style={{
+                outline: "none",
+                border: "none",
+                width: "100%",
+                backgroundColor: "transparent",
+                color: Cor.texto1,
+              }}
+              onChange={(e) => setRota(e.target.value)}
+              value={rota?.id || 0}
+            >
+              <option
+                value={""}
+                style={{ backgroundColor: Cor.base2, color: Cor.texto2 + 70 }}
+              >
+                Selecione a Rota
+              </option>
+              {listaRotasExtras?.map((rota: any) => {
+                return (
+                  <option
+                    value={rota?.id}
+                    key={rota?.id}
+                    style={{
+                      backgroundColor: Cor.base2,
+                      padding: 15,
+                      margin: 10,
+                    }}
+                  >
+                    {rota?.origem} x {rota?.destino}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DetalhesDoVoucher({
+  motorista,
+  setMotorista,
+  dataHoraProgramada,
+  setDataHoraProgramada,
+  dataHoraFinalizacao,
+  observacao,
+  setObservacao,
+  observacaoMotorista,
+  carregandoEmpresa,
+  assinatura,
+  status,
+  carro,
+}: {
+  motorista: any;
+  setMotorista: any;
+  dataHoraProgramada: any;
+  setDataHoraProgramada: any;
+  dataHoraFinalizacao: any;
+  observacao: any;
+  setObservacao: any;
+  observacaoMotorista: any;
+  carregandoEmpresa: any;
+  assinatura: any;
+  status: any;
+  carro: any;
+}) {
+  const Cor = useTema().Cor;
+
+  const operId = useAdminLogado()?.operadora.id;
+
+  const { listaMotoristas } = useMotorista(operId);
+
+  const formatarParaInputP = (dataString: any) => {
+    if (!dataString) return "";
+    return dataString.substring(0, 16);
+  };
+
+  const formatarParaInputF = (dataString: any) => {
+    if (!dataString) return "";
+
+    const data = new Date(dataString);
+
+    if (isNaN(data.getTime())) return "";
+
+    const timezoneOffset = data.getTimezoneOffset() * 60000;
+
+    const dataLocal = new Date(data.getTime() - timezoneOffset);
+
+    return dataLocal.toISOString().substring(0, 16);
+  };
+
+  return (
+    <div
+      style={{
+        width: "100%",
+        padding: 15,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+        backgroundColor: Cor.base2,
+        borderRadius: 22,
+        boxShadow: Cor.sombra,
+        opacity: carregandoEmpresa ? 0.5 : 1,
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "space-between",
+          gap: 15,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+            width: "60%",
+          }}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <p style={{ fontSize: 12, color: Cor.texto2, marginBottom: 5 }}>
+              Detalhes da viagem: Rota, Motorista, Data e Hora Programado, Data
+              e Hora Finalizado.
+            </p>
+          </div>
+
+          <div
+            style={{
+              width: "100%",
+              display: "flex",
+              flexDirection: "row",
+              gap: 15,
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <div
+              style={{ display: "flex", flexDirection: "column", width: "40%" }}
+            >
+              <p
+                style={{
+                  fontSize: 14,
+                  color: Cor.textoExtra + 90,
+                  fontWeight: "bold",
+                  margin: 5,
+                }}
+              >
+                Motorista Entrada:
+              </p>
+              <div
+                style={{
+                  width: "100%",
+                  border: `1px solid ${Cor.texto2 + 50}`,
+                  padding: 10,
+                  borderRadius: 14,
+                }}
+              >
+                <select
+                  name=""
+                  id=""
+                  style={{
+                    outline: "none",
+                    border: "none",
+                    width: "100%",
+                    backgroundColor: "transparent",
+                    color: Cor.texto1,
+                    opacity: 1,
+                  }}
+                  onChange={(e) => setMotorista(e.target.value)}
+                  value={motorista?.id || 0}
+                >
+                  <option
+                    value=""
+                    style={{
+                      backgroundColor: Cor.base2,
+                      color: Cor.texto2 + 70,
+                    }}
+                  >
+                    Selecione um Motorista
+                  </option>
+                  {listaMotoristas?.map((motorista: any) => {
+                    return (
+                      <option
+                        value={motorista?.id}
+                        key={motorista?.id}
+                        style={{
+                          backgroundColor: Cor.base2,
+                        }}
+                      >
+                        {motorista?.nome}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+            </div>
+            <div
+              style={{ display: "flex", flexDirection: "column", width: "30%" }}
+            >
+              <p
+                style={{
+                  fontSize: 14,
+                  color: Cor.textoExtra + 90,
+                  fontWeight: "bold",
+                  margin: 5,
+                }}
+              >
+                Data/Hora Programação:
+              </p>
+              <div
+                style={{
+                  width: "100%",
+                  border: `1px solid ${Cor.texto2 + 50}`,
+                  padding: 10,
+                  borderRadius: 14,
+                  position: "relative",
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <input
+                  type="datetime-local"
+                  style={{
+                    backgroundColor: "transparent",
+                    color: Cor.texto1,
+                    width: "100%",
+                    outline: "none",
+                    border: "none",
+                    zIndex: 8,
+                  }}
+                  value={formatarParaInputP(dataHoraProgramada)}
+                  onChange={(e: any) => {
+                    setDataHoraProgramada(`${e.target.value}:00.000Z`);
+                  }}
+                />
+                <div
+                  style={{
+                    width: 25,
+                    height: 25,
+                    backgroundColor: "#F4F4F4",
+                    borderRadius: 22,
+                    position: "absolute",
+                    right: 6,
+                    alignSelf: "center",
+                  }}
+                />
+              </div>
+            </div>
+            <div
+              style={{ display: "flex", flexDirection: "column", width: "30%" }}
+            >
+              <p
+                style={{
+                  fontSize: 14,
+                  color:
+                    status === "Concluido" ? Cor.texto2 : Cor.textoExtra + "CC",
+                  fontWeight: "bold",
+                  margin: 5,
+                }}
+              >
+                Data/Hora Finalização:
+              </p>
+              <div
+                style={{
+                  width: "100%",
+                  border: `1px solid ${Cor.texto2 + 50}`,
+                  padding: 10,
+                  backgroundColor:
+                    status === "Concluido" ? Cor.ativo + 30 : "transparent",
+                  borderRadius: 14,
+                  position: "relative",
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <input
+                  type="datetime-local"
+                  style={{
+                    backgroundColor: "transparent",
+                    color: status === "Concluido" ? Cor.ativo : Cor.texto1,
+                    fontWeight: status === "Concluido" ? "bold" : "normal",
+                    width: "100%",
+                    outline: "none",
+                    border: "none",
+                    zIndex: 8,
+                  }}
+                  value={formatarParaInputF(dataHoraFinalizacao)}
+                  onChange={() => {
+                    // setDataHoraEntrada(`${e.target.value}:00.000Z`);
+                  }}
+                />
+                <div
+                  style={{
+                    width: 25,
+                    height: 25,
+                    backgroundColor: "#F4F4F4",
+                    borderRadius: 22,
+                    position: "absolute",
+                    right: 6,
+                    alignSelf: "center",
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+          <div
+            style={{
+              width: "100%",
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                width: "100%",
+              }}
+            >
+              <p
+                style={{
+                  fontSize: 14,
+                  color: Cor.textoExtra + 90,
+                  fontWeight: "bold",
+                  margin: 5,
+                }}
+              >
+                Obsercação
+              </p>
+              <input
+                placeholder="Digite aqui sua observação..."
+                value={observacao}
+                onChange={(e) => setObservacao(e.target.value)}
+                type="text"
+                style={{
+                  width: "100%",
+                  color: Cor.texto1,
+                  padding: 10,
+                  borderRadius: 14,
+                  border: `1px solid ${Cor.texto2 + 50}`,
+                  outline: "none",
+                  backgroundColor: "transparent",
+                }}
+              />
+            </div>
+          </div>
+          <div
+            style={{
+              width: "100%",
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                width: "100%",
+              }}
+            >
+              <p
+                style={{
+                  fontSize: 14,
+                  color: Cor.textoExtra + 90,
+                  fontWeight: "bold",
+                  margin: 5,
+                }}
+              >
+                Obsercação do Motorista
+              </p>
+              <input
+                placeholder="Sem Observação do Motorista"
+                value={observacaoMotorista}
+                // onChange={(e) => setObersevacao(e.target.value)}
+                type="text"
+                style={{
+                  width: "100%",
+                  color: Cor.texto1,
+                  padding: 10,
+                  borderRadius: 14,
+                  border: `1px solid ${Cor.secundaria + 50}`,
+                  outline: "none",
+                  backgroundColor:
+                    observacaoMotorista !== ""
+                      ? Cor.primaria + 60
+                      : "transparent",
+                  fontWeight: "bold",
+                }}
+              />
+            </div>
+          </div>
+        </div>
+        <Assinatura v={assinatura} />
+        <DetalhesCarro carro={carro} motorista={motorista} />
+      </div>
+    </div>
+  );
+}
+
+function DetalhesCarro({ carro, motorista }: { carro: any; motorista: any }) {
+  const Cor = useTema().Cor;
+  console.log(motorista, carro);
+  const normalize = (text: string) => {
+    if (!text) return "";
+    return text
+      .normalize("NFD") // separa acento
+      .replace(/[\u0300-\u036f]/g, "") // remove acento
+      .toLowerCase()
+      .replace(/\s+/g, "_"); // troca espaços por _
+  };
+  const imgCarro = carro
+    ? `https://iyqleanlhzcnndzuugkg.supabase.co/storage/v1/object/public/neofrotabkt/carros/${normalize(carro.marca)}/${normalize(carro.modelo)}/${normalize(carro.cor)}.png`
+    : "";
+  return (
+    <div
+      style={{
+        width: "20%",
+        backgroundColor: Cor.texto2 + 20,
+        borderRadius: 18,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "flex-start",
+        gap: 5,
+        padding: 10,
+        border: `1px solid ${Cor.texto2 + 20}`,
+        scrollbarColor: `${Cor.secundaria} ${Cor.base + "00"}`,
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          gap: 5,
+          justifyContent: "space-between",
+        }}
+      >
+        <img
+          src={imgCarro}
+          alt=""
+          style={{ width: "60%", objectFit: "contain" }}
+        />
+        <img
+          src={motorista?.fotoMotorista || ""}
+          alt=""
+          style={{ width: "30%", objectFit: "cover", borderRadius: 5 }}
+        />
+      </div>
+      <div style={{ width: "100%", height: 1, backgroundColor: Cor.texto2 }} />
+      <p
+        style={{
+          fontSize: 14,
+          color: Cor.texto1,
+          fontWeight: "bold",
+          margin: 5,
+        }}
+      >
+        Carro: {carro.marca} {carro.modelo}
+      </p>
+      <p
+        style={{
+          fontSize: 14,
+          color: Cor.texto1,
+          fontWeight: "bold",
+          margin: 5,
+        }}
+      >
+        Placa: {carro.placa}
+      </p>
+      <div
+        style={{
+          width: "100%",
+          backgroundColor:
+            motorista?.statusCnh === true ? Cor.ativo + 20 : Cor.inativo + 20,
+          padding: 5,
+          borderRadius: 8,
+          border: `1px solid ${motorista?.statusCnh === true ? Cor.ativo + 30 : Cor.inativo + 80}`,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <p
+          style={{
+            fontSize: 14,
+            color: motorista?.statusCnh === true ? Cor.ativo : Cor.inativo,
+            fontWeight: "bold",
+          }}
+        >
+          CNH - {motorista?.statusCnh === true ? "Válida" : "Vencida"}
+        </p>
+      </div>
+      <div
+        style={{
+          width: "100%",
+          backgroundColor:
+            carro.vCrlv === true ? Cor.ativo + 20 : Cor.inativo + 20,
+          padding: 5,
+          borderRadius: 8,
+          border: `1px solid ${carro.vCrlv === true ? Cor.ativo + 30 : Cor.inativo + 80}`,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <p
+          style={{
+            fontSize: 14,
+            color: carro.vCrlv === true ? Cor.ativo : Cor.inativo,
+            fontWeight: "bold",
+          }}
+        >
+          CRLV - {carro.vCrlv === true ? "Válida" : "Vencida"}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function Assinatura({ v }: { v: any }) {
+  const Cor = useTema().Cor;
+  return (
+    <div
+      style={{
+        width: "20%",
+        backgroundColor: Cor.texto2 + 20,
+        borderRadius: 18,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-start",
+        gap: 5,
+        padding: 10,
+        border: `1px solid ${Cor.texto2 + 20}`,
+        scrollbarColor: `${Cor.secundaria} ${Cor.base + "00"}`,
+      }}
+    >
+      <p style={{ fontSize: 12, color: Cor.texto1 }}>Assinatura:</p>
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          borderRadius: 10,
+          backgroundColor: Cor.texto2 + 20,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 5,
+        }}
+      >
+        <img
+          src={v || assPadrao}
+          style={{
+            width: "100%",
+            height: "100%",
+            borderRadius: 6,
+            backgroundColor: "#f4f4f4",
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function IncluirPassageiros({
+  statusVoucher,
+  empresaCliente,
+  passageirosVoucher,
+  setPassageirosVoucher,
+}: {
+  statusVoucher: any;
+  empresaCliente: any;
+  passageirosVoucher: any;
+  setPassageirosVoucher: any;
+}) {
+  const Cor = useTema().Cor;
+
+  const desabilitado = !passageirosVoucher || passageirosVoucher.length === 0;
+  return (
+    <div
+      style={{
+        width: "100%",
+        padding: 15,
+        display: "flex",
+        flexDirection: "column",
+        gap: 15,
+        justifyContent: "space-between",
+        backgroundColor: Cor.base2,
+        borderRadius: 22,
+        boxShadow: Cor.sombra,
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "start",
+        }}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <p
+            style={{
+              fontSize: 14,
+              color: Cor.textoExtra,
+              fontWeight: "bold",
+            }}
+          >
+            Passageiros:
+          </p>
+          <p style={{ fontSize: 12, color: Cor.texto2, marginBottom: 5 }}>
+            Adicione abaixo os Passageiros ao voucher.
+          </p>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            gap: 10,
+            alignItems: "center",
+            height: 35,
+          }}
+        >
+          <p style={{ color: Cor.texto2, fontSize: 12 }}>
+            Total de Passageiros adicionados{" "}
+            <strong style={{ fontSize: 14, color: Cor.textoExtra }}>
+              {passageirosVoucher.length}
+            </strong>
+          </p>
+          {statusVoucher === "Aberto" ? (
+            <>
+              <SeletorPassageiro
+                empresaCliente={empresaCliente}
+                passageirosVoucher={passageirosVoucher}
+                setPassageirosVoucher={setPassageirosVoucher}
+              />
+              <button
+                disabled={desabilitado}
+                style={{
+                  aspectRatio: 1,
+                  width: 35,
+                  backgroundColor: desabilitado
+                    ? Cor.texto2 + 50
+                    : Cor.atencao + 50,
+                  display: "flex",
+                  border: "none",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  borderRadius: 12,
+                  cursor: desabilitado ? "default" : "pointer",
+                }}
+                onClick={() => setPassageirosVoucher([])}
+              >
+                <p
+                  style={{
+                    fontFamily: "Icone",
+                    fontWeight: "bold",
+                    color: desabilitado ? Cor.texto2 : Cor.atencao,
+                  }}
+                >
+                  delete
+                </p>
+              </button>
+            </>
+          ) : null}
+        </div>
+      </div>
+      <div
+        style={{
+          width: "100%",
+          height: 250,
+          padding: 15,
+          display: "flex",
+          flexDirection: "column",
+          backgroundColor: Cor.base,
+          borderRadius: 22,
+          boxShadow: Cor.sombra,
+          gap: 5,
+          overflowY: "auto",
+          scrollbarWidth: "none",
+        }}
+      >
+        {passageirosVoucher.map((passageiro: any) => {
+          const selecionado = passageirosVoucher.some(
+            (p: any) => p.id === passageiro.id,
+          );
+          if (statusVoucher === "Concluido") {
+            return <CardPassageiroVoucher key={passageiro.id} p={passageiro} />;
+          } else {
+            return (
+              <LinhaPassageiro
+                passageiro={passageiro}
+                selecionado={false}
+                btnAdd={selecionado}
+                setPassageirosVoucher={setPassageirosVoucher}
+                key={passageiro.id}
+              />
+            );
+          }
+        })}
+      </div>
+    </div>
+  );
+}
+
+function SeletorPassageiro({
+  empresaCliente,
+  passageirosVoucher,
+  setPassageirosVoucher,
+}: {
+  empresaCliente: any;
+  passageirosVoucher: any;
+  setPassageirosVoucher: any;
+}) {
+  const { listaPassageiro } = usePassageiros(empresaCliente ?? "");
+
+  const desabilitado = !listaPassageiro || listaPassageiro.length === 0;
+
+  const [cxPesquisa, setCxPesquisa] = useState<boolean>(false);
+
+  const { Cor } = useTema();
+
+  return (
+    <>
+      <button
+        disabled={desabilitado}
+        style={{
+          height: 35,
+          backgroundColor: desabilitado ? Cor.texto2 + 50 : Cor.fixo + 50,
+          color: desabilitado ? Cor.texto2 : Cor.textoExtra,
+          border: "none",
+          padding: "8px 25px",
+          borderRadius: 12,
+          cursor: desabilitado ? "default" : "pointer",
+          fontWeight: 700,
+        }}
+        onClick={() => {
+          setCxPesquisa(true);
+        }}
+      >
+        Pesquisar
+      </button>
+      <ModalSeletorPassageiro
+        empresaCliente={empresaCliente}
+        passageirosVoucher={passageirosVoucher}
+        setPassageirosVoucher={setPassageirosVoucher}
+        setCxPesquisa={setCxPesquisa}
+        cxPesquisa={cxPesquisa}
+      />
+    </>
+  );
+}
+
+function ModalSeletorPassageiro({
+  empresaCliente,
+  passageirosVoucher,
+  setPassageirosVoucher,
+  cxPesquisa,
+  setCxPesquisa,
+}: {
+  empresaCliente: any;
+  passageirosVoucher: any;
+  setPassageirosVoucher: any;
+  cxPesquisa: any;
+  setCxPesquisa: any;
+}) {
+  const [nomeBusca, setNomeBusca] = useState<string>("");
+  const [bairroBusca, setBairroBusca] = useState<string>("");
+
+  const { listaPassageiro: listaTotal } = usePassageiros(empresaCliente || "0");
+
+  const listaPassageiro = listaTotal?.filter((p: any) => p.ativo === true);
+
+  const Cor = useTema().Cor;
+
+  function normalizarTexto(texto: string) {
+    return texto
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
+  }
+
+  return (
+    <>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          opacity: cxPesquisa ? 1 : 0,
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          backgroundColor: Cor.base2 + 50,
+          backdropFilter: "blur(2px)",
+          pointerEvents: cxPesquisa ? "auto" : "none",
+          transition: "all ease-in-out 0.3s",
+          zIndex: 10,
+        }}
+        onClick={() => {
+          setCxPesquisa(false);
+          setBairroBusca("");
+          setNomeBusca("");
+        }}
+      >
+        <div
+          style={{
+            width: "70%",
+            display: "flex",
+            flexDirection: "column",
+            gap: 10,
+            border: `1px solid ${Cor.texto2 + 50}`,
+            backgroundColor: Cor.base,
+            boxShadow: Cor.sombra,
+            borderRadius: 22,
+            padding: 15,
+            scale: cxPesquisa ? 1 : 0.6,
+            transition: "all ease-in-out 0.3s",
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 10,
+            }}
+          >
+            <TextoEntrada
+              placeholder="Digite aqui o nome do Passageiro"
+              type="text"
+              largura="50%"
+              onChange={(e) => {
+                setNomeBusca(e.target.value);
+              }}
+              value={nomeBusca}
+            />
+            <TextoEntrada
+              placeholder="Digite aqui o nome do Bairro"
+              type="text"
+              largura="50%"
+              onChange={(e) => {
+                setBairroBusca(e.target.value);
+              }}
+              value={bairroBusca}
+            />
+            <BtnCriarPassageiro clienteId={String(empresaCliente)} />
+          </div>
+
+          <div
+            style={{
+              width: "100%",
+              display: "flex",
+              flexDirection: "column",
+              height: 400,
+              padding: 10,
+              backgroundColor: Cor.base2,
+              boxShadow: Cor.sombra,
+              borderRadius: 12,
+              overflowY: "auto",
+              scrollbarColor: `${Cor.secundaria} ${Cor.base + "00"}`,
+              gap: 5,
+            }}
+          >
+            {(
+              listaPassageiro?.filter((p) => {
+                const nome = normalizarTexto(p.nome);
+                const bairro = normalizarTexto(p.endBairro);
+
+                const buscaNome = normalizarTexto(nomeBusca);
+                const buscaBairro = normalizarTexto(bairroBusca);
+
+                const porNome = nome.includes(buscaNome);
+                const porBairro = bairro.includes(buscaBairro);
+
+                return porNome && porBairro;
+              }) || []
+            ).map((passageiro) => {
+              const selecionado = passageirosVoucher.some(
+                (p: any) => p.id === passageiro.id,
+              );
+              return (
+                <LinhaPassageiro
+                  key={passageiro.id}
+                  passageiro={passageiro}
+                  selecionado={selecionado}
+                  btnAdd={selecionado}
+                  setPassageirosVoucher={setPassageirosVoucher}
+                />
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function LinhaPassageiro({
+  passageiro,
+  selecionado,
+  setPassageirosVoucher,
+  btnAdd,
+}: {
+  passageiro: any;
+  selecionado: boolean;
+  setPassageirosVoucher: any;
+  btnAdd: any;
+}) {
+  const Cor = useTema().Cor;
+
+  const adicionarPassageiro = (passageiro: any) => {
+    setPassageirosVoucher((prev: any) => {
+      const existe = prev.some((p: any) => p.id === passageiro.id);
+
+      if (existe) {
+        return prev.filter((p: any) => p.id !== passageiro.id);
+      }
+
+      return [...prev, passageiro];
+    });
+  };
+
+  return (
+    <>
+      <div
+        key={passageiro.id}
+        style={{
+          width: "100%",
+          height: 40,
+          border: `1px solid ${Cor.texto2 + 30}`,
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: 5,
+          borderRadius: 8,
+          backgroundColor: selecionado ? Cor.primaria + 50 : Cor.base2,
+          boxShadow: btnAdd ? Cor.sombra : "none",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            width: "30%",
+            borderRight: `1px solid ${Cor.texto2 + 50}`,
+            marginRight: 10,
+          }}
+        >
+          <p
+            style={{
+              fontSize: 11,
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              color: Cor.texto2,
+            }}
+          >
+            Nome
+          </p>
+          <p
+            style={{
+              fontSize: 14,
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              color: Cor.texto1,
+            }}
+          >
+            {passageiro.nome}
+          </p>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            width: "30%",
+            borderRight: `1px solid ${Cor.texto2 + 50}`,
+            marginRight: 10,
+          }}
+        >
+          <p
+            style={{
+              fontSize: 11,
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              color: Cor.texto2,
+            }}
+          >
+            Endereço
+          </p>
+          <p
+            style={{
+              fontSize: 14,
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              color: Cor.texto1,
+            }}
+          >
+            {passageiro.endRua}, {passageiro.endBairro}, {passageiro.endCidade}
+          </p>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            width: "20%",
+            borderRight: `1px solid ${Cor.texto2 + 50}`,
+            marginRight: 10,
+          }}
+        >
+          <p
+            style={{
+              fontSize: 11,
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              color: Cor.texto2,
+            }}
+          >
+            Centro de Custo
+          </p>
+          <p
+            style={{
+              fontSize: 14,
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              color: Cor.texto1,
+            }}
+          >
+            {passageiro.centroCustoClienteId.nome}
+          </p>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            width: "8%",
+            borderRight: `1px solid ${Cor.texto2 + 50}`,
+          }}
+        >
+          <p
+            style={{
+              fontSize: 11,
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              color: Cor.texto2,
+            }}
+          >
+            Horário
+          </p>
+          <p
+            style={{
+              fontSize: 14,
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              color: Cor.texto1,
+            }}
+          >
+            {passageiro.horarioEmbarque}
+          </p>
+        </div>
+        <div
+          style={{
+            width: 30,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: 30,
+            borderRadius: 8,
+            backgroundColor: btnAdd ? Cor.primaria + 90 : Cor.primaria + 50,
+            cursor: "pointer",
+          }}
+          onClick={() => adicionarPassageiro(passageiro)}
+        >
+          <p
+            style={{
+              fontFamily: "Icone",
+              fontWeight: "bold",
+              fontSize: 20,
+              color: Cor.primariaTxt,
+            }}
+          >
+            {btnAdd ? "close" : "add"}
+          </p>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function CardPassageiroVoucher({ p }: { p: any }) {
+  const Cor = useTema().Cor;
+  return (
+    <div
+      style={{
+        height: 45,
+        width: "100%",
+        backgroundColor:
+          p.statusPresenca === "Ausente" ? Cor.atencao + 50 : Cor.base,
+        borderRadius: 10,
+        border: `1px solid ${Cor.texto2 + 40}`,
+        padding: 5,
+        display: "flex",
+        flexDirection: "row",
+        justifyContent: "space-between",
+        gap: 5,
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          width: "28%",
+        }}
+      >
+        <p style={{ fontSize: 12, color: Cor.texto2 }}>Tipo</p>
+        <p
+          style={{
+            fontSize: 14,
+            fontWeight: "500",
+            color: Cor.texto1,
+            textOverflow: "ellipsis",
+            maxWidth: "95%",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+          }}
+        >
+          {p?.passageiroId?.nome}
+        </p>
+      </div>
+      <div style={{ width: 1, height: "100%", backgroundColor: Cor.texto2 }} />
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          width: "14%",
+        }}
+      >
+        <p style={{ fontSize: 12, color: Cor.texto2 }}>Telefone</p>
+        <p
+          style={{
+            fontSize: 14,
+            fontWeight: "500",
+            color: Cor.texto1,
+            textOverflow: "ellipsis",
+            maxWidth: "95%",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+          }}
+        >
+          {p?.passageiroId?.telefone}
+        </p>
+      </div>
+      <div style={{ width: 1, height: "100%", backgroundColor: Cor.texto2 }} />
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          width: "8%",
+        }}
+      >
+        <p style={{ fontSize: 12, color: Cor.texto2 }}>Horário</p>
+        <p
+          style={{
+            fontSize: 14,
+            fontWeight: "500",
+            color: Cor.texto1,
+            textOverflow: "ellipsis",
+            maxWidth: "95%",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+          }}
+        >
+          {p?.passageiroId?.horarioEmbarque}
+        </p>
+      </div>
+      <div style={{ width: 1, height: "100%", backgroundColor: Cor.texto2 }} />
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          width: "45%",
+        }}
+      >
+        <p style={{ fontSize: 12, color: Cor.texto2 }}>Endereço</p>
+        <p
+          style={{
+            fontSize: 14,
+            fontWeight: "500",
+            color: Cor.texto1,
+            textOverflow: "ellipsis",
+            maxWidth: "100%",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+          }}
+        >
+          {p?.passageiroId?.endRua}, {p?.passageiroId?.endNumero} -{" "}
+          {p?.passageiroId?.endBairro} - {p?.passageiroId?.endCidade}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function TextoEntrada({
+  placeholder,
+  onChange,
+  value,
+  type,
+  largura,
+}: {
+  placeholder: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  value: string;
+  type: string;
+  largura: string;
+}) {
+  const Cor = useTema().Cor;
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "row",
+        width: largura,
+        height: 40,
+        backgroundColor: Cor.texto2 + 20,
+        padding: 10,
+        borderRadius: 22,
+      }}
+    >
+      <input
+        type={type}
+        placeholder={placeholder}
+        onChange={onChange}
+        value={value}
+        style={{
+          backgroundColor: "transparent",
+          color: Cor.texto1,
+          border: "none",
+          outline: "none",
+          width: "100%",
+        }}
+      />
+      <p style={{ fontFamily: "icone", fontWeight: "bold", fontSize: 18 }}>
+        search
+      </p>
+    </div>
+  );
+}
+
+function ValoresFixo({
+  valorViagem,
+  setValorViagem,
+  valorViagemRepasse,
+  setValorViagemRepasse,
+  valorDeslocamento,
+  setValorDeslocamento,
+  valorDeslocamentoRepasse,
+  setValorDeslocamentoRepasse,
+  valorHoraParada,
+  setValorHoraParada,
+  valorHoraParadaRepasse,
+  setValorHoraParadaRepasse,
+  pedagio,
+  setPedagio,
+  qntTempoParado,
+  setQntTempoParado,
+}: {
+  valorViagem: any;
+  setValorViagem: any;
+  valorViagemRepasse: any;
+  setValorViagemRepasse: any;
+  valorDeslocamento: any;
+  setValorDeslocamento: any;
+  valorDeslocamentoRepasse: any;
+  setValorDeslocamentoRepasse: any;
+  valorHoraParada: any;
+  setValorHoraParada: any;
+  valorHoraParadaRepasse: any;
+  setValorHoraParadaRepasse: any;
+  pedagio: any;
+  setPedagio: any;
+  qntTempoParado: any;
+  setQntTempoParado: any;
+}) {
+  const { Cor } = useTema();
+
+  const operadoraId = useAdminLogado()?.operadora.id;
+
+  const { listaPedagios } = usePedagios(String(operadoraId));
+
+  const valorPedagio = listaPedagios.filter((p: any) => p.id === pedagio);
+
+  const pedagioReal = valorPedagio[0]?.valor || 0;
+
+  return (
+    <div
+      style={{
+        width: "100%",
+        padding: 15,
+        backgroundColor: Cor.base2,
+        borderRadius: 22,
+        boxShadow: Cor.sombra,
+      }}
+    >
+      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <p
+          style={{
+            fontSize: 14,
+            color: Cor.textoExtra,
+            fontWeight: "bold",
+          }}
+        >
+          Valores
+        </p>
+        <p style={{ fontSize: 12, color: Cor.texto2, marginBottom: 5 }}>
+          Informe abaixo os valores que serão cobrados da empresa e repassados
+          aos motoristas.
+        </p>
+      </div>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          width: "100%",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <div style={{ display: "flex", flexDirection: "column", width: "22%" }}>
+          <p
+            style={{
+              fontSize: 14,
+              color: Cor.textoExtra,
+              fontWeight: "bold",
+              margin: 5,
+            }}
+          >
+            Valor Total:
+          </p>
+          <div
+            style={{
+              width: "100%",
+              border: `2px solid ${Cor.textoExtra + 99}`,
+              padding: 10,
+              borderRadius: 14,
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 5,
+            }}
+          >
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <p style={{ fontSize: 11, color: Cor.texto2 }}>Cobrança</p>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <span style={{ fontSize: 14, color: Cor.texto1 }}>R$</span>
+                <input
+                  type="number"
+                  placeholder="0,00"
+                  style={{
+                    width: "100%",
+                    border: "none",
+                    outline: "none",
+                    backgroundColor: "transparent",
+                    color: Cor.textoExtra,
+                    fontWeight: "bold",
+                    fontSize: 20,
+                  }}
+                  value={
+                    valorViagem +
+                      pedagioReal +
+                      valorDeslocamento +
+                      valorHoraParada * qntTempoParado || 0
+                  }
+                  onChange={(e) => setValorViagem(e.target.value)}
+                />
+              </div>
+            </div>
+            <div
+              style={{ width: 1, height: 30, backgroundColor: Cor.textoExtra }}
+            />
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <p style={{ fontSize: 11, color: Cor.texto2 }}>Repasse</p>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <span style={{ fontSize: 14, color: Cor.texto1 }}>R$</span>
+                <input
+                  type="number"
+                  placeholder="0,00"
+                  style={{
+                    width: "100%",
+                    border: "none",
+                    outline: "none",
+                    fontSize: 20,
+                    color: Cor.textoExtra,
+                    fontWeight: "bold",
+                    backgroundColor: "transparent",
+                  }}
+                  value={valorViagemRepasse || ""}
+                  onChange={(e) => setValorViagemRepasse(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", width: "20%" }}>
+          <p
+            style={{
+              fontSize: 14,
+              color: Cor.textoExtra + 90,
+              fontWeight: "bold",
+              margin: 5,
+            }}
+          >
+            Valor da Viagem:
+          </p>
+          <div
+            style={{
+              width: "100%",
+              border: `1px solid ${Cor.texto2 + 50}`,
+              padding: 10,
+              borderRadius: 14,
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 5,
+            }}
+          >
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <p style={{ fontSize: 11, color: Cor.texto2 }}>Cobrança</p>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <span style={{ fontSize: 14, color: Cor.texto1 }}>R$</span>
+                <input
+                  type="number"
+                  placeholder="0,00"
+                  style={{
+                    width: "100%",
+                    border: "none",
+                    outline: "none",
+                    padding: 5,
+                    backgroundColor: "transparent",
+                    color: Cor.texto1,
+                    fontSize: 14,
+                  }}
+                  value={valorViagem || ""}
+                  onChange={(e) => setValorViagem(e.target.value)}
+                />
+              </div>
+            </div>
+            <div
+              style={{ width: 1, height: 30, backgroundColor: Cor.textoExtra }}
+            />
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <p style={{ fontSize: 11, color: Cor.texto2 }}>Repasse</p>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <span style={{ fontSize: 14, color: Cor.texto1 }}>R$</span>
+                <input
+                  type="number"
+                  placeholder="0,00"
+                  style={{
+                    width: "100%",
+                    border: "none",
+                    outline: "none",
+                    padding: 5,
+                    color: Cor.texto1,
+                    fontSize: 14,
+                    backgroundColor: "transparent",
+                  }}
+                  value={valorViagemRepasse || ""}
+                  onChange={(e) => setValorViagemRepasse(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", width: "20%" }}>
+          <p
+            style={{
+              fontSize: 14,
+              color: Cor.textoExtra + 90,
+              fontWeight: "bold",
+              margin: 5,
+            }}
+          >
+            Valor Adicional:
+          </p>
+          <div
+            style={{
+              width: "100%",
+              border: `1px solid ${Cor.texto2 + 50}`,
+              padding: 10,
+              borderRadius: 14,
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 5,
+              backgroundColor: "transparent",
+            }}
+          >
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <p style={{ fontSize: 11, color: Cor.texto2 }}>Cobrança</p>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <span style={{ fontSize: 14, color: Cor.texto1 }}>R$</span>
+                <input
+                  type="number"
+                  placeholder="0,00"
+                  style={{
+                    width: "100%",
+                    border: "none",
+                    outline: "none",
+                    padding: 5,
+                    color: Cor.texto1,
+                    fontSize: 14,
+                    backgroundColor: "transparent",
+                  }}
+                  value={valorDeslocamento || ""}
+                  onChange={(e) => setValorDeslocamento(e.target.value)}
+                />
+              </div>
+            </div>
+            <div
+              style={{ width: 1, height: 30, backgroundColor: Cor.textoExtra }}
+            />
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <p style={{ fontSize: 11, color: Cor.texto2 }}>Repasse</p>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <span style={{ fontSize: 14, color: Cor.texto1 }}>R$</span>
+                <input
+                  type="number"
+                  placeholder="0,00"
+                  style={{
+                    width: "100%",
+                    border: "none",
+                    outline: "none",
+                    padding: 5,
+                    color: Cor.texto1,
+                    fontSize: 14,
+                    backgroundColor: "transparent",
+                  }}
+                  value={valorDeslocamentoRepasse || ""}
+                  onChange={(e) => setValorDeslocamentoRepasse(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", width: "25%" }}>
+          <p
+            style={{
+              fontSize: 14,
+              color: Cor.textoExtra + 90,
+              fontWeight: "bold",
+              margin: 5,
+            }}
+          >
+            Valor Hora Parada:
+          </p>
+          <div
+            style={{
+              width: "100%",
+              border: `1px solid ${Cor.texto2 + 50}`,
+              padding: 10,
+              borderRadius: 14,
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 5,
+            }}
+          >
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <p style={{ fontSize: 11, color: Cor.texto2 }}>Tempo</p>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <input
+                  placeholder="0"
+                  style={{
+                    width: "30%",
+                    border: "none",
+                    outline: "none",
+                    padding: 5,
+                    color: Cor.texto1,
+                    fontSize: 14,
+                    backgroundColor: "transparent",
+                  }}
+                  value={qntTempoParado || ""}
+                  onChange={(e) => setQntTempoParado(e.target.value)}
+                />
+                <span style={{ fontSize: 14, color: Cor.texto1 }}>
+                  {qntTempoParado > 1 ? "horas" : "hora"}
+                </span>
+              </div>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <p style={{ fontSize: 11, color: Cor.texto2 }}>Cobrança</p>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <span style={{ fontSize: 14, color: Cor.texto1 }}>R$</span>
+                <input
+                  type="number"
+                  placeholder="0,00"
+                  style={{
+                    width: "100%",
+                    border: "none",
+                    outline: "none",
+                    padding: 5,
+                    color: Cor.texto1,
+                    fontSize: 14,
+                    backgroundColor: "transparent",
+                  }}
+                  value={valorHoraParada * qntTempoParado || ""}
+                  onChange={(e) => setValorHoraParada(e.target.value)}
+                />
+              </div>
+            </div>
+            <div
+              style={{ width: 1, height: 30, backgroundColor: Cor.textoExtra }}
+            />
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <p style={{ fontSize: 11, color: Cor.texto2 }}>Repasse</p>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <span style={{ fontSize: 14, color: Cor.texto1 }}>R$</span>
+                <input
+                  type="number"
+                  placeholder="0,00"
+                  style={{
+                    width: "100%",
+                    border: "none",
+                    outline: "none",
+                    padding: 5,
+                    color: Cor.texto1,
+                    fontSize: 14,
+                    backgroundColor: "transparent",
+                  }}
+                  value={valorHoraParadaRepasse * qntTempoParado || ""}
+                  onChange={(e) => setValorHoraParadaRepasse(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", width: "10%" }}>
+          <p
+            style={{
+              fontSize: 14,
+              color: Cor.textoExtra + 90,
+              fontWeight: "bold",
+              margin: 5,
+            }}
+          >
+            Pedágio:
+          </p>
+          <div
+            style={{
+              width: "100%",
+              border: `1px solid ${Cor.texto2 + 50}`,
+              padding: 10,
+              borderRadius: 14,
+            }}
+          >
+            <select
+              style={{
+                width: "100%",
+                border: "none",
+                outline: "none",
+                backgroundColor: "transparent",
+                color: Cor.texto1,
+              }}
+              value={pedagio || ""}
+              onChange={(e) => setPedagio(e.target.value)}
+            >
+              <option value="">Selecione</option>
+              {listaPedagios.map((p: any) => {
+                return (
+                  <option
+                    style={{ backgroundColor: Cor.base }}
+                    value={p.id}
+                    key={p.id}
+                  >
+                    {p.nome}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SalvarInformacoes({ v }: { v: any }) {
+  const Cor = useTema().Cor;
+  return (
+    <div
+      style={{
+        width: "100%",
+        padding: 15,
+        backgroundColor: Cor.base2,
+        borderRadius: 22,
+        boxShadow: Cor.sombra,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        gap: 20,
+      }}
+    >
+      <p
+        style={{
+          fontSize: 14,
+          color: Cor.texto1,
+          margin: 5,
+        }}
+      >
+        Lançado Por: <strong>{v?.adminUsuario.nome || ""}</strong> | Criado em:{" "}
+        {new Date(v?.dataHoraCriacao).toLocaleString("pt-BR", {
+          timeZone: "America/Sao_Paulo",
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        })}{" "}
+        às{" "}
+        {new Date(v?.dataHoraCriacao).toLocaleString("pt-BR", {
+          timeZone: "America/Sao_Paulo",
+          hour: "numeric",
+          minute: "numeric",
+        })}
+        h
+      </p>
+      <div
+        style={{
+          width: "100%",
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <BtnVouchers $bg={Cor.atencao}>Cancelar Voucher</BtnVouchers>
+        <BtnVouchers $bg={Cor.texto1}>Redefinir Voucher</BtnVouchers>
+        <BtnVouchers $bg={Cor.texto1}>Fechar Voucher</BtnVouchers>
+        <BtnVouchers $bg={"transparent"}>Salvar Alterações</BtnVouchers>
+      </div>
+    </div>
+  );
+}
+
+interface BtnVouchers {
+  $bg: string;
+}
+
+const BtnVouchers = styled.div<BtnVouchers>`
+  width: 15%;
+  padding: 10px;
+  background-color: ${({ $bg }) => $bg + 50};
+  border-radius: 14px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: ${({ $bg }) => $bg};
+  border: 1px solid ${({ $bg }) => $bg + 50};
+  transition: all 0.3s ease-in-out;
+  cursor: pointer;
+  user-select: none;
+
+  &:hover {
+    background-color: ${({ $bg }) => $bg + 90};
+    scale: 1.02;
+  }
+
+  &:active {
+    background-color: ${({ $bg }) => $bg + 70};
+    scale: 0.98;
+  }
+`;

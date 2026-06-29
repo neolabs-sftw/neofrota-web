@@ -86,11 +86,11 @@ function ModalPreviewVoucher({
   const navigate = useNavigate();
 
   const { voucherExtraId, loading: loadingExtra } = useVoucherExtraId(
-    v?.natureza === "Extra" ? v?.id : null
+    v?.natureza === "Extra" ? v?.id : null,
   );
 
   const { voucherFixoId, loading: loadingFixo } = useVoucherFixoId(
-    v?.natureza === "Fixo" || v?.natureza === "Turno" ? v?.id : null
+    v?.natureza === "Fixo" || v?.natureza === "Turno" ? v?.id : null,
   );
 
   const voucher = v?.natureza === "Extra" ? voucherExtraId : voucherFixoId;
@@ -101,7 +101,7 @@ function ModalPreviewVoucher({
     const handleKeyDown = (event: any) => {
       if (event.key === "Escape") setVisivel(false);
       if (event.key === "Enter" && v) {
-        navigate(`/editar/${v.natureza}/${v.id}`);
+        navigate(`/editarVoucher/${v.natureza}/${btoa(v.id)}`);
       }
     };
     if (visivel) document.addEventListener("keydown", handleKeyDown);
@@ -112,7 +112,11 @@ function ModalPreviewVoucher({
   if (!visivel) return null;
 
   return (
-    <Overlay $visivel={visivel} $bg={Cor.base} onClick={() => setVisivel(false)}>
+    <Overlay
+      $visivel={visivel}
+      $bg={Cor.base}
+      onClick={() => setVisivel(false)}
+    >
       <CxModal
         $visivel={visivel}
         $bg={Cor.base}
@@ -121,33 +125,72 @@ function ModalPreviewVoucher({
       >
         {/* ESTADO DE CARREGAMENTO INTERNO DO MODAL */}
         {loading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: 50 }}>
+          <div
+            style={{ display: "flex", justifyContent: "center", padding: 50 }}
+          >
             <CircularProgress sx={{ color: Cor.primaria }} />
           </div>
         ) : !voucher ? (
-          <div style={{ padding: 20, textAlign: 'center' }}>
+          <div style={{ padding: 20, textAlign: "center" }}>
             <p>Erro ao carregar detalhes do voucher.</p>
             <button onClick={() => setVisivel(false)}>Fechar</button>
           </div>
         ) : (
           <>
-            <div style={{
-              display: "flex", flexDirection: "row", justifyContent: "space-between",
-              width: "100%", paddingBottom: 5, borderBottom: `1px solid ${Cor.primaria}`,
-            }}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "space-between",
+                width: "100%",
+                paddingBottom: 5,
+                borderBottom: `1px solid ${Cor.primaria}`,
+              }}
+            >
               <div style={{ display: "flex", flexDirection: "column" }}>
-                <p style={{ fontSize: 14, fontWeight: "bold", color: Cor.texto1 }}>Detalhes</p>
-                <p style={{ fontSize: 12, color: Cor.texto2 }}>Mais informações sobre o voucher completo.</p>
+                <p
+                  style={{
+                    fontSize: 14,
+                    fontWeight: "bold",
+                    color: Cor.texto1,
+                  }}
+                >
+                  Detalhes
+                </p>
+                <p style={{ fontSize: 12, color: Cor.texto2 }}>
+                  Mais informações sobre o voucher completo.
+                </p>
               </div>
-              <div style={{ display: "flex", flexDirection: "row", gap: 10, alignItems: "center" }}>
-                <p style={{
-                  fontSize: 18,
-                  color: voucher.natureza === "Fixo" ? Cor.textoFixo : Cor.textoExtra
-                }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  gap: 10,
+                  alignItems: "center",
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: 18,
+                    color:
+                      voucher.natureza === "Fixo"
+                        ? Cor.textoFixo
+                        : Cor.textoExtra,
+                  }}
+                >
                   ID: <strong>{btoa(voucher.id)}</strong>
                 </p>
-                <p style={{ cursor: "pointer", fontFamily: "Icone", fontSize: 24, color: Cor.primaria }}
-                  onClick={() => setVisivel(false)}>close</p>
+                <p
+                  style={{
+                    cursor: "pointer",
+                    fontFamily: "Icone",
+                    fontSize: 24,
+                    color: Cor.primaria,
+                  }}
+                  onClick={() => setVisivel(false)}
+                >
+                  close
+                </p>
               </div>
             </div>
 
@@ -155,25 +198,67 @@ function ModalPreviewVoucher({
             <PrimeiraLinha v={voucher} />
             <DetalhesDaViagem v={voucher} />
 
-            <div style={{ width: "100%", height: 1, backgroundColor: Cor.texto2 + "70" }} />
+            <div
+              style={{
+                width: "100%",
+                height: 1,
+                backgroundColor: Cor.texto2 + "70",
+              }}
+            />
             <DetalhesDaViagem2 v={voucher} />
 
-            <div style={{ width: "100%", height: 1, backgroundColor: Cor.texto2 + "70" }} />
+            <div
+              style={{
+                width: "100%",
+                height: 1,
+                backgroundColor: Cor.texto2 + "70",
+              }}
+            />
 
-            <div style={{ width: "100%", gap: 10, display: "flex", flexDirection: "row" }}>
+            <div
+              style={{
+                width: "100%",
+                gap: 10,
+                display: "flex",
+                flexDirection: "row",
+              }}
+            >
               <DetalhesDoOperador v={voucher} />
               <DetalhesDoMotorista v={voucher} />
             </div>
 
-            <div style={{ width: "100%", height: 180, display: "flex", flexDirection: "row", gap: 10 }}>
+            <div
+              style={{
+                width: "100%",
+                height: 180,
+                display: "flex",
+                flexDirection: "row",
+                gap: 10,
+              }}
+            >
               <ListaPassageirosVoucher v={voucher} />
               <Assinatura v={voucher} />
             </div>
 
-            <div style={{ width: "100%", display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+            <div
+              style={{
+                width: "100%",
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
               <ResultadoVoucher v={voucher} />
-              <BtnEditarVoucher $bg={Cor.primaria} onClick={() => navigate(`/editar/${v.natureza}/${v.id}`)}>
-                <p style={{ color: Cor.base, fontWeight: "500", fontSize: 14 }}>Editar Voucher</p>
+              <BtnEditarVoucher
+                $bg={Cor.primaria}
+                onClick={() =>
+                  navigate(`/editarVoucher/${v.natureza}/${btoa(v.id)}`)
+                }
+              >
+                <p style={{ color: Cor.base, fontWeight: "500", fontSize: 14 }}>
+                  Editar Voucher
+                </p>
               </BtnEditarVoucher>
             </div>
           </>
@@ -646,28 +731,35 @@ function DetalhesDaViagem({ v }: { v: any }) {
               year: "2-digit",
             })}
           </p>
-          {v?.dataHoraConclusao === null ? null : <p
-            style={{
-              fontSize: 12,
-              color: Cor.texto1
-            }}
-          >
-            Assinado em:{" "}<strong style={{
-              fontSize: 14,
-              color:
-                v?.natureza === "Fixo"
-                  ? Cor.textoFixo
-                  : v?.natureza === "Turno"
-                    ? Cor.textoTurno
-                    : Cor.textoExtra,
-            }}>{new Date(v?.dataHoraConclusao).toLocaleString("pt-BR", {
-              hour: "2-digit",
-              minute: "2-digit",
-              day: "2-digit",
-              month: "2-digit",
-              year: "2-digit",
-            })}</strong>
-          </p>}
+          {v?.dataHoraConclusao === null ? null : (
+            <p
+              style={{
+                fontSize: 12,
+                color: Cor.texto1,
+              }}
+            >
+              Assinado em:{" "}
+              <strong
+                style={{
+                  fontSize: 14,
+                  color:
+                    v?.natureza === "Fixo"
+                      ? Cor.textoFixo
+                      : v?.natureza === "Turno"
+                        ? Cor.textoTurno
+                        : Cor.textoExtra,
+                }}
+              >
+                {new Date(v?.dataHoraConclusao).toLocaleString("pt-BR", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "2-digit",
+                })}
+              </strong>
+            </p>
+          )}
         </div>
       </div>
     </div>
@@ -677,7 +769,7 @@ function DetalhesDaViagem({ v }: { v: any }) {
 function DetalhesDaViagem2({ v }: { v: any }) {
   const Cor = useTema().Cor;
 
-  console.log(v)
+  console.log(v);
   return (
     <div
       style={{
@@ -723,7 +815,13 @@ function DetalhesDaViagem2({ v }: { v: any }) {
             request_quote
           </p>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
           <p style={{ fontSize: 12, color: Cor.texto2 }}>Valor Cobrança</p>
           <p
             style={{
@@ -816,55 +914,72 @@ function DetalhesDaViagem2({ v }: { v: any }) {
           display: "flex",
           flexDirection: "row",
           alignItems: "center",
-          width: "12%"
+          width: "12%",
         }}
       >
-        <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
-          <p style={{ fontSize: 12, color: Cor.texto2, textAlign: "center" }}>Deslocamento</p>
-          <div style={{
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-          }}>
+        <div
+          style={{ display: "flex", flexDirection: "column", width: "100%" }}
+        >
+          <p style={{ fontSize: 12, color: Cor.texto2, textAlign: "center" }}>
+            Deslocamento
+          </p>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+            }}
+          >
             <p
               style={{
                 fontSize: 12,
-                color: Cor.texto1
+                color: Cor.texto1,
               }}
             >
-              Cobr.: <strong style={{
-                fontSize: 14,
-                color: v?.natureza === "Fixo"
-                  ? Cor.textoFixo
-                  : v?.natureza === "Turno"
-                    ? Cor.textoTurno
-                    : Cor.textoExtra,
-              }}>{Intl.NumberFormat("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-              }).format(Number(v?.valorDeslocamento))}</strong>
+              Cobr.:{" "}
+              <strong
+                style={{
+                  fontSize: 14,
+                  color:
+                    v?.natureza === "Fixo"
+                      ? Cor.textoFixo
+                      : v?.natureza === "Turno"
+                        ? Cor.textoTurno
+                        : Cor.textoExtra,
+                }}
+              >
+                {Intl.NumberFormat("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
+                }).format(Number(v?.valorDeslocamento))}
+              </strong>
             </p>
             <p
               style={{
                 fontSize: 12,
-                color: Cor.texto1
+                color: Cor.texto1,
               }}
             >
-              Repas.: <strong style={{
-                fontSize: 14,
-                color: v?.natureza === "Fixo"
-                  ? Cor.textoFixo
-                  : v?.natureza === "Turno"
-                    ? Cor.textoTurno
-                    : Cor.textoExtra,
-              }}>{Intl.NumberFormat("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-              }).format(Number(v?.valorDeslocamentoRepasse))}</strong>
+              Repas.:{" "}
+              <strong
+                style={{
+                  fontSize: 14,
+                  color:
+                    v?.natureza === "Fixo"
+                      ? Cor.textoFixo
+                      : v?.natureza === "Turno"
+                        ? Cor.textoTurno
+                        : Cor.textoExtra,
+                }}
+              >
+                {Intl.NumberFormat("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
+                }).format(Number(v?.valorDeslocamentoRepasse))}
+              </strong>
             </p>
           </div>
-
         </div>
       </div>
       <div
@@ -879,55 +994,74 @@ function DetalhesDaViagem2({ v }: { v: any }) {
           display: "flex",
           flexDirection: "row",
           alignItems: "center",
-          width: "12%"
+          width: "12%",
         }}
       >
-        <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
-          <p style={{ fontSize: 12, color: Cor.texto2, textAlign: "center" }}>Hora Parada</p>
-          <div style={{
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-          }}>
+        <div
+          style={{ display: "flex", flexDirection: "column", width: "100%" }}
+        >
+          <p style={{ fontSize: 12, color: Cor.texto2, textAlign: "center" }}>
+            Hora Parada
+          </p>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+            }}
+          >
             <p
               style={{
                 fontSize: 12,
-                color: Cor.texto1
+                color: Cor.texto1,
               }}
             >
-              Cobr.: <strong style={{
-                fontSize: 14,
-                color: v?.natureza === "Fixo"
-                  ? Cor.textoFixo
-                  : v?.natureza === "Turno"
-                    ? Cor.textoTurno
-                    : Cor.textoExtra,
-              }}>{Intl.NumberFormat("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-              }).format(Number(v?.valorHoraParada * v?.qntTempoParado))}</strong>
+              Cobr.:{" "}
+              <strong
+                style={{
+                  fontSize: 14,
+                  color:
+                    v?.natureza === "Fixo"
+                      ? Cor.textoFixo
+                      : v?.natureza === "Turno"
+                        ? Cor.textoTurno
+                        : Cor.textoExtra,
+                }}
+              >
+                {Intl.NumberFormat("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
+                }).format(Number(v?.valorHoraParada * v?.qntTempoParado))}
+              </strong>
             </p>
             <p
               style={{
                 fontSize: 12,
-                color: Cor.texto1
+                color: Cor.texto1,
               }}
             >
-              Repas.: <strong style={{
-                fontSize: 14,
-                color: v?.natureza === "Fixo"
-                  ? Cor.textoFixo
-                  : v?.natureza === "Turno"
-                    ? Cor.textoTurno
-                    : Cor.textoExtra,
-              }}>{Intl.NumberFormat("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-              }).format(Number(v?.valorHoraParadaRepasse * v?.qntTempoParado))}</strong>
+              Repas.:{" "}
+              <strong
+                style={{
+                  fontSize: 14,
+                  color:
+                    v?.natureza === "Fixo"
+                      ? Cor.textoFixo
+                      : v?.natureza === "Turno"
+                        ? Cor.textoTurno
+                        : Cor.textoExtra,
+                }}
+              >
+                {Intl.NumberFormat("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
+                }).format(
+                  Number(v?.valorHoraParadaRepasse * v?.qntTempoParado),
+                )}
+              </strong>
             </p>
           </div>
-
         </div>
       </div>
       <div
@@ -1012,12 +1146,13 @@ function CodigoRoteiro({ v }: { v: any }) {
         alignItems: "center",
         backgroundColor: Cor.texto2 + 20,
         padding: "5px 10px",
-        borderLeft: `12px solid ${v?.natureza === "Fixo"
-          ? Cor.fixo
-          : v?.natureza === "Turno"
-            ? Cor.turno
-            : Cor.extra
-          }`,
+        borderLeft: `12px solid ${
+          v?.natureza === "Fixo"
+            ? Cor.fixo
+            : v?.natureza === "Turno"
+              ? Cor.turno
+              : Cor.extra
+        }`,
         borderTop: `1px solid ${Cor.texto2 + 20}`,
         borderRight: `1px solid ${Cor.texto2 + 20}`,
         borderBottom: `1px solid ${Cor.texto2 + 20}`,
@@ -1081,17 +1216,19 @@ function DetalhesDoOperador({ v }: { v: any }) {
         padding: 10,
       }}
     >
-      <p style={{ fontSize: 12, color: Cor.texto1, whiteSpace: "nowrap" }}>Obs. Opr.: </p>
+      <p style={{ fontSize: 12, color: Cor.texto1, whiteSpace: "nowrap" }}>
+        Obs. Opr.:{" "}
+      </p>
       <p
         style={{
           fontSize: 12,
           fontWeight: "500",
           color: Cor.texto1,
           marginLeft: 5,
-          display: '-webkit-box',
+          display: "-webkit-box",
           WebkitLineClamp: 2,
           WebkitBoxOrient: "vertical",
-          overflow: 'hidden'
+          overflow: "hidden",
         }}
       >
         {v?.observacao || "Nenhuma observação registrada."}
@@ -1115,17 +1252,19 @@ function DetalhesDoMotorista({ v }: { v: any }) {
         padding: 10,
       }}
     >
-      <p style={{ fontSize: 12, color: Cor.texto1, whiteSpace: "noWrap" }}>Obs. Mot.: </p>
+      <p style={{ fontSize: 12, color: Cor.texto1, whiteSpace: "noWrap" }}>
+        Obs. Mot.:{" "}
+      </p>
       <p
         style={{
           fontSize: 12,
           fontWeight: "500",
           color: Cor.texto1,
           marginLeft: 5,
-          display: '-webkit-box',
+          display: "-webkit-box",
           WebkitLineClamp: 2,
           WebkitBoxOrient: "vertical",
-          overflow: 'hidden'
+          overflow: "hidden",
         }}
       >
         {v?.observacaoMotorista || "Nenhuma observação registrada."}
@@ -1305,20 +1444,16 @@ function Assinatura({ v }: { v: any }) {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          padding: 10,
+          padding: 5,
         }}
       >
-        <div
+        <img
+          src={v?.assinatura || assPadrao}
           style={{
             width: "100%",
             height: "100%",
-            backgroundColor: Cor.secundaria,
-            maskImage: `url(${v?.assinatura || assPadrao})`,
-            maskRepeat: "no-repeat",
-            maskSize: "contain",
-            WebkitMaskImage: v?.assinatura || assPadrao,
-            WebkitMaskRepeat: "no-repeat",
-            WebkitMaskSize: "contain",
+            borderRadius: 6,
+            backgroundColor: "#f4f4f4",
           }}
         />
       </div>
@@ -1366,10 +1501,12 @@ function ResultadoVoucher({ v }: { v: any }) {
                   : Cor.textoExtra,
           }}
         >
-          <strong>{Intl.NumberFormat("pt-BR", {
-            style: "currency",
-            currency: "BRL",
-          }).format(Number(totalCobranca))}</strong>
+          <strong>
+            {Intl.NumberFormat("pt-BR", {
+              style: "currency",
+              currency: "BRL",
+            }).format(Number(totalCobranca))}
+          </strong>
         </p>
       </div>
       <div
@@ -1398,10 +1535,12 @@ function ResultadoVoucher({ v }: { v: any }) {
                   : Cor.textoExtra,
           }}
         >
-          <strong>{Intl.NumberFormat("pt-BR", {
-            style: "currency",
-            currency: "BRL",
-          }).format(Number(totalRepasse))}</strong>
+          <strong>
+            {Intl.NumberFormat("pt-BR", {
+              style: "currency",
+              currency: "BRL",
+            }).format(Number(totalRepasse))}
+          </strong>
         </p>
       </div>
       <div

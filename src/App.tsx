@@ -29,6 +29,7 @@ import { GerarVouchersTurno } from "./telas/subtelas/modeloTurno/novoTurno";
 import { EditarTurno } from "./telas/subtelas/modeloTurno/editarTurnos";
 import { NovoModeloTurno } from "./telas/subtelas/modeloTurno/novoModeloTurno";
 import { Pagamentos } from "./telas/subtelas/pagamentos";
+import EditarVoucher from "./telas/subtelas/editarVouchers/telaEdicao";
 
 function App() {
   return (
@@ -82,6 +83,7 @@ function App() {
               <Route path="/novomodeloturno" element={<NovoModeloTurno />} />
               <Route path="/editarturno/:TurnoId" element={<EditarTurno />} />
               <Route path="/lancamentos" element={<Lancamentos />} />
+              <Route path="/editarVoucher/:natureza/:id" element={<EditarVoucher />} />
             </Route>
           </Routes>
         </BrowserRouter>

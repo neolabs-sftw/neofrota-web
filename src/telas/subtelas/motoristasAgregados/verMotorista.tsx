@@ -706,7 +706,6 @@ function ListaMotoristasFuncionarios({ motorista }: { motorista: any }) {
 }
 
 function LinhaFuncionario({ f, rId }: { f: any; rId: any }) {
-  console.log(f.id); //f.id === "2"
 
   const { carroAtrelado } = useCarroAtrelado(String(f.id));
 

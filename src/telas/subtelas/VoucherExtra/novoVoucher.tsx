@@ -21,6 +21,7 @@ import { useAdminLogado } from "../../../hooks/AdminLogado";
 import { useCarroId, useCarros } from "../../../hooks/useCarros";
 import { useCreateVoucher } from "../../../hooks/useVouchers";
 import { useNavigate } from "react-router-dom";
+import BtnCriarPassageiro from "../empresaCliente/btnComponentes/criarPassageiro";
 
 function NovoVoucher() {
   return BaseTelas({
@@ -185,7 +186,7 @@ function NovoVoucherConteudo() {
     // console.log(vouchers);
 
     setLancamentos(vouchers);
-    console.log(vouchers)
+    console.log(vouchers);
     setCxConfirmarVoucher(true);
   }
 
@@ -1417,6 +1418,7 @@ function ModalSeletorPassageiro({
               }}
               value={bairroBusca}
             />
+            <BtnCriarPassageiro clienteId={String(empresaCliente)} />
           </div>
 
           <div
