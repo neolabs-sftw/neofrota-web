@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useEditarVoucher, useVoucherFixoId } from "../../../hooks/useVouchers";
 import { useTema } from "../../../hooks/temaContext";
 import { useAdminLogado } from "../../../hooks/AdminLogado";
@@ -667,9 +667,7 @@ function DetalhesDoVoucher({
     return dataLocal.toISOString().substring(0, 16);
   };
 
-  useEffect(()=>{
-
-  },[motorista, setMotorista])
+  useEffect(() => {}, [motorista, setMotorista]);
 
   return (
     <div
@@ -2364,6 +2362,9 @@ function ValoresFixo({
 function SalvarInformacoes({ v, vA }: { v: any; vA: any }) {
   const { editar, loading } = useEditarVoucher();
 
+  const Cor = useTema().Cor;
+  const navigate = useNavigate();
+
   const adminLogado = useAdminLogado();
 
   const editarVoucherCompleto = async () => {
@@ -2385,7 +2386,10 @@ function SalvarInformacoes({ v, vA }: { v: any; vA: any }) {
         dataHoraProgramado: checkZero(vA.dataHoraProgramado),
         dataHoraConclusao: checkZero(vA.dataHoraConclusao),
         dataHoraCriacao: new Date().toISOString(),
-        qntTempoParado: checkZero(Number(vA.qntTempoParado)),
+        qntTempoParado:
+          vA.qntTempoParado === null || vA.qntTempoParado === ""
+            ? null
+            : Number(vA.qntTempoParado),
 
         // Valores numéricos
         valorViagem: vA.valorViagem ? parseFloat(vA.valorViagem) : undefined,
@@ -2466,12 +2470,13 @@ function SalvarInformacoes({ v, vA }: { v: any; vA: any }) {
       // 6. Executa a mutation
       const resultado = await editar(cleanInput);
       console.log("Voucher editado com sucesso!", resultado);
+      navigate(-1)
     } catch (error) {
       console.error("Erro ao editar voucher:", error);
+      alert("Erro ao editar voucher")
     }
   };
 
-  const Cor = useTema().Cor;
   return (
     <div
       style={{
@@ -2528,8 +2533,18 @@ function SalvarInformacoes({ v, vA }: { v: any; vA: any }) {
         <BtnVouchers $bg={Cor.secundaria}>Fechar</BtnVouchers>
         <div style={{ width: "50%" }} />
         <BtnSalvarStyle $cor={Cor.primaria} onClick={editarVoucherCompleto}>
-          {loading ? "Salvando..." : "Salvar"}
+          <p style={{ color: Cor.primariaTxt }}>
+            {loading ? "Salvando..." : "Salvar"}
+          </p>
         </BtnSalvarStyle>
+        <BtnSairStyle
+          $cor={Cor.atencao}
+          onClick={() => {
+            navigate(-1);
+          }}
+        >
+          Sair
+        </BtnSairStyle>
       </div>
     </div>
   );
@@ -2565,6 +2580,32 @@ const BtnVouchers = styled.div<BtnVouchers>`
   }
 `;
 
+interface BtnSairProps {
+  $cor: string;
+}
+
+const BtnSairStyle = styled.button<BtnSairProps>`
+  padding: 15px 50px;
+  border-radius: 18px;
+  outline: none;
+  font-size: 14px;
+  font-weight: 700;
+  color: ${({ $cor }) => $cor};
+  border: 1px solid ${({ $cor }) => $cor};
+  background-color: ${({ $cor }) => $cor + 50};
+  position: absolute;
+  bottom: 30px;
+  right: 35px;
+  backdrop-filter: blur(3px);
+  cursor: pointer;
+  transition: all ease-in-out 0.2s;
+  user-select: none;
+
+  &:hover {
+    background-color: ${({ $cor }) => $cor + 90};
+  }
+`;
+
 interface BtnSalvarProps {
   $cor: string;
 }
@@ -2579,7 +2620,7 @@ const BtnSalvarStyle = styled.button<BtnSalvarProps>`
   background-color: ${({ $cor }) => $cor + 50};
   position: absolute;
   bottom: 30px;
-  right: 35px;
+  right: 170px;
   backdrop-filter: blur(3px);
   cursor: pointer;
   transition: all ease-in-out 0.2s;
