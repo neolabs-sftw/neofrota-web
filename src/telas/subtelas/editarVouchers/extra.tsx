@@ -1,5 +1,5 @@
-import { useParams } from "react-router-dom";
-import { useVoucherExtraId } from "../../../hooks/useVouchers";
+import { useNavigate, useParams } from "react-router-dom";
+import { useEditarVoucher } from "../../../hooks/useVouchers";
 import { useTema } from "../../../hooks/temaContext";
 import { useAdminLogado } from "../../../hooks/AdminLogado";
 import { useListaClientes } from "../../../hooks/useEmpresaCliente";
@@ -9,29 +9,36 @@ import { useMotorista } from "../../../hooks/useMotorista";
 import assPadrao from "../../../assets/image/not_sing.png";
 import { usePassageiros } from "../../../hooks/usePassageiros";
 import BtnCriarPassageiro from "../empresaCliente/btnComponentes/criarPassageiro";
+import { useSolicitante } from "../../../hooks/useSolicitantes";
+import { useVoucherExtraId } from "../../../hooks/useVouchers";
 import { usePedagios } from "../../../hooks/usePedagios";
-import styled from "styled-components";
 import { useRotasExtas } from "../../../hooks/useRotasExtras";
+import styled from "styled-components";
 
-export default function EditarVoucherFixo() {
+export default function EditarVoucherExtra() {
   const { id } = useParams();
   const Cor = useTema().Cor;
 
-  const { voucherExtraId, loading: loadingExtra } = useVoucherExtraId(
-    atob(String(id)),
-  );
+  const { voucherExtraId } = useVoucherExtraId(atob(String(id)));
+
+  console.log("VOUCHER EXTRA AQUI >>>>>>", voucherExtraId);
+
+  const adminLogado = useAdminLogado();
 
   const [empresaCliente, setEmpresaCliente] = useState<any>(0);
   const [unidadeEmpresaCliente, setUnidadeEmpresaCliente] = useState<any>(0);
   const [rota, setRota] = useState<any>(0);
+  const [solicitante, setSolicitante] = useState<any>(0);
   const [motorista, setMotorista] = useState<any>(0);
   const [dataHoraProgramada, setDataHoraProgramada] = useState<any>(0);
   const [dataHoraFinalizcao, setDataHoraFinalizacao] = useState<any>(0);
+  const [assinatura, setAssinatura] = useState<string>("");
   const [observacao, setObservacao] = useState<any>("");
   const [observacaoMotorista, setObservacaoMotorista] = useState<any>("");
   const [carregandoEmpresa, setCarregandoEmpresa] = useState<boolean>(false);
   const [passageirosVoucher, setPassageirosVoucher] = useState<any[]>([]);
-
+  const [natureza, setNatureza] = useState("");
+  const [tipo, setTipo] = useState("");
   const [valorViagem, setValorViagem] = useState(0);
   const [valorViagemRepasse, setValorViagemRepasse] = useState(0);
   const [valorDeslocamento, setValorDeslocamento] = useState(0);
@@ -44,14 +51,21 @@ export default function EditarVoucherFixo() {
   const [valorPedagio, setValorPedagio] = useState("");
 
   useEffect(() => {
-    setEmpresaCliente(voucherExtraId?.empresaCliente.id || 0);
-    setUnidadeEmpresaCliente(voucherExtraId?.unidadeCliente.id || 0);
-    setRota(voucherExtraId?.rota || null);
+    if (!voucherExtraId) return;
+
+    setEmpresaCliente(voucherExtraId?.empresaCliente?.id || 0);
+    setUnidadeEmpresaCliente(voucherExtraId?.unidadeCliente?.id || 0);
+    setRota(voucherExtraId?.rota?.id || 0);
+    setSolicitante(voucherExtraId.solicitante?.id || 0);
     setMotorista(voucherExtraId?.motorista || null);
     setDataHoraProgramada(voucherExtraId?.dataHoraProgramado || "");
     setDataHoraFinalizacao(voucherExtraId?.dataHoraConclusao || "");
     setObservacao(voucherExtraId?.observacao || "");
     setObservacaoMotorista(voucherExtraId?.observacaoMotorista || "");
+    setNatureza(voucherExtraId?.natureza || "");
+    setTipo(voucherExtraId?.tipoCorrida || "");
+    setAssinatura(voucherExtraId?.assinatura || "");
+
     if (voucherExtraId?.status === "Concluido") {
       setPassageirosVoucher(voucherExtraId.passageiros);
     } else if (
@@ -66,11 +80,11 @@ export default function EditarVoucherFixo() {
           return item;
         },
       );
-
       setPassageirosVoucher(passageirosFormatados);
     } else {
       setPassageirosVoucher([]);
     }
+
     setValorViagem(voucherExtraId?.valorViagem || 0);
     setValorViagemRepasse(voucherExtraId?.valorViagemRepasse || 0);
     setValorDeslocamento(voucherExtraId?.valorDeslocamento || 0);
@@ -79,9 +93,34 @@ export default function EditarVoucherFixo() {
     setValorHoraParadaRepasse(voucherExtraId?.valorHoraParadaRepasse || 0);
     setValorPedagio(voucherExtraId?.valorPedagio || 0);
     setQntTempoParado(voucherExtraId?.qntTempoParado || 0);
-  }, [carregandoEmpresa, loadingExtra]);
+  }, [carregandoEmpresa, voucherExtraId]);
 
-  console.log(voucherExtraId);
+  const voucherAtualizado = {
+    ...voucherExtraId,
+    empresaClienteId: empresaCliente,
+    unidadeClienteId: unidadeEmpresaCliente,
+    rota: rota,
+    solicitante: solicitante,
+    motorista: motorista,
+    dataHoraProgramado: dataHoraProgramada,
+    dataHoraConclusao: dataHoraFinalizcao,
+    dataHoraCriacao: new Date().toISOString(),
+    adminUsuarioId: adminLogado?.id,
+    assinatura: assinatura,
+    observacao: observacao,
+    observacaoMotorista: observacaoMotorista,
+    natureza: natureza,
+    tipoCorrida: tipo,
+    passageiros: passageirosVoucher,
+    valorViagem: valorViagem,
+    valorViagemRepasse: valorViagemRepasse,
+    valorDeslocamento: valorDeslocamento,
+    valorDeslocamentoRepasse: valorDeslocamentoRepasse,
+    valorHoraParada: valorHoraParada,
+    valorHoraParadaRepasse: valorHoraParadaRepasse,
+    valorPedagio: valorPedagio,
+    qntTempoParado: qntTempoParado,
+  };
 
   return (
     <div
@@ -106,7 +145,7 @@ export default function EditarVoucherFixo() {
         }}
       >
         <h3 style={{ color: Cor.textoExtra, fontSize: "20px" }}>
-          Editar o Voucher {atob(String(id))}
+          Editar o Voucher Fixo {atob(String(id))}
         </h3>
         <div
           style={{
@@ -120,9 +159,15 @@ export default function EditarVoucherFixo() {
         empresaCliente={empresaCliente}
         unidadeCliente={unidadeEmpresaCliente}
         rota={rota}
+        solicitante={solicitante}
+        tipo={tipo}
+        natureza={natureza}
         setEmpresaCliente={setEmpresaCliente}
         setUnidadeEmpresaCliente={setUnidadeEmpresaCliente}
         setRota={setRota}
+        setSolicitante={setSolicitante}
+        setTipo={setTipo}
+        setNatureza={setNatureza}
         setCarregandoEmpresa={setCarregandoEmpresa}
       />
       <DetalhesDoVoucher
@@ -163,7 +208,7 @@ export default function EditarVoucherFixo() {
         setPassageirosVoucher={setPassageirosVoucher}
         statusVoucher={voucherExtraId?.status || false}
       />
-      <SalvarInformacoes v={voucherExtraId} />
+      <SalvarInformacoes v={voucherExtraId} vA={voucherAtualizado} />
     </div>
   );
 }
@@ -172,17 +217,29 @@ function DadosGerais({
   empresaCliente,
   unidadeCliente,
   rota,
+  solicitante,
+  tipo,
+  natureza,
   setEmpresaCliente,
   setUnidadeEmpresaCliente,
   setRota,
+  setSolicitante,
+  setTipo,
+  setNatureza,
   setCarregandoEmpresa,
 }: {
   empresaCliente: any;
   unidadeCliente: any;
   rota: any;
+  solicitante: any;
+  tipo: any;
+  natureza: any;
   setEmpresaCliente: any;
   setUnidadeEmpresaCliente: any;
   setRota: any;
+  setSolicitante: any;
+  setTipo: any;
+  setNatureza: any;
   setCarregandoEmpresa: any;
 }) {
   const Cor = useTema().Cor;
@@ -190,6 +247,8 @@ function DadosGerais({
   const operId = useAdminLogado()?.operadora.id;
 
   const { listaClientes: listaClientesTotal } = useListaClientes(operId || "0");
+  const { solicitantes } = useSolicitante(empresaCliente);
+  const { listaRotasExtras } = useRotasExtas(empresaCliente);
 
   const listaClientes = listaClientesTotal?.filter(
     (c: any) => c.statusCliente === true,
@@ -203,11 +262,11 @@ function DadosGerais({
     (u: any) => u.statusUnidadeCliente === true,
   );
 
+  console.log(rota);
+
   useEffect(() => {
     setCarregandoEmpresa(loading);
   }, [loading]);
-
-  const { listaRotasExtras } = useRotasExtas(empresaCliente);
 
   return (
     <div
@@ -288,23 +347,29 @@ function DadosGerais({
                   backgroundColor: "transparent",
                   color: Cor.texto1,
                 }}
-                // onChange={(e) => setEmpresaCliente(e.target.value)}
-                // value={empresaCliente}
+                onChange={(e) => setNatureza(e.target.value)}
+                value={natureza}
               >
                 <option
                   value={""}
                   style={{ backgroundColor: Cor.base2, color: Cor.texto2 }}
                 >
+                  -
+                </option>
+                <option
+                  value={"Fixo"}
+                  style={{ backgroundColor: Cor.base2, color: Cor.texto2 }}
+                >
                   Fixo
                 </option>
                 <option
-                  value={""}
+                  value={"Extra"}
                   style={{ backgroundColor: Cor.base2, color: Cor.texto2 }}
                 >
                   Extra
                 </option>
                 <option
-                  value={""}
+                  value={"Turno"}
                   style={{ backgroundColor: Cor.base2, color: Cor.texto2 }}
                 >
                   Turno
@@ -329,7 +394,7 @@ function DadosGerais({
                 margin: 5,
               }}
             >
-             Tipo
+              Tipo
             </p>
             <div
               style={{
@@ -349,26 +414,26 @@ function DadosGerais({
                   backgroundColor: "transparent",
                   color: Cor.texto1,
                 }}
-                // onChange={(e) => setEmpresaCliente(e.target.value)}
-                // value={empresaCliente}
+                onChange={(e) => setTipo(e.target.value)}
+                value={tipo}
               >
                 <option
                   value={""}
                   style={{ backgroundColor: Cor.base2, color: Cor.texto2 }}
                 >
-                  Fixo
+                  -
                 </option>
                 <option
-                  value={""}
+                  value={"Entrada"}
                   style={{ backgroundColor: Cor.base2, color: Cor.texto2 }}
                 >
-                  Extra
+                  Entrada
                 </option>
                 <option
-                  value={""}
+                  value={"Saida"}
                   style={{ backgroundColor: Cor.base2, color: Cor.texto2 }}
                 >
-                  Turno
+                  Saída
                 </option>
               </select>
             </div>
@@ -384,7 +449,7 @@ function DadosGerais({
           alignItems: "center",
         }}
       >
-        <div style={{ display: "flex", flexDirection: "column", width: "32%" }}>
+        <div style={{ display: "flex", flexDirection: "column", width: "24%" }}>
           <p
             style={{
               fontSize: 14,
@@ -441,7 +506,7 @@ function DadosGerais({
             </select>
           </div>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", width: "32%" }}>
+        <div style={{ display: "flex", flexDirection: "column", width: "24%" }}>
           <p
             style={{
               fontSize: 14,
@@ -498,7 +563,7 @@ function DadosGerais({
             </select>
           </div>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", width: "32%" }}>
+        <div style={{ display: "flex", flexDirection: "column", width: "24%" }}>
           <p
             style={{
               fontSize: 14,
@@ -528,26 +593,82 @@ function DadosGerais({
                 color: Cor.texto1,
               }}
               onChange={(e) => setRota(e.target.value)}
-              value={rota?.id || 0}
+              value={rota}
             >
               <option
                 value={""}
                 style={{ backgroundColor: Cor.base2, color: Cor.texto2 + 70 }}
               >
-                Selecione a Rota
+                Selecione o Solicitante
               </option>
-              {listaRotasExtras?.map((rota: any) => {
+              {listaRotasExtras?.map((r: any) => {
                 return (
                   <option
-                    value={rota?.id}
-                    key={rota?.id}
+                    value={r?.id}
+                    key={r?.id}
                     style={{
                       backgroundColor: Cor.base2,
                       padding: 15,
                       margin: 10,
                     }}
                   >
-                    {rota?.origem} x {rota?.destino}
+                    {r?.origem} X {r?.destino}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", width: "24%" }}>
+          <p
+            style={{
+              fontSize: 14,
+              color: Cor.textoExtra + 90,
+              fontWeight: "bold",
+              margin: 5,
+            }}
+          >
+            Solicitante:
+          </p>
+          <div
+            style={{
+              width: "100%",
+              border: `1px solid ${Cor.texto2 + 50}`,
+              padding: 10,
+              borderRadius: 14,
+            }}
+          >
+            <select
+              name=""
+              id=""
+              style={{
+                outline: "none",
+                border: "none",
+                width: "100%",
+                backgroundColor: "transparent",
+                color: Cor.texto1,
+              }}
+              onChange={(e) => setSolicitante(e.target.value)}
+              value={solicitante}
+            >
+              <option
+                value={""}
+                style={{ backgroundColor: Cor.base2, color: Cor.texto2 + 70 }}
+              >
+                Selecione o Solicitante
+              </option>
+              {solicitantes?.map((s: any) => {
+                return (
+                  <option
+                    value={s?.id}
+                    key={s?.id}
+                    style={{
+                      backgroundColor: Cor.base2,
+                      padding: 15,
+                      margin: 10,
+                    }}
+                  >
+                    {s?.nome}
                   </option>
                 );
               })}
@@ -592,12 +713,12 @@ function DetalhesDoVoucher({
 
   const { listaMotoristas } = useMotorista(operId);
 
-  const formatarParaInputP = (dataString: any) => {
+  const formatarParaInputProg = (dataString: any) => {
     if (!dataString) return "";
     return dataString.substring(0, 16);
   };
 
-  const formatarParaInputF = (dataString: any) => {
+  const formatarParaInputFin = (dataString: any) => {
     if (!dataString) return "";
 
     const data = new Date(dataString);
@@ -610,6 +731,8 @@ function DetalhesDoVoucher({
 
     return dataLocal.toISOString().substring(0, 16);
   };
+
+  useEffect(() => {}, [motorista, setMotorista]);
 
   return (
     <div
@@ -690,7 +813,17 @@ function DetalhesDoVoucher({
                     color: Cor.texto1,
                     opacity: 1,
                   }}
-                  onChange={(e) => setMotorista(e.target.value)}
+                  onChange={(e) => {
+                    const idSelecionado = e.target.value;
+                    if (!idSelecionado) {
+                      setMotorista(null);
+                    } else {
+                      const motoristaCompleto = listaMotoristas?.find(
+                        (m: any) => String(m.id) === String(idSelecionado),
+                      );
+                      setMotorista(motoristaCompleto);
+                    }
+                  }}
                   value={motorista?.id || 0}
                 >
                   <option
@@ -753,7 +886,7 @@ function DetalhesDoVoucher({
                     border: "none",
                     zIndex: 8,
                   }}
-                  value={formatarParaInputP(dataHoraProgramada)}
+                  value={formatarParaInputProg(dataHoraProgramada)}
                   onChange={(e: any) => {
                     setDataHoraProgramada(`${e.target.value}:00.000Z`);
                   }}
@@ -778,7 +911,7 @@ function DetalhesDoVoucher({
                 style={{
                   fontSize: 14,
                   color:
-                    status === "Concluido" ? Cor.texto2 : Cor.textoExtra + "CC",
+                    status === "Concluido" ? Cor.textoExtra + "CC" : Cor.texto2,
                   fontWeight: "bold",
                   margin: 5,
                 }}
@@ -810,7 +943,7 @@ function DetalhesDoVoucher({
                     border: "none",
                     zIndex: 8,
                   }}
-                  value={formatarParaInputF(dataHoraFinalizacao)}
+                  value={formatarParaInputFin(dataHoraFinalizacao)}
                   onChange={() => {
                     // setDataHoraEntrada(`${e.target.value}:00.000Z`);
                   }}
@@ -901,7 +1034,7 @@ function DetalhesDoVoucher({
               <input
                 placeholder="Sem Observação do Motorista"
                 value={observacaoMotorista}
-                // onChange={(e) => setObersevacao(e.target.value)}
+                readOnly
                 type="text"
                 style={{
                   width: "100%",
@@ -929,7 +1062,6 @@ function DetalhesDoVoucher({
 
 function DetalhesCarro({ carro, motorista }: { carro: any; motorista: any }) {
   const Cor = useTema().Cor;
-  console.log(motorista, carro);
   const normalize = (text: string) => {
     if (!text) return "";
     return text
@@ -941,6 +1073,7 @@ function DetalhesCarro({ carro, motorista }: { carro: any; motorista: any }) {
   const imgCarro = carro
     ? `https://iyqleanlhzcnndzuugkg.supabase.co/storage/v1/object/public/neofrotabkt/carros/${normalize(carro.marca)}/${normalize(carro.modelo)}/${normalize(carro.cor)}.png`
     : "";
+
   return (
     <div
       style={{
@@ -965,16 +1098,20 @@ function DetalhesCarro({ carro, motorista }: { carro: any; motorista: any }) {
           justifyContent: "space-between",
         }}
       >
-        <img
-          src={imgCarro}
-          alt=""
-          style={{ width: "60%", objectFit: "contain" }}
-        />
-        <img
-          src={motorista?.fotoMotorista || ""}
-          alt=""
-          style={{ width: "30%", objectFit: "cover", borderRadius: 5 }}
-        />
+        {imgCarro ? (
+          <img
+            src={imgCarro}
+            alt="Foto do Carro"
+            style={{ width: "60%", objectFit: "contain" }}
+          />
+        ) : null}
+        {motorista?.fotoMotorista ? (
+          <img
+            src={motorista?.fotoMotorista}
+            alt="Foto do Motorista"
+            style={{ width: "30%", objectFit: "cover", borderRadius: 5 }}
+          />
+        ) : null}
       </div>
       <div style={{ width: "100%", height: 1, backgroundColor: Cor.texto2 }} />
       <p
@@ -1213,7 +1350,7 @@ function IncluirPassageiros({
           const selecionado = passageirosVoucher.some(
             (p: any) => p.id === passageiro.id,
           );
-          if (statusVoucher === "Concluido") {
+          if (statusVoucher === "Concluido" || statusVoucher === "Cancelado") {
             return <CardPassageiroVoucher key={passageiro.id} p={passageiro} />;
           } else {
             return (
@@ -1567,7 +1704,7 @@ function LinhaPassageiro({
               color: Cor.texto1,
             }}
           >
-            {passageiro.centroCustoClienteId.nome}
+            {passageiro?.centroCustoClienteId?.nome || ""}
           </p>
         </div>
         <div
@@ -1905,6 +2042,7 @@ function ValoresFixo({
                 <input
                   type="number"
                   placeholder="0,00"
+                  readOnly
                   style={{
                     width: "100%",
                     border: "none",
@@ -1915,12 +2053,11 @@ function ValoresFixo({
                     fontSize: 20,
                   }}
                   value={
-                    valorViagem +
-                      pedagioReal +
-                      valorDeslocamento +
-                      valorHoraParada * qntTempoParado || 0
+                    Number(valorViagem || 0) +
+                    Number(pedagioReal || 0) +
+                    Number(valorDeslocamento || 0) +
+                    Number(valorHoraParada || 0) * Number(qntTempoParado || 0)
                   }
-                  onChange={(e) => setValorViagem(e.target.value)}
                 />
               </div>
             </div>
@@ -1940,6 +2077,7 @@ function ValoresFixo({
                 <input
                   type="number"
                   placeholder="0,00"
+                  readOnly
                   style={{
                     width: "100%",
                     border: "none",
@@ -1949,8 +2087,13 @@ function ValoresFixo({
                     fontWeight: "bold",
                     backgroundColor: "transparent",
                   }}
-                  value={valorViagemRepasse || ""}
-                  onChange={(e) => setValorViagemRepasse(e.target.value)}
+                  value={
+                    Number(valorViagemRepasse || 0) +
+                    Number(pedagioReal || 0) +
+                    Number(valorDeslocamentoRepasse || 0) +
+                    Number(valorHoraParadaRepasse || 0) *
+                      Number(qntTempoParado || 0)
+                  }
                 />
               </div>
             </div>
@@ -2281,8 +2424,168 @@ function ValoresFixo({
   );
 }
 
-function SalvarInformacoes({ v }: { v: any }) {
+function SalvarInformacoes({ v, vA }: { v: any; vA: any }) {
+  const { editar, loading } = useEditarVoucher();
+
   const Cor = useTema().Cor;
+  const navigate = useNavigate();
+
+  const adminLogado = useAdminLogado();
+
+  const editarVoucherCompleto = async () => {
+    try {
+      // 1. Funções de segurança para limpar dados inválidos
+      // Transforma 0 em undefined para que o filtro final o remova (evita erro em DateTime)
+      const checkZero = (val: any) => (val === 0 ? undefined : val);
+      // Força IDs a serem Strings (Apollo lida melhor) e remove se for 0
+      const formatId = (val: any) =>
+        val && val !== 0 ? String(val) : undefined;
+
+      // 2. Montagem segura do Payload
+      const inputBruto = {
+        id: String(vA.id), // ID principal obrigatório
+        origem: vA.origem,
+        destino: vA.destino,
+
+        // Datas protegidas contra o '0' do useState
+        dataHoraProgramado: checkZero(vA.dataHoraProgramado),
+        dataHoraConclusao: checkZero(vA.dataHoraConclusao),
+        dataHoraCriacao: new Date().toISOString(),
+        qntTempoParado:
+          vA.qntTempoParado === null ? null : Number(vA.qntTempoParado),
+
+        // Valores numéricos
+        valorViagem: vA.valorViagem ? parseFloat(vA.valorViagem) : undefined,
+        valorViagemRepasse: vA.valorViagemRepasse
+          ? parseFloat(vA.valorViagemRepasse)
+          : undefined,
+        valorDeslocamento: vA.valorDeslocamento
+          ? parseFloat(vA.valorDeslocamento)
+          : undefined,
+        valorDeslocamentoRepasse: vA.valorDeslocamentoRepasse
+          ? parseFloat(vA.valorDeslocamentoRepasse)
+          : undefined,
+        valorHoraParada: vA.valorHoraParada
+          ? parseFloat(vA.valorHoraParada)
+          : undefined,
+        valorHoraParadaRepasse: vA.valorHoraParadaRepasse
+          ? parseFloat(vA.valorHoraParadaRepasse)
+          : undefined,
+        valorPedagio: vA.valorPedagio ? parseFloat(vA.valorPedagio) : undefined,
+        valorEstacionamento: vA.valorEstacionamento
+          ? parseFloat(vA.valorEstacionamento)
+          : undefined,
+
+        assinatura: vA.assinatura,
+        observacaoMotorista: vA.observacaoMotorista,
+        observacao: vA.observacao,
+        natureza: vA.natureza,
+        tipoCorrida: vA.tipoCorrida,
+        status: vA.status,
+
+        // 3. Relações protegidas pelo formatId
+        empresaClienteId: formatId(
+          vA.empresaClienteId || vA.empresaCliente?.id,
+        ),
+        unidadeClienteId: formatId(
+          vA.unidadeClienteId || vA.unidadeCliente?.id,
+        ),
+        modeloFixoId: null,
+        rotaId: formatId(vA.rota || vA.rotaId || vA.rota?.id),
+        solicitanteId: formatId(
+          vA.solicitante || vA.solicitanteId || vA.solicitante?.id,
+        ),
+        adminUsuarioId: adminLogado?.id || 0,
+        carroId: formatId(vA.carroId || vA.carro?.id),
+        operadoraId: formatId(vA.operadoraId || vA.operadora?.id),
+        modeloTurnoId: null,
+
+        motoristaId: formatId(
+          typeof vA.motorista === "object"
+            ? vA.motorista?.id
+            : vA.motorista || vA.motoristaId,
+        ),
+
+        // 4. Passageiros com formatação segura de ID
+        passageiros:
+          vA.passageiros?.length > 0
+            ? vA.passageiros.map((p: any) => {
+                if (typeof p !== "object") {
+                  return { id: String(p) };
+                }
+                return {
+                  id: String(p.id || p.passageiroId),
+                  horarioEmbarqueReal: checkZero(p.horarioEmbarqueReal),
+                  rateio: p.rateio ? parseFloat(p.rateio) : undefined,
+                  statusPresenca: p.statusPresenca || undefined,
+                };
+              })
+            : undefined,
+      };
+
+      // 5. Limpeza Final (agora o checkZero e formatId já cuidaram dos 0s)
+      const cleanInput = Object.fromEntries(
+        Object.entries(inputBruto).filter(
+          ([_, value]) => value !== undefined && value !== null,
+        ),
+      );
+
+      console.log("Payload enviado para API:", cleanInput); // Útil para debugar
+
+      // 6. Executa a mutation
+      const resultado = await editar(cleanInput);
+      console.log("Voucher editado com sucesso!", resultado);
+      navigate(-1);
+    } catch (error) {
+      console.error("Erro ao editar voucher:", error);
+      alert("Erro ao editar voucher");
+    }
+  };
+
+  const cancelarVoucher = async () => {
+    try {
+      const resultado = await editar({
+        id: String(vA.id),
+        status: "Cancelado",
+      });
+      console.log("Voucher editado com sucesso!", resultado);
+      navigate(-1);
+    } catch (error) {
+      console.error("Erro ao editar voucher:", error);
+      alert("Erro ao editar voucher");
+    }
+  };
+
+  const redefinirVoucher = async () => {
+    try {
+      const resultado = await editar({
+        id: String(vA.id),
+        status: "Aberto",
+        assinatura: null,
+        dataHoraConclusao: null,
+        passageiros:
+          vA.passageiros?.length > 0
+            ? vA.passageiros.map((p: any) => {
+                if (typeof p !== "object") {
+                  return { id: String(p) };
+                }
+                return {
+                  id: String(p.id || p.passageiroId),
+                  horarioEmbarqueReal: null,
+                  rateio: null,
+                  statusPresenca: "Agendado",
+                };
+              })
+            : undefined,
+      });
+      console.log("Voucher editado com sucesso!", resultado);
+      navigate(-1);
+    } catch (error) {
+      console.error("Erro ao editar voucher:", error);
+      alert("Erro ao editar voucher");
+    }
+  };
+
   return (
     <div
       style={{
@@ -2315,8 +2618,8 @@ function SalvarInformacoes({ v }: { v: any }) {
         às{" "}
         {new Date(v?.dataHoraCriacao).toLocaleString("pt-BR", {
           timeZone: "America/Sao_Paulo",
-          hour: "numeric",
-          minute: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
         })}
         h
       </p>
@@ -2327,12 +2630,30 @@ function SalvarInformacoes({ v }: { v: any }) {
           flexDirection: "row",
           justifyContent: "space-between",
           alignItems: "center",
+          fontWeight: "bold",
         }}
       >
-        <BtnVouchers $bg={Cor.atencao}>Cancelar Voucher</BtnVouchers>
-        <BtnVouchers $bg={Cor.texto1}>Redefinir Voucher</BtnVouchers>
-        <BtnVouchers $bg={Cor.texto1}>Fechar Voucher</BtnVouchers>
-        <BtnVouchers $bg={"transparent"}>Salvar Alterações</BtnVouchers>
+        <BtnVouchers $bg={Cor.atencao} onClick={cancelarVoucher}>
+          <p>Cancelar</p>
+        </BtnVouchers>
+        <BtnVouchers $bg={Cor.ativo} onClick={redefinirVoucher}>
+          <p>Redefinir</p>
+        </BtnVouchers>
+        <BtnVouchers $bg={Cor.secundaria}>Fechar</BtnVouchers>
+        <div style={{ width: "50%" }} />
+        <BtnSalvarStyle $cor={Cor.primaria} onClick={editarVoucherCompleto}>
+          <p style={{ color: Cor.primariaTxt }}>
+            {loading ? "Salvando..." : "Salvar"}
+          </p>
+        </BtnSalvarStyle>
+        <BtnSairStyle
+          $cor={Cor.atencao}
+          onClick={() => {
+            navigate(-1);
+          }}
+        >
+          Sair
+        </BtnSairStyle>
       </div>
     </div>
   );
@@ -2344,12 +2665,13 @@ interface BtnVouchers {
 
 const BtnVouchers = styled.div<BtnVouchers>`
   width: 15%;
-  padding: 10px;
+  padding: 15px;
   background-color: ${({ $bg }) => $bg + 50};
   border-radius: 14px;
   display: flex;
   justify-content: center;
   align-items: center;
+  font-size: 14px;
   color: ${({ $bg }) => $bg};
   border: 1px solid ${({ $bg }) => $bg + 50};
   transition: all 0.3s ease-in-out;
@@ -2364,5 +2686,56 @@ const BtnVouchers = styled.div<BtnVouchers>`
   &:active {
     background-color: ${({ $bg }) => $bg + 70};
     scale: 0.98;
+  }
+`;
+
+interface BtnSairProps {
+  $cor: string;
+}
+
+const BtnSairStyle = styled.button<BtnSairProps>`
+  padding: 15px 50px;
+  border-radius: 18px;
+  outline: none;
+  font-size: 14px;
+  font-weight: 700;
+  color: ${({ $cor }) => $cor};
+  border: 1px solid ${({ $cor }) => $cor};
+  background-color: ${({ $cor }) => $cor + 50};
+  position: absolute;
+  bottom: 30px;
+  right: 35px;
+  backdrop-filter: blur(3px);
+  cursor: pointer;
+  transition: all ease-in-out 0.2s;
+  user-select: none;
+
+  &:hover {
+    background-color: ${({ $cor }) => $cor + 90};
+  }
+`;
+
+interface BtnSalvarProps {
+  $cor: string;
+}
+
+const BtnSalvarStyle = styled.button<BtnSalvarProps>`
+  padding: 15px 50px;
+  border-radius: 18px;
+  outline: none;
+  font-size: 14px;
+  font-weight: 700;
+  border: 1px solid ${({ $cor }) => $cor};
+  background-color: ${({ $cor }) => $cor + 50};
+  position: absolute;
+  bottom: 30px;
+  right: 170px;
+  backdrop-filter: blur(3px);
+  cursor: pointer;
+  transition: all ease-in-out 0.2s;
+  user-select: none;
+
+  &:hover {
+    background-color: ${({ $cor }) => $cor + 90};
   }
 `;

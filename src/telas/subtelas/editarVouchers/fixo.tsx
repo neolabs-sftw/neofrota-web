@@ -21,6 +21,8 @@ export default function EditarVoucherFixo() {
     atob(String(id)),
   );
 
+  console.log(voucherFixoId);
+
   const adminLogado = useAdminLogado();
 
   const [empresaCliente, setEmpresaCliente] = useState<any>(0);
@@ -2430,10 +2432,10 @@ function SalvarInformacoes({ v, vA }: { v: any; vA: any }) {
         modeloFixoId: formatId(vA.modeloFixoId || vA.modeloFixo?.id),
         adminUsuarioId: adminLogado?.id || 0,
         carroId: formatId(vA.carroId || vA.carro?.id),
-        solicitanteId: formatId(vA.solicitanteId || vA.solicitante?.id),
+        solicitanteId: null,
         operadoraId: formatId(vA.operadoraId || vA.operadora?.id),
         modeloTurnoId: formatId(vA.modeloTurnoId || vA.modeloTurno?.id),
-        rotaId: formatId(vA.rotaId || vA.rota?.id),
+        rotaId: null,
 
         motoristaId: formatId(
           typeof vA.motorista === "object"
@@ -2461,7 +2463,7 @@ function SalvarInformacoes({ v, vA }: { v: any; vA: any }) {
       // 5. Limpeza Final (agora o checkZero e formatId já cuidaram dos 0s)
       const cleanInput = Object.fromEntries(
         Object.entries(inputBruto).filter(
-          ([_, value]) => value !== undefined && value !== null && value !== "",
+          ([_, value]) => value !== undefined && value !== null,
         ),
       );
 
@@ -2470,10 +2472,20 @@ function SalvarInformacoes({ v, vA }: { v: any; vA: any }) {
       // 6. Executa a mutation
       const resultado = await editar(cleanInput);
       console.log("Voucher editado com sucesso!", resultado);
-      navigate(-1)
+      navigate(-1);
     } catch (error) {
       console.error("Erro ao editar voucher:", error);
-      alert("Erro ao editar voucher")
+      alert("Erro ao editar voucher");
+    }
+  };
+
+  const cancelarVoucher = async () => {
+    try {
+      const resultado = await editar({ status: "Cancelado" });
+      console.log("Voucher editado com sucesso!", resultado);
+    } catch (error) {
+      console.error("Erro ao editar voucher:", error);
+      alert("Erro ao editar voucher");
     }
   };
 
@@ -2524,7 +2536,7 @@ function SalvarInformacoes({ v, vA }: { v: any; vA: any }) {
           fontWeight: "bold",
         }}
       >
-        <BtnVouchers $bg={Cor.atencao}>
+        <BtnVouchers $bg={Cor.atencao} onClick={cancelarVoucher}>
           <p>Cancelar</p>
         </BtnVouchers>
         <BtnVouchers $bg={Cor.ativo}>
