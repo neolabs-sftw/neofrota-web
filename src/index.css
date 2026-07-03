@@ -15,23 +15,24 @@ body {
 
 @font-face {
   font-family: "Open Sans";
-  src: url("/src/assets/fonts/OpenSans-Regular.ttf") format("truetype");
+  /* Se o index.css estiver na raiz do src, use ./assets... */
+  src: url("./assets/fonts/OpenSans-Regular.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
 
 @font-face {
   font-family: "Icone";
-  src: url("/src/assets/fonts/MaterialSymbolsRounded-Light.woff2")
-    format("truetype");
+  src: url("./assets/fonts/MaterialSymbolsRounded-Light.woff2") 
+    format("woff2"); /* ⬅️ CORRIGIDO PARA WOFF2 */
   font-weight: normal;
   font-style: normal;
 }
 
 @font-face {
   font-family: "Icone";
-  src: url("/src/assets/fonts/MaterialSymbolsRounded-Fill.woff2")
-    format("truetype");
-  font-weight: bold;
+  src: url("./assets/fonts/MaterialSymbolsRounded-Fill.woff2") 
+    format("woff2"); /* ⬅️ CORRIGIDO PARA WOFF2 */
+  font-weight: bold; /* Usar o bold para chamar a versão Fill é uma ótima sacada! */
   font-style: normal;
 }
