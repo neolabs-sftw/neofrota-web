@@ -168,11 +168,12 @@ function RelatorioConteudo() {
     refetch,
   } = useVouchersFiltrados(filtro);
 
-  const [listaRelatorio, setListaRelatorio] = useState<any[]>(listaPrincipal);
-
   const { listaVouchersIds } = useVouchersIds(idsParaBusca);
 
-  console.log(listaVouchersIds)
+  const listaRelatorio =
+    listaVouchersIds && listaVouchersIds.length > 0
+      ? listaVouchersIds
+      : listaPrincipal;
 
   const [buscarDadosExportacao, { loading: CarregandoExportacao }] =
     useLazyQuery(GET_VOUCHERS_EXPORTACAO, {

@@ -30,6 +30,7 @@ import { EditarTurno } from "./telas/subtelas/modeloTurno/editarTurnos";
 import { NovoModeloTurno } from "./telas/subtelas/modeloTurno/novoModeloTurno";
 import { Pagamentos } from "./telas/subtelas/pagamentos";
 import EditarVoucher from "./telas/subtelas/editarVouchers/telaEdicao";
+import PoliticaPrivacidadeMotorista from "./telas/privacidadeMotorista";
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/politica-de-privacidade" element={<PoliticaPrivacidadeMotorista/>}/>
             <Route element={<PrivateRoute />}>
               <Route path="/" element={<Home />} />
               <Route path="/agregados" element={<Agregados />} />
