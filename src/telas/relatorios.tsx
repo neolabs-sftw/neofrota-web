@@ -12,6 +12,7 @@ import {
   GET_VOUCHERS_EXPORTACAO,
   useEditarVouchersEmMassa,
   useVouchersFiltrados,
+  useVouchersIds,
 } from "../hooks/useVouchers";
 import styled from "styled-components";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -159,7 +160,19 @@ function RelatorioConteudo() {
     unidadeClienteId: "",
   });
 
-  const { listaRelatorio, loading, refetch } = useVouchersFiltrados(filtro);
+  const [idsParaBusca, setIdsParaBusca] = useState<string[]>([]);
+
+  const {
+    listaRelatorio: listaPrincipal,
+    loading,
+    refetch,
+  } = useVouchersFiltrados(filtro);
+
+  const [listaRelatorio, setListaRelatorio] = useState<any[]>(listaPrincipal);
+
+  const { listaVouchersIds } = useVouchersIds(idsParaBusca);
+
+  console.log(listaVouchersIds)
 
   const [buscarDadosExportacao, { loading: CarregandoExportacao }] =
     useLazyQuery(GET_VOUCHERS_EXPORTACAO, {
@@ -290,6 +303,7 @@ function RelatorioConteudo() {
         <BaseFiltros
           filtroAtivo={filtro}
           setFiltroAtivo={setFiltro}
+          setIdsParaBusca={setIdsParaBusca}
           exportarPlanilha={ExportarPlanilha}
           carregandoExportacao={CarregandoExportacao}
         />
@@ -2493,15 +2507,18 @@ function ResumoValores({
 function BaseFiltros({
   filtroAtivo,
   setFiltroAtivo,
+  setIdsParaBusca,
   exportarPlanilha,
   carregandoExportacao,
 }: {
   filtroAtivo: any;
   setFiltroAtivo: any;
+  setIdsParaBusca: any;
   exportarPlanilha: any;
   carregandoExportacao: any;
 }) {
   const [filtro, setFiltro] = useState(filtroAtivo);
+  const [numerosVouchers, setNumerosVouchers] = useState("");
 
   const operId = useAdminLogado()?.operadora.id;
 
@@ -2522,6 +2539,15 @@ function BaseFiltros({
 
   const handleFiltrar = () => {
     setFiltroAtivo(filtro);
+  };
+
+  const buscarPorIds = () => {
+    const idsProcessados = numerosVouchers
+      .split(",")
+      .map((id) => id.trim())
+      .filter((id) => id !== "");
+
+    setIdsParaBusca(idsProcessados);
   };
 
   const { Cor } = useTema();
@@ -2549,7 +2575,48 @@ function BaseFiltros({
           alignItems: "center",
         }}
       >
-        <p style={{ fontSize: 12, color: Cor.texto1 }}>Filtro de Pesquisa</p>
+        <p style={{ fontSize: 12, color: Cor.texto1 }}>
+          Filtro de <br></br>Pesquisa
+        </p>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            width: "50%",
+            gap: 5,
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <div>
+            <p
+              style={{
+                fontSize: 12,
+                color: Cor.texto1,
+                fontWeight: "bolder",
+                whiteSpace: "nowrap",
+              }}
+            >
+              Digite aqui 1 ou mais vouchers Ids:
+            </p>
+            <p
+              style={{ fontWeight: "normal", fontSize: 11, color: Cor.texto1 }}
+            >
+              *separando com uma "," vírgula.
+            </p>
+          </div>
+
+          <TextoEntrada
+            placeholder="Ids dos Vouchers"
+            value={numerosVouchers}
+            largura="60%"
+            type="text"
+            onChange={(e: any) => setNumerosVouchers(e.target.value)}
+          />
+          <BtnFiltrar $cor={Cor.primaria} onClick={() => buscarPorIds()}>
+            Buscar
+          </BtnFiltrar>
+        </div>
       </div>
       <div
         style={{

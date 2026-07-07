@@ -2378,15 +2378,18 @@ function SalvarInformacoes({ v, vA }: { v: any; vA: any }) {
       const formatId = (val: any) =>
         val && val !== 0 ? String(val) : undefined;
 
+      const checkEmpty = (val: any) => (val === "" ? undefined : val);
+
       // 2. Montagem segura do Payload
       const inputBruto = {
         id: String(vA.id), // ID principal obrigatório
         origem: vA.origem,
         destino: vA.destino,
 
+
         // Datas protegidas contra o '0' do useState
-        dataHoraProgramado: checkZero(vA.dataHoraProgramado),
-        dataHoraConclusao: checkZero(vA.dataHoraConclusao),
+      dataHoraProgramado: checkEmpty(checkZero(vA.dataHoraProgramado)),
+        dataHoraConclusao: checkEmpty(checkZero(vA.dataHoraConclusao)),
         dataHoraCriacao: new Date().toISOString(),
         qntTempoParado:
           vA.qntTempoParado === null || vA.qntTempoParado === ""

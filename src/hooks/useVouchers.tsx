@@ -212,6 +212,116 @@ export function useVouchers({
   };
 }
 
+const GET_VOUCHERS_IDS = gql`
+  query VouchersIds($ids: [ID!]!) {
+    vouchersIds(ids: $ids) {
+      id
+      origem
+      destino
+      dataHoraProgramado
+      dataHoraConclusao
+      dataHoraCriacao
+      qntTempoParado
+      assinatura
+      observacaoMotorista
+      observacao
+      valorViagem
+      valorViagemRepasse
+      valorDeslocamento
+      valorDeslocamentoRepasse
+      valorHoraParada
+      valorHoraParadaRepasse
+      valorPedagio
+      valorEstacionamento
+      natureza
+      tipoCorrida
+      status
+      empresaCliente {
+        id
+        nome
+        fotoLogoCliente
+        rSocial
+        statusCliente
+      }
+      unidadeCliente {
+        id
+        nome
+        endBairro
+        endCep
+        endCidade
+        endComplemento
+        endNumero
+        endRua
+        endUf
+        statusUnidadeCliente
+        cnpj
+      }
+      motorista {
+        id
+        nome
+        fotoMotorista
+        vCnh
+        statusMotorista
+        statusCnh
+      }
+      carro {
+        id
+        marca
+        modelo
+        cor
+        placa
+        ano
+      }
+      adminUsuario {
+        id
+        nome
+        funcao
+        fotoAdminOperadora
+      }
+      solicitante {
+        id
+        nome
+        funcao
+        fotoUrlSolicitante
+      }
+
+      operadora {
+        id
+      }
+      passageiros {
+        id
+        statusPresenca
+        horarioEmbarqueReal
+        rateio
+        passageiroId {
+          ativo
+          email
+          endBairro
+          endCidade
+          endNumero
+          endRua
+          fotoPerfilPassageiro
+          horarioEmbarque
+          matricula
+          id
+        }
+      }
+    }
+  }
+`;
+
+export function useVouchersIds(ids: any) {
+  const { data, loading, error } = useQuery(GET_VOUCHERS_IDS, {
+    variables: { ids },
+    fetchPolicy: "cache-and-network",
+  });
+
+  return {
+    listaVouchersIds: data ? data.vouchersIds : [],
+    error,
+    loading,
+  };
+}
 const GET_VOUCHERS_DATA = gql`
   query VoucherOperadoraData($operadoraId: ID!, $diaSelecionado: String!) {
     voucherOperadoraData(
