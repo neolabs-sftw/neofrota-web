@@ -217,11 +217,13 @@ const styles: { [key: string]: React.CSSProperties } = {
     lineHeight: "1.6",
     marginBottom: "16px",
     textAlign: "justify",
+    color: "#777777"
   },
   list: {
     marginTop: "8px",
     marginBottom: "24px",
     paddingLeft: "24px",
+    color: "#777777"
   },
   listItem: {
     fontSize: "16px",

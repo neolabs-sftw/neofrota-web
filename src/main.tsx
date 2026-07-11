@@ -14,9 +14,9 @@ import { registerSW } from 'virtual:pwa-register'
 registerSW({ immediate: true })
 
 const httpLink = new HttpLink({
-  uri: 'http://localhost:4000/graphql',
+  // uri: 'http://localhost:4000/graphql',
   // uri: "https://neofrota-api.vercel.app/graphql",
-  // uri: "https://api.neofrota.com/graphql",
+  uri: "https://api.neofrota.com/graphql",
   credentials: "include",
 });
 
