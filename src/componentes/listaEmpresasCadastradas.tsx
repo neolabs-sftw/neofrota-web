@@ -29,7 +29,7 @@ const GET_EMPRESAS_CLIENTES = gql`
 function ListaEmpresasCadastradas() {
   const Cor = useTema().Cor;
 
-  const [busca, setBusca] = useState("");
+  const [busca, setBusca] = useState<string>("");
 
   interface JwtPayload {
     adminUsuarioId?: string;

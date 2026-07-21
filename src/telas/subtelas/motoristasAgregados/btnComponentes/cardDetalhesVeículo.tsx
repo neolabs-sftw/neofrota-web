@@ -24,7 +24,7 @@ function CardDetalhesVeiculo({ motorista }: { motorista: any }) {
   };
   // Monta a URL antes do return
   const imgCarro = veiculo
-    ? `https://iyqleanlhzcnndzuugkg.supabase.co/storage/v1/object/public/neofrotabkt/carros/${normalize(veiculo.marca)}/${normalize(veiculo.modelo)}/${normalize(veiculo.cor)}.png`
+    ? `https://cdn.neofrota.com/storage/v1/object/public/neofrotabkt/carros/${normalize(veiculo.marca)}/${normalize(veiculo.modelo)}/${normalize(veiculo.cor)}.png`
     : "";
 
   if (loading || !veiculo) {
@@ -70,7 +70,7 @@ function CardDetalhesVeiculo({ motorista }: { motorista: any }) {
             alignItems: "center",
           }}
         >
-          <p style={{ color: Cor.texto1, fontSize: 16 }}>
+          <div style={{ color: Cor.texto1, fontSize: 16 }}>
             {loading ? (
               <div
                 style={{
@@ -91,7 +91,7 @@ function CardDetalhesVeiculo({ motorista }: { motorista: any }) {
                     },
                   }}
                 />
-                
+
                 <p>"Buscando veículo..."</p>
               </div>
             ) : (
@@ -101,7 +101,7 @@ function CardDetalhesVeiculo({ motorista }: { motorista: any }) {
                   flexDirection: "column",
                   alignItems: "center",
                   justifyContent: "center",
-                  userSelect: "none"
+                  userSelect: "none",
                 }}
               >
                 <img
@@ -120,7 +120,7 @@ function CardDetalhesVeiculo({ motorista }: { motorista: any }) {
                 </p>
               </div>
             )}
-          </p>
+          </div>
         </div>
       </div>
     );

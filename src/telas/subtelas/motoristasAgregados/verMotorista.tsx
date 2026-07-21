@@ -123,8 +123,22 @@ function Cabecalho({ motorista }: { motorista: any }) {
 
   const navigate = useNavigate();
 
+  const { updateMotorista } = useUpdateMotorista();
+
+  const redefinirSenha = async () => {
+    await updateMotorista({
+      variables: {
+        updateMotoristaId: motorista.id,
+        input: {
+          senha: "0000",
+        },
+      },
+    });
+    alert(`A senha do usuário ${motorista.nome} foi redefinida!`);
+  };
+
   const FALLBACK_IMAGE_URL =
-    "https://iyqleanlhzcnndzuugkg.supabase.co/storage/v1/object/public/neofrotabkt/foto_perfil_motorista/default.png";
+    "https://cdn.neofrota.com/storage/v1/object/public/neofrotabkt/foto_perfil_motorista/default.png";
 
   return (
     <div
@@ -139,6 +153,7 @@ function Cabecalho({ motorista }: { motorista: any }) {
         style={{
           width: "20%",
           height: 250,
+          gap: 5,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -193,19 +208,46 @@ function Cabecalho({ motorista }: { motorista: any }) {
             </div>
           </div>
         </div>
-        <button
+        <div
           style={{
-            border: "none",
             backgroundColor: Cor.primaria,
-            padding: "5px 25px",
-            borderRadius: 12,
-            color: Cor.base,
+            fontSize: 14,
+            color: Cor.base2,
+            padding: "5px 20px",
+            borderRadius: 14,
+            display: "flex",
+            fontWeight: 500,
+            flexDirection: "row",
+            gap: 10,
+            alignItems: "center",
+            userSelect: "none",
             cursor: "pointer",
           }}
           onClick={() => navigate(`/editarmotorista/${motorista?.id}`)}
         >
-          Editar Informações
-        </button>
+           <p style={{ fontFamily: "Icone" }}>article_person</p>
+          <p>Editar Motorista</p>
+        </div>
+        <div
+          style={{
+            backgroundColor: Cor.primaria,
+            fontSize: 14,
+            color: Cor.base2,
+            padding: "5px 20px",
+            borderRadius: 14,
+            display: "flex",
+            fontWeight: 500,
+            flexDirection: "row",
+            gap: 10,
+            alignItems: "center",
+            userSelect: "none",
+            cursor: "pointer",
+          }}
+          onClick={() => redefinirSenha()}
+        >
+          <p style={{ fontFamily: "Icone" }}>password</p>
+          <p>Redefinir Senha</p>
+        </div>
       </div>
       {/* Fim Resumo perfil */}
       {/* Linha Detalhes Motorista */}
@@ -607,7 +649,6 @@ function ListaMotoristasFuncionarios({ motorista }: { motorista: any }) {
           {funcionarios == undefined
             ? null
             : funcionarios.map((f: any) => {
-                console.log(f);
                 return (
                   <LinhaFuncionario
                     f={f.motoristaComoFuncionario}
@@ -706,7 +747,6 @@ function ListaMotoristasFuncionarios({ motorista }: { motorista: any }) {
 }
 
 function LinhaFuncionario({ f, rId }: { f: any; rId: any }) {
-
   const { carroAtrelado } = useCarroAtrelado(String(f.id));
 
   const carro = carroAtrelado?.[0] || null;

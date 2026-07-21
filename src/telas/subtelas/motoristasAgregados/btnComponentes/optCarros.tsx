@@ -12,6 +12,7 @@ import { useParams } from "react-router-dom";
 import { useAdminLogado } from "../../../../hooks/AdminLogado";
 import CircularProgress from "@mui/material/CircularProgress";
 import { useListaRelacaoByFunc } from "../../../../hooks/useRelacaoMotoristas";
+import { useMotoristaId } from "../../../../hooks/useMotorista";
 
 interface BtnOptCarrosProps {
   $cor: string;
@@ -101,6 +102,8 @@ function ModalCarros({ open, setOpen }: { open: boolean; setOpen: any }) {
     String(proprietario),
   );
 
+  const { motorista } = useMotoristaId(motoristaId);
+
   const { refetch: refetchCarroAtrelado } = useCarroAtrelado(
     String(motoristaId),
   );
@@ -116,7 +119,6 @@ function ModalCarros({ open, setOpen }: { open: boolean; setOpen: any }) {
     refetchCarroAtrelado();
     refetch();
   }, [listaRelacao, loading, motoristaId, addOpen, open, proprietario]);
-
   return (
     <div
       style={{
@@ -164,31 +166,33 @@ function ModalCarros({ open, setOpen }: { open: boolean; setOpen: any }) {
           }}
         >
           <TextoEntrada
-            largura="80%"
+            largura={motorista?.tipoMotorista === "Agregado" ? "80%" : "100%"}
             placeholder="Buscar por Placa"
             type="Text"
             value={placaBusca}
             onChange={(e) => setPlacaBusca(e.target.value)}
           />
 
-          <BtnOptCarros
-            $cor={Cor.primaria}
-            onClick={() => {
-              setAddOpen(!addOpen);
-            }}
-          >
-            <p
-              style={{
-                fontFamily: "Icone",
-                fontSize: 22,
-                rotate: addOpen ? "45deg" : "0deg",
-                transition: "ease-in-out all 0.6s",
+          {motorista?.tipoMotorista === "Agregado" ? (
+            <BtnOptCarros
+              $cor={Cor.primaria}
+              onClick={() => {
+                setAddOpen(!addOpen);
               }}
             >
-              add
-            </p>
-            <p style={{ fontSize: 14, fontWeight: 500 }}>Adicionar</p>
-          </BtnOptCarros>
+              <p
+                style={{
+                  fontFamily: "Icone",
+                  fontSize: 22,
+                  rotate: addOpen ? "45deg" : "0deg",
+                  transition: "ease-in-out all 0.6s",
+                }}
+              >
+                add
+              </p>
+              <p style={{ fontSize: 14, fontWeight: 500 }}>Adicionar</p>
+            </BtnOptCarros>
+          ) : null}
         </div>
         <div
           style={{
@@ -642,7 +646,7 @@ function LinhaCarro({ c, setOpen }: { c: any; setOpen: any }) {
   };
 
   const linkImg = c
-    ? `https://iyqleanlhzcnndzuugkg.supabase.co/storage/v1/object/public/neofrotabkt/carros/${normalize(c.marca)}/${normalize(c.modelo)}/${normalize(c.cor)}.png`
+    ? `https://cdn.neofrota.com/storage/v1/object/public/neofrotabkt/carros/${normalize(c.marca)}/${normalize(c.modelo)}/${normalize(c.cor)}.png`
     : "";
 
   const { vincularMotorista } = useDefinirMotorista();
@@ -688,7 +692,7 @@ function LinhaCarro({ c, setOpen }: { c: any; setOpen: any }) {
           }}
         >
           <p style={{ color: Cor.texto2, fontSize: 12 }}>Marca / Modelo</p>
-          <p style={{ color: Cor.texto1, textWrap: "nowrap"}}>
+          <p style={{ color: Cor.texto1, textWrap: "nowrap" }}>
             {c.marca} - {c.modelo}
           </p>
         </div>

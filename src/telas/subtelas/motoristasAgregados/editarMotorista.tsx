@@ -9,10 +9,16 @@ import {
   useMotoristaId,
   useUpdateMotorista,
 } from "../../../hooks/useMotorista";
+import EditPerfil from "../../../componentes/editPerfil";
 
 function EditarMotorista() {
   return BaseTelas({
-    conteudo: <EditarMotoristaConteudo />,
+    conteudo: (
+      <>
+        <EditarMotoristaConteudo />
+        <EditPerfil />
+      </>
+    ),
   });
 }
 
@@ -42,7 +48,6 @@ function EditarMotoristaConteudo() {
   const [cpf, setCpf] = useState(motorista ? motorista.cpf : "");
   const [cnh, setCnh] = useState(motorista ? motorista.cnh : "");
   const [vCnh, setV_cnh] = useState(motorista ? motorista.vCnh : "");
-  const [senha, setSenha] = useState(motorista ? motorista.senha : "");
   const [tipoMotorista, setTipo_motorista] = useState(
     motorista ? motorista.tipoMotorista : "",
   );
@@ -61,7 +66,6 @@ function EditarMotoristaConteudo() {
       setCpf(motorista.cpf);
       setCnh(motorista.cnh);
       setV_cnh(motorista.vCnh);
-      setSenha(motorista.senha);
       setTipo_motorista(motorista.tipoMotorista);
       setImgPreview(motorista.fotoMotorista);
     }
@@ -83,6 +87,18 @@ function EditarMotoristaConteudo() {
     setImgPreview("");
     setFoto_motorista(undefined);
   }
+
+  const redefinirSenha = async () => {
+    await updateMotorista({
+      variables: {
+        updateMotoristaId: motoristaId,
+        input: {
+          senha: "0000",
+        },
+      },
+    });
+    alert(`A senha do usuário ${motorista.nome} foi redefinida!`);
+  };
 
   const atualizarMotoristaFunc = async () => {
     setStatusCx(true);
@@ -141,7 +157,6 @@ function EditarMotoristaConteudo() {
           input: {
             nome,
             email,
-            senha,
             fotoMotorista: fotoUrlFinal,
             cpf,
             cnh,
@@ -321,13 +336,6 @@ function EditarMotoristaConteudo() {
                   largura="100%"
                 />
                 <TextoEntrada
-                  placeholder="Senha"
-                  onChange={(e: any) => setSenha(e.target.value)}
-                  value={senha}
-                  type="text"
-                  largura="100%"
-                />
-                <TextoEntrada
                   placeholder="CPF"
                   onChange={(e: { target: { value: any } }) => {
                     setCpf(formatCPF(e.target.value));
@@ -370,7 +378,7 @@ function EditarMotoristaConteudo() {
                     flexDirection: "row",
                     gap: 10,
                     alignItems: "center",
-                    justifyContent: "flex-start",
+                    justifyContent: "space-between",
                   }}
                 >
                   <p style={{ color: Cor.texto1, fontSize: 12 }}>
@@ -383,7 +391,7 @@ function EditarMotoristaConteudo() {
                       appearance: "none",
                       outline: "none",
                       borderRadius: 22,
-                      width: 220,
+                      width: 150,
                       border: "1px solid" + Cor.texto2 + 25,
                       color: Cor.texto1,
                       fontSize: 12,
@@ -395,6 +403,26 @@ function EditarMotoristaConteudo() {
                     <option value="Agregado">Agredado</option>
                     <option value="Funcionario">Funcionário</option>
                   </select>
+                  <div
+                    style={{
+                      backgroundColor: Cor.primaria,
+                      fontSize: 14,
+                      color: Cor.base2,
+                      padding: "10px 20px",
+                      borderRadius: 14,
+                      display: "flex",
+                      fontWeight: 500,
+                      flexDirection: "row",
+                      gap: 10,
+                      alignItems: "center",
+                      userSelect: "none",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => redefinirSenha()}
+                  >
+                    <p style={{ fontFamily: "Icone" }}>password</p>
+                    <p>Redefinir Senha</p>
+                  </div>
                 </div>
               </div>
               <div
