@@ -284,7 +284,6 @@ const GET_VOUCHERS_IDS = gql`
         funcao
         fotoUrlSolicitante
       }
-
       operadora {
         id
       }

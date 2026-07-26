@@ -178,7 +178,7 @@ function ModalPreviewVoucher({
                         : Cor.textoExtra,
                   }}
                 >
-                  ID: <strong>{btoa(voucher.id)}</strong>
+                  ID: <strong>{voucher.id}</strong>
                 </p>
                 <p
                   style={{

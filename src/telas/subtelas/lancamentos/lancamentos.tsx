@@ -27,6 +27,9 @@ function LancamentosConteudo() {
 
   const [motoristaSelecionado, setMotoristaSelecionado] = useState<any>("");
 
+  const [visivel, setVisivel] = useState<boolean>(false);
+  const [lancamentoModal, setLancamentoModal] = useState<any>();
+
   return (
     <div
       style={{
@@ -82,7 +85,15 @@ function LancamentosConteudo() {
           <DetalhesMotorista motoristaSelecionado={motoristaSelecionado} />
         </div>
       </div>
-      <TabelaLancamentos />
+      <TabelaLancamentos
+        setLancamentoModal={setLancamentoModal}
+        setVisivel={setVisivel}
+      />
+      <ModalEditarLancamento
+        visivel={visivel}
+        setVisivel={setVisivel}
+        l={lancamentoModal}
+      />
     </div>
   );
 }
@@ -233,7 +244,6 @@ function CxAplicarLancamento({
 
   const { refetch } = useLancamentosOperadora({
     operadoraId: useAdminLogado()?.operadora.id,
-    motoristaId: motoristaId,
     dataInicial: formatarParaYMD(primeiroDia),
     dataFinal: formatarParaYMD(ultimoDia),
   });
@@ -503,6 +513,79 @@ function CxAplicarLancamento({
     </div>
   );
 }
+
+function ModalEditarLancamento({
+  visivel,
+  setVisivel,
+  l,
+}: {
+  visivel: any;
+  setVisivel: any;
+  l: any;
+}) {
+  const { Cor } = useTema();
+  return (
+    <Overlay
+      $visivel={visivel}
+      $bg={Cor.base}
+      onClick={() => setVisivel(false)}
+    >
+      <CxModal
+        $visivel={visivel}
+        $bg={Cor.base}
+        $border={Cor.texto2 + "50"}
+        onClick={(e: any) => e.stopPropagation()}
+      >
+        <p>{l?.valor || 0}</p>
+      </CxModal>
+    </Overlay>
+  );
+}
+
+const Overlay = styled.div<{ $visivel: boolean; $bg: string }>`
+  width: 100vw;
+  height: 100vh;
+  background-color: ${({ $bg }) => `${$bg}90`};
+  position: absolute;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  alin-items: center;
+  top: 0;
+  left: 0;
+  padding: 1%;
+  z-index: 10;
+  backdrop-filter: blur(3px);
+  opacity: ${({ $visivel }) => ($visivel ? 1 : 0)};
+  pointer-events: ${({ $visivel }) => ($visivel ? "auto" : "none")};
+  transition: all 0.3s ease-in-out;
+`;
+
+interface CxModalProps {
+  $border: string;
+  $visivel: boolean;
+  $bg: string;
+}
+
+const CxModal = styled.div<CxModalProps>`
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 7px;
+  padding: 15px;
+  width: 40%;
+  border-radius: 22px;
+  border: 1px solid ${({ $border }) => $border};
+  background-color: ${({ $bg }) => $bg};
+  position: absolute;
+  z-index: 11;
+  transform: ${({ $visivel }) => ($visivel ? "scale(1)" : "scale(0.6)")};
+  opacity: ${({ $visivel }) => ($visivel ? 1 : 0)};
+  pointer-events: ${({ $visivel }) => ($visivel ? "auto" : "none")};
+  transition: all 0.3s ease-in-out;
+  box-shadow: 4px 4px 8px #00000020;
+`;
 
 interface BtnSalvarLancamentoProps {
   $cor: string;
@@ -899,20 +982,18 @@ function DetalhesMotorista({
   );
 }
 
-const listaFiltro = [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }];
+// const listaFiltro = [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }];
 
-function TabelaLancamentos() {
+function TabelaLancamentos({
+  setLancamentoModal,
+  setVisivel,
+}: {
+  setLancamentoModal: any;
+  setVisivel: any;
+}) {
   const { Cor } = useTema();
 
   const [selecionados, setSelecionados] = useState<any[]>([]);
-
-  const selecionarTodosLancamentos = () => {
-    if (selecionados.length === listaFiltro.length) {
-      setSelecionados([]);
-    } else {
-      setSelecionados(listaFiltro.map((v: any) => v.id));
-    }
-  };
 
   //   const [mesSelecionado, setMesSelecionado] = useState<number>(
   //     new Date().getMonth() + 1,
@@ -943,7 +1024,25 @@ function TabelaLancamentos() {
     dataFinal: formatarParaYMD(ultimoDia),
   });
 
-  console.log(lancamentos);
+  const selecionarTodosLancamentos = () => {
+    if (selecionados.length === lancamentos.length) {
+      setSelecionados([]);
+    } else {
+      setSelecionados(lancamentos.map((v: any) => v.id));
+    }
+  };
+
+  const selecionarLinhaLancamento = (id: any) => {
+    setSelecionados((prev) => {
+      const isSelecionado = prev.includes(id);
+
+      const novaLista = isSelecionado
+        ? prev.filter((itemId) => itemId !== id)
+        : [...prev, id];
+
+      return novaLista;
+    });
+  };
 
   const Cabecalho = (
     <div
@@ -971,9 +1070,9 @@ function TabelaLancamentos() {
           fontWeight: 400,
           cursor: "pointer",
         }}
-        onClick={selecionarTodosLancamentos}
+        onClick={() => selecionarTodosLancamentos()}
       >
-        {selecionados.length > 0 && selecionados.length === listaFiltro.length
+        {selecionados.length > 0 && selecionados.length === lancamentos.length
           ? "indeterminate_check_box"
           : "square"}
       </p>
@@ -982,7 +1081,7 @@ function TabelaLancamentos() {
       <p style={{ width: "8%", textAlign: "center" }}>Data</p>
       <p style={{ width: "40%" }}>Observação</p>
       <p style={{ width: "20%" }}>Motorista</p>
-      <p style={{ width: "10%", textAlign: "center" }}>Ações</p>
+      <p style={{ width: "6%", textAlign: "center" }}>Ações</p>
     </div>
   );
 
@@ -1002,7 +1101,7 @@ function TabelaLancamentos() {
         color: Cor.texto1,
       }}
     >
-      s
+      <button onClick={() => console.log(selecionados)}>Ver</button>
     </div>
   );
 
@@ -1025,10 +1124,10 @@ function TabelaLancamentos() {
         style={{
           backgroundColor: Cor.base,
           width: "100%",
-          height: "80vh",
+          height: "60vh",
           display: "flex",
           flexDirection: "column",
-          justifyContent: "space-between",
+          justifyContent: "flex-start",
           overflow: "scroll",
           scrollbarWidth: "none",
           padding: 5,
@@ -1036,20 +1135,31 @@ function TabelaLancamentos() {
       >
         {lancamentos?.map((l: any) => {
           return (
-            <LinhaLancamentoStyled $texto={Cor.texto1} $bg={Cor.base2} key={l.id}>
+            <LinhaLancamentoStyled
+              $texto={Cor.texto1}
+              $bg={Cor.base2}
+              key={l.id}
+            >
               <p
                 style={{
                   width: "2%",
                   textAlign: "center",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
                   fontFamily: "Icone",
-                  fontSize: 16,
-                  fontWeight: 400,
+                  height: "100%",
+                  padding: 5,
+                  fontSize: 18,
                   cursor: "pointer",
                 }}
+                onClick={(e) => {
+                  (e.stopPropagation(), selecionarLinhaLancamento(l.id));
+                }}
               >
-                square
+                {selecionados.includes(l.id) ? "check_box" : "square"}
               </p>
-              <p
+              <div
                 style={{
                   width: "10%",
                   display: "flex",
@@ -1067,12 +1177,13 @@ function TabelaLancamentos() {
                     borderRadius: 14,
                     fontSize: 12,
                     fontWeight: 500,
+                    userSelect: "none",
                     border: `1px solid ${l.tipo === "Credito" ? Cor.ativo + 90 : Cor.atencao + 90}`,
                   }}
                 >
                   {l.tipo}
                 </div>
-              </p>
+              </div>
               <p
                 style={{
                   width: "10%",
@@ -1113,19 +1224,18 @@ function TabelaLancamentos() {
               >
                 {l.motorista?.nome}
               </p>
-              <p style={{ width: "10%", textAlign: "center" }}>
-                <div
-                  style={{
-                    backgroundColor: Cor.texto1 + 10,
-                    padding: "1px 10px",
-                    color: Cor.texto1,
-                    borderRadius: 8,
-                    fontSize: 12,
+              <div style={{ width: "6%", textAlign: "center" }}>
+                <BtnEditarLancamentoStyled
+                  $texto={Cor.texto1}
+                  $bg={Cor.primaria}
+                  onClick={() => {
+                    setVisivel(true);
+                    setLancamentoModal(l);
                   }}
                 >
-                  Ações
-                </div>
-              </p>
+                  <p>Editar</p>
+                </BtnEditarLancamentoStyled>
+              </div>
             </LinhaLancamentoStyled>
           );
         })}
@@ -1142,14 +1252,39 @@ interface LinhaLancamentoProps {
 
 const LinhaLancamentoStyled = styled.div<LinhaLancamentoProps>`
   width: 100%;
+  height: 35px;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  background-color: ${({ $bg }) => $bg};
   padding-top: 2.5px;
   padding-bottom: 2.5px;
   border-bottom: 1px solid ${({ $texto }) => $texto + 10};
   align-items: center;
   font-size: 14px;
   color: ${({ $texto }) => $texto};
+
+  &:hover {
+    background-color: ${({ $bg }) => $bg};
+  }
+`;
+
+interface BtnEditarLancamentoProps {
+  $texto: string;
+  $bg: string;
+}
+
+const BtnEditarLancamentoStyled = styled.div<BtnEditarLancamentoProps>`
+  background-color: ${({ $bg }) => $bg + 50};
+  padding: 5px;
+  color: ${({ $texto }) => $texto};
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all ease-in 0.2s;
+  user-select: none;
+
+  &:hover {
+    background-color: ${({ $bg }) => $bg};
+    scale: 0.98;
+  }
 `;

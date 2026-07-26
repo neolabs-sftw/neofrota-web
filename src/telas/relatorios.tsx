@@ -10,6 +10,7 @@ import { useListaAdminFuncionario } from "../hooks/useAdminFuncionario";
 import { useSolicitante } from "../hooks/useSolicitantes";
 import {
   GET_VOUCHERS_EXPORTACAO,
+  useEditarVoucher,
   useEditarVouchersEmMassa,
   useVouchersFiltrados,
   useVouchersIds,
@@ -19,6 +20,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import { useLazyQuery } from "@apollo/client";
 import { exportarPlanilhaFunc } from "../hooks/exportarPlanilha";
 import ModalPreviewVoucher from "../componentes/modalPreviewVoucher";
+import { useNavigate } from "react-router-dom";
 
 function Relatorios() {
   return BaseTelas({
@@ -223,11 +225,11 @@ function RelatorioConteudo() {
           const status = p.statusPresenca || "Sem status";
           const centroCusto =
             p.passageiroId?.centroCustoClienteId?.nome || "Sem Centro de Custo";
-
+          const rateio = p.rateio;
           // Adicionamos uma nova chave ao objeto no formato "Passageiro X"
           // E concatenamos os valores na mesma string
           linhaExcel[`Passageiro ${index + 1}`] =
-            `${nome}, ${status}, ${centroCusto}`;
+            `${nome}, ${status}, ${centroCusto}, ${rateio}`;
         });
       } else {
         // Se não houver nenhum passageiro, garantimos que a coluna 1 exista com um aviso
@@ -452,6 +454,97 @@ function TabelaVouchersFiltrados({
     }
   };
 
+  const [posicaoMenu, setPosicaoMenu] = useState({ x: 0, y: 0 });
+  const [menuAbertoId, setMenuAbertoId] = useState<string | null>(null);
+
+  const abrirMiniMenu = (e: React.MouseEvent, id: string) => {
+    e.preventDefault(); // Evita o menu nativo se for clique direito
+
+    // Captura a posição exata onde o mouse clicou na tela
+    setPosicaoMenu({
+      x: e.clientX,
+      y: e.clientY,
+    });
+
+    // Alterna o menu da linha correspondente
+    setMenuAbertoId((prev) => (prev === id ? null : id));
+  };
+
+  useEffect(() => {
+    const lidarComCliqueFora = () => {
+      // Se o menu estiver aberto, fechamos ele ao clicar fora
+      if (menuAbertoId !== null) {
+        setMenuAbertoId(null);
+      }
+    };
+
+    if (menuAbertoId !== null) {
+      window.addEventListener("click", lidarComCliqueFora);
+    }
+
+    return () => {
+      window.removeEventListener("click", lidarComCliqueFora);
+    };
+  }, [menuAbertoId]);
+
+  const { editar } = useEditarVoucher();
+
+  const cancelarVoucher = async (voucherId: any) => {
+    try {
+      await editar({
+        id: String(voucherId),
+        status: "Cancelado",
+      });
+
+      refetch();
+    } catch (error) {
+      console.error("Erro ao editar voucher:", error);
+      alert("Erro ao editar voucher");
+    }
+  };
+
+  // const redefinirVoucher = async (voucher: any) => {
+  //   try {
+  //     await editar({
+  //       id: String(voucher),
+  //       status: "Aberto",
+  //       assinatura: null,
+  //       dataHoraConclusao: null,
+  //       passageiros:
+  //         voucher.passageiros?.length > 0
+  //           ? voucher.passageiros.map((p: any) => {
+  //               if (typeof p !== "object") {
+  //                 return { id: String(p) };
+  //               }
+  //               return {
+  //                 id: String(p.id || p.passageiroId),
+  //                 horarioEmbarqueReal: null,
+  //                 rateio: null,
+  //                 statusPresenca: "Agendado",
+  //               };
+  //             })
+  //           : undefined,
+  //     });
+  //     refetch();
+  //   } catch (error) {
+  //     console.error("Erro ao editar voucher:", error);
+  //     alert("Erro ao editar voucher");
+  //   }
+  // };
+
+  const fecharVoucher = async (voucherId: any) => {
+    try {
+      await editar({
+        id: String(voucherId),
+        status: "Concluido",
+      });
+    } catch (error) {
+      console.error("Erro ao editar voucher:", error);
+      alert("Erro ao editar voucher");
+    }
+    refetch();
+  };
+
   const Cabecalho = (
     <div
       style={{
@@ -495,7 +588,7 @@ function TabelaVouchersFiltrados({
       <p style={{ width: "8%" }}>Valor</p>
     </div>
   );
-
+  const navigate = useNavigate();
   return (
     <div
       style={{
@@ -549,7 +642,6 @@ function TabelaVouchersFiltrados({
               v.valorViagem +
               v.valorDeslocamento +
               v.valorHoraParada * v.qntTempoParado;
-
             return (
               <LinhaTabela
                 $base={Cor.base2}
@@ -559,7 +651,123 @@ function TabelaVouchersFiltrados({
                 onClick={() => {
                   (setV(v), setM(true));
                 }}
+                onContextMenu={(e) => abrirMiniMenu(e, v.id)}
               >
+                {menuAbertoId === v.id && (
+                  <div
+                    style={{
+                      position: "fixed",
+                      top: `${posicaoMenu.y}px`,
+                      left: `${posicaoMenu.x}px`,
+                      backgroundColor: Cor.base2,
+                      color: Cor.texto1,
+                      border: `1px solid ${Cor.texto2 + 10}`,
+                      boxShadow: "4px 4px 12px rgba(0,0,0,0.2)",
+                      borderRadius: "8px",
+                      zIndex: 9999,
+                      display: "flex",
+                      flexDirection: "column",
+                      minWidth: "120px",
+                    }}
+                    onClick={(e) => e.stopPropagation()} // Impede que o clique dentro feche o menu instantaneamente
+                  >
+                    <p style={{ fontWeight: "bold", fontSize: 12, margin: 8 }}>
+                      Ações - ID: {v.id}
+                    </p>
+                    <div
+                      style={{
+                        width: "100%",
+                        height: 1,
+                        backgroundColor: Cor.texto1 + 10,
+                        marginBottom: 4,
+                      }}
+                    />
+                    <BtnMiniMenu
+                      $cor={Cor.ativo}
+                      onClick={() => {
+                        // redefinirVoucher(v)
+                        setMenuAbertoId(null);
+                        alert("Função Indisponível no momento!");
+                      }}
+                    >
+                      <p
+                        style={{
+                          fontFamily: "Icone",
+                          marginRight: 5,
+                          fontSize: 18,
+                        }}
+                      >
+                        autorenew
+                      </p>
+                      <p>Redefinir</p>
+                    </BtnMiniMenu>
+                    <BtnMiniMenu
+                      $cor={Cor.inativo}
+                      onClick={() => {
+                        cancelarVoucher(v.id);
+                        setMenuAbertoId(null);
+                      }}
+                    >
+                      <p
+                        style={{
+                          fontFamily: "Icone",
+                          marginRight: 5,
+                          fontSize: 18,
+                        }}
+                      >
+                        disabled_by_default
+                      </p>
+                      <p>Cancelar</p>
+                    </BtnMiniMenu>
+                    {v.status === "Concluido" ? null : (
+                      <BtnMiniMenu
+                        $cor={Cor.secundaria}
+                        onClick={() => {
+                          fecharVoucher(v.id);
+                          setMenuAbertoId(null);
+                        }}
+                      >
+                        <p
+                          style={{
+                            fontFamily: "Icone",
+                            marginRight: 5,
+                            fontSize: 18,
+                          }}
+                        >
+                          bookmark_added
+                        </p>
+                        <p>Fechar</p>
+                      </BtnMiniMenu>
+                    )}
+                    <div
+                      style={{
+                        width: "100%",
+                        height: 1,
+                        backgroundColor: Cor.texto1 + 10,
+                        marginBottom: 4,
+                      }}
+                    />
+                    <BtnMiniMenu
+                      $cor={Cor.primaria}
+                      onClick={() => {
+                        // Sua ação aqui
+                        navigate(`/editarVoucher/${v.natureza}/${btoa(v.id)}`);
+                        setMenuAbertoId(null);
+                      }}
+                    >
+                      <p
+                        style={{
+                          fontFamily: "Icone",
+                          marginRight: 5,
+                          fontSize: 18,
+                        }}
+                      >
+                        edit_note
+                      </p>
+                      <p>Editar</p>
+                    </BtnMiniMenu>
+                  </div>
+                )}
                 <p
                   style={{
                     width: "2%",
@@ -1001,6 +1209,42 @@ function TabelaVouchersFiltrados({
     </div>
   );
 }
+
+interface BtnMiniMenuProps {
+  $cor: string;
+}
+
+const BtnMiniMenu = styled.div<BtnMiniMenuProps>`
+  width: 150px;
+  background-color: transparent;
+  padding: 5px;
+  border-radius: 4px;
+  display: flex;
+  margin-left: 8px;
+  margin-right: 8px;
+  margin-bottom: 4px;
+  align-items: center;
+  justify-content: flex-start;
+  transition: ease-in-out all 0.2s;
+  user-select: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+
+  &:hover {
+    scale: 1.02;
+    background-color: ${({ $cor }) => $cor + "08"};
+    border: 1px solid ${({ $cor }) => $cor + 15};
+    scale: 1.02;
+    color: ${({ $cor }) => $cor + 90};
+  }
+
+  &:active {
+    background-color: ${({ $cor }) => $cor + 15};
+    border: 1px solid ${({ $cor }) => $cor + 35};
+    scale: 0.98;
+    ${({ $cor }) => $cor}
+  }
+`;
 
 interface BtnAcaoEmMassaProps {
   $cor: string;

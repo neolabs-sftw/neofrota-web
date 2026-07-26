@@ -78,7 +78,6 @@ function ModeloFixosConteudo() {
           motorista={motorista}
           setMotorista={setMotorista}
         />
-
         <Cabecalho />
         <div
           style={{
@@ -153,7 +152,7 @@ function Filtros({
 }) {
   const { Cor } = useTema();
 
-  const operId = useAdminLogado()?.operadora.id
+  const operId = useAdminLogado()?.operadora.id;
 
   const { listaMotoristas } = useMotorista(operId);
   const { listaClientes } = useListaClientes(operId || "0");
