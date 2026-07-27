@@ -9,7 +9,6 @@ import { usePedagios } from "../../../hooks/usePedagios";
 import { useMotorista } from "../../../hooks/useMotorista";
 import styled from "styled-components";
 import { usePassageiros } from "../../../hooks/usePassageiros";
-import BtnCriarPassageiro from "../empresaCliente/btnComponentes/criarPassageiro";
 import { useCarroAtrelado } from "../../../hooks/useCarros";
 import CircularProgress from "@mui/material/CircularProgress";
 import { useNavigate, useParams } from "react-router-dom";
@@ -2465,48 +2464,3 @@ function LinhaPassageiro({
   );
 }
 
-function TextoEntrada({
-  placeholder,
-  onChange,
-  value,
-  type,
-  largura,
-}: {
-  placeholder: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  value: string;
-  type: string;
-  largura: string;
-}) {
-  const Cor = useTema().Cor;
-  return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "row",
-        width: largura,
-        height: 40,
-        backgroundColor: Cor.texto2 + 20,
-        padding: 10,
-        borderRadius: 22,
-      }}
-    >
-      <input
-        type={type}
-        placeholder={placeholder}
-        onChange={onChange}
-        value={value}
-        style={{
-          backgroundColor: "transparent",
-          color: Cor.texto1,
-          border: "none",
-          outline: "none",
-          width: "100%",
-        }}
-      />
-      <p style={{ fontFamily: "icone", fontWeight: "bold", fontSize: 18 }}>
-        search
-      </p>
-    </div>
-  );
-}

@@ -21,7 +21,6 @@ import { useAdminLogado } from "../../../hooks/AdminLogado";
 import { useCarroId, useCarros } from "../../../hooks/useCarros";
 import { useCreateVoucher } from "../../../hooks/useVouchers";
 import { useNavigate } from "react-router-dom";
-import BtnCriarPassageiro from "../empresaCliente/btnComponentes/criarPassageiro";
 import { ModalSeletorPassageiro } from "../../../componentes/modalAdicionarPassageiros";
 
 function NovoVoucher() {

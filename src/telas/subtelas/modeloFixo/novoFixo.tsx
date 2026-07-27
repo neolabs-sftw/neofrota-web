@@ -9,7 +9,6 @@ import { usePedagios } from "../../../hooks/usePedagios";
 import { useMotorista } from "../../../hooks/useMotorista";
 import styled from "styled-components";
 import { usePassageiros } from "../../../hooks/usePassageiros";
-import BtnCriarPassageiro from "../empresaCliente/btnComponentes/criarPassageiro";
 import { useCarroAtrelado } from "../../../hooks/useCarros";
 import { useCriarModeloFixo } from "../../../hooks/useModelosFixos";
 import CircularProgress from "@mui/material/CircularProgress";
