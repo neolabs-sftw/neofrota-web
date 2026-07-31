@@ -26,12 +26,12 @@ export function ModalSeletorPassageiro({
 
   const Cor = useTema().Cor;
 
-  function normalizarTexto(texto: string) {
-    return texto
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase();
-  }
+ function normalizarTexto(texto: string | null | undefined) {
+  return (texto || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
 
   return (
     <>

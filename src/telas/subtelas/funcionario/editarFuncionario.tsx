@@ -52,6 +52,11 @@ function EditarFuncionarioConteudo() {
   );
   const admin = useAdminFuncionario(String(adminId)).adminFuncionario;
 
+  const adminLogado = useAdminLogado();
+
+  const editarMeuPerfil =
+    admin && adminLogado ? admin.id === adminLogado.id : false;
+
   const [statusCx, setStatusCx] = useState<boolean>(false);
   const [status, setStatus] = useState<string>("");
   const [statusMsg, setStatusMsg] = useState<string>("");
@@ -59,6 +64,7 @@ function EditarFuncionarioConteudo() {
 
   const [nome, setNome] = useState<string>("");
   const [email, setEmail] = useState<string>("");
+  const [senha, setSenha] = useState<string>("");
   const [fotoFuncionario, setFotoFuncionario] = useState<File>();
   const [funcao, setFuncao] = useState<string>("");
 
@@ -77,6 +83,7 @@ function EditarFuncionarioConteudo() {
       setEmail(admin?.email || "");
       setImgPreview(admin?.fotoAdminOperadora || "");
       setFuncao(admin?.funcao || "");
+      setSenha(admin?.senha || "");
     }
   }, [adminId]);
 
@@ -158,7 +165,93 @@ function EditarFuncionarioConteudo() {
       await editarAdmin(String(adminId), {
         nome,
         email,
-        senha: "0000",
+        fotoAdminOperadora: fotoUrlFinal,
+        funcao,
+        operadoraId: String(operadoraId),
+      });
+      setStatusIcon(checkIcon);
+      setStatus("Funcionario Editado com sucesso!");
+      setTimeout(() => {
+        setStatusCx(false);
+      }, 3000);
+      setTimeout(() => {
+        navigate("/funcionarios");
+      }, 3000);
+    } catch (err) {
+      console.error("Erro ao criar funcionario:", err);
+      setStatusMsg("Erro!");
+      setStatusIcon(erroIcon);
+      setStatus("Erro ao criar funcionario");
+      setTimeout(() => {
+        setStatusCx(false);
+      }, 4000);
+    }
+  };
+
+  const editarMeuPerfilfunc = async () => {
+    setStatusCx(true);
+    setStatus("Validando dados...");
+    setStatusIcon(
+      <CircularProgress
+        sx={{ color: Cor.primaria }}
+        thickness={5}
+        size={120}
+      />,
+    );
+
+    if (!nome || !email || !funcao) {
+      setStatus("Você precisa preencher todos os campos para seguir.");
+      setStatusMsg("Erro!");
+      setStatusIcon(erroIcon);
+      setTimeout(() => {
+        setStatusCx(false);
+      }, 4000);
+      return;
+    }
+
+    if (!operadoraId) {
+      setStatusMsg("Erro Crítico!");
+      setStatusIcon(erroIcon);
+      setStatus(
+        "Erro: Informações de autenticação não encontradas. Por favor, faça login novamente.",
+      );
+      setTimeout(() => setStatusCx(false), 4000);
+      return;
+    }
+
+    try {
+      let fotoUrlFinal = admin?.fotoAdminOperadora || null;
+      if (fotoFuncionario) {
+        setStatus("Fazendo upload da imagem...");
+
+        const nomeImg = `img_perfis/${nome}-${Date.now()}.png`;
+        const bucket = "neofrotabkt";
+
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from(bucket)
+          .upload(nomeImg, fotoFuncionario);
+
+        if (uploadError) {
+          throw uploadError;
+        }
+
+        const { data: urlData } = supabase.storage
+          .from(bucket)
+          .getPublicUrl(uploadData.path);
+
+        fotoUrlFinal = urlData.publicUrl;
+      } else if (!imgPreview) {
+        fotoUrlFinal = null;
+        setStatus("Removendo Foto");
+      } else {
+        setStatus("Registo sem foto...");
+      }
+      setStatus("Enviando dados para o servidor...");
+
+      await editarAdmin(String(adminId), {
+        nome,
+        email,
+        senha,
         fotoAdminOperadora: fotoUrlFinal,
         funcao,
         operadoraId: String(operadoraId),
@@ -302,6 +395,17 @@ function EditarFuncionarioConteudo() {
                   type="text"
                   largura="100%"
                 />
+                {editarMeuPerfil && (
+                  <TextoEntrada
+                    placeholder="senha"
+                    onChange={(e: { target: { value: any } }) =>
+                      setSenha(e.target.value)
+                    }
+                    value={senha}
+                    type="password"
+                    largura="100%"
+                  />
+                )}
                 <div
                   style={{
                     display: "flex",
@@ -420,7 +524,9 @@ function EditarFuncionarioConteudo() {
                 cursor: "pointer",
               }}
               onClick={() => {
-                editarfuncionariofunc();
+                editarMeuPerfil
+                  ? editarMeuPerfilfunc()
+                  : editarfuncionariofunc();
               }}
             >
               {loading ? "Salvando..." : "Salvar"}

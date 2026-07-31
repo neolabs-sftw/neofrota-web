@@ -1,19 +1,15 @@
 import BaseTelas from "../componentes/baseTelas";
-import EditPerfil from "../componentes/editPerfil";
+import EditPerfil from "../componentes/editPerfil"
 
 function Configuracoes() {
-  
   return BaseTelas({
     conteudo: (
       <>
-      <EditPerfil/>
+        <EditPerfil />
         <h1>Configuracoes</h1>
-
       </>
     ),
   });
 }
 
 export default Configuracoes;
-
-
