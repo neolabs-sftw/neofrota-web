@@ -88,7 +88,7 @@ function ModalPreviewVoucher({
 
   const admin = useAdminLogado();
 
-  console.log(admin)
+  console.log(admin);
 
   const { voucherExtraId, loading: loadingExtra } = useVoucherExtraId(
     v?.natureza === "Extra" ? v?.id : null,
@@ -255,16 +255,20 @@ function ModalPreviewVoucher({
               }}
             >
               <ResultadoVoucher v={voucher} />
-             {admin?.funcao === "Oper" ? null :  <BtnEditarVoucher
-                $bg={Cor.primaria}
-                onClick={() =>
-                  navigate(`/editarVoucher/${v.natureza}/${btoa(v.id)}`)
-                }
-              >
-                <p style={{ color: Cor.base, fontWeight: "500", fontSize: 14 }}>
-                  Editar Voucher
-                </p>
-              </BtnEditarVoucher>}
+              {admin?.funcao === "Oper" ? null : (
+                <BtnEditarVoucher
+                  $bg={Cor.primaria}
+                  onClick={() =>
+                    navigate(`/editarVoucher/${v.natureza}/${btoa(v.id)}`)
+                  }
+                >
+                  <p
+                    style={{ color: Cor.base, fontWeight: "500", fontSize: 14 }}
+                  >
+                    Editar Voucher
+                  </p>
+                </BtnEditarVoucher>
+              )}
             </div>
           </>
         )}
@@ -1469,10 +1473,12 @@ function ResultadoVoucher({ v }: { v: any }) {
   const totalCobranca =
     Number(v?.valorViagem || 0) +
     Number(v?.valorDeslocamento || 0) +
+    Number(v?.valorPedagio || 0) +
     Number(v?.valorHoraParada * v?.qntTempoParado || 0);
   const totalRepasse =
     Number(v?.valorViagemRepasse || 0) +
     Number(v?.valorDeslocamentoRepasse || 0) +
+    Number(v?.valorPedagio || 0) +
     Number(v?.valorHoraParadaRepasse * v?.qntTempoParado || 0);
   const Cor = useTema().Cor;
   return (
@@ -1576,6 +1582,60 @@ function ResultadoVoucher({ v }: { v: any }) {
           <strong>{v?.qntTempoParado || 0}h</strong>
         </p>
       </div>
+      {v.valorPedagio > 0 ? (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "flex-start",
+            alignItems: "center",
+            gap: 5,
+          }}
+        >
+          <p
+            style={{
+              fontFamily: "Icone",
+              fontSize: 30,
+              color:
+                v?.natureza === "Fixo"
+                  ? Cor.textoFixo
+                  : v?.natureza === "Turno"
+                    ? Cor.textoTurno
+                    : Cor.textoExtra,
+            }}
+          >
+            price_check
+          </p>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <p style={{ fontSize: 12, color: Cor.texto2 }}>
+              Pedágio Adicionado
+            </p>
+            <p
+              style={{
+                fontSize: 16,
+                color:
+                  v?.natureza === "Fixo"
+                    ? Cor.textoFixo + 99
+                    : v?.natureza === "Turno"
+                      ? Cor.textoTurno + 99
+                      : Cor.textoExtra + 99,
+              }}
+            >
+              <strong>
+                {Intl.NumberFormat("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
+                }).format(Number(v.valorPedagio))}
+              </strong>
+            </p>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

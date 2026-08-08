@@ -641,9 +641,10 @@ function TabelaVouchersFiltrados({
             const valorTotal =
               v.valorViagem +
               v.valorDeslocamento +
+              v.valorPedagio +
               v.valorHoraParada * v.qntTempoParado;
 
-              const admin = useAdminLogado()
+            const admin = useAdminLogado();
             return (
               <LinhaTabela
                 $base={Cor.base2}
@@ -653,7 +654,11 @@ function TabelaVouchersFiltrados({
                 onClick={() => {
                   (setV(v), setM(true));
                 }}
-                onContextMenu={admin?.funcao === "Oper" ? undefined : (e) => abrirMiniMenu(e, v.id)}
+                onContextMenu={
+                  admin?.funcao === "Oper"
+                    ? undefined
+                    : (e) => abrirMiniMenu(e, v.id)
+                }
               >
                 {menuAbertoId === v.id && (
                   <div
@@ -854,7 +859,11 @@ function TabelaVouchersFiltrados({
                     padding: 5,
                   }}
                 >
-                {v.natureza === "Extra" ? v.solicitante?.nome || "" : v.natureza === "Fixo" ? v.modeloFixo?.nomeModelo || "" : v.modeloTurno?.nomeModelo || ""} 
+                  {v.natureza === "Extra"
+                    ? v.solicitante?.nome || ""
+                    : v.natureza === "Fixo"
+                      ? v.modeloFixo?.nomeModelo || ""
+                      : v.modeloTurno?.nomeModelo || ""}
                 </p>
                 <div
                   style={{
@@ -1139,24 +1148,50 @@ function TabelaVouchersFiltrados({
                     </p>
                   </BtnStatus>
                 </div>
-                <p
+                <div
                   style={{
                     width: "8%",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
                     display: "flex",
                     justifyContent: "flex-start",
                     alignItems: "center",
-                    height: "100%",
-                    padding: 5,
                   }}
                 >
-                  {Intl.NumberFormat("pt-BR", {
-                    style: "currency",
-                    currency: "BRL",
-                  }).format(Number(valorTotal))}
-                </p>
+                  <p
+                    style={{
+                      width: "100%",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      display: "flex",
+                      justifyContent: "flex-start",
+                      alignItems: "center",
+                      height: "100%",
+                      padding: 5,
+                    }}
+                  >
+                    {Intl.NumberFormat("pt-BR", {
+                      style: "currency",
+                      currency: "BRL",
+                    }).format(Number(valorTotal))}
+                  </p>
+                  {v.valorPedagio > 0 ? (
+                    <p
+                      style={{
+                        fontFamily: "Icone",
+                        fontWeight: "bold",
+                        color: Cor.primaria,
+                      }}
+                      title={`Pedágio adicionado: ${Intl
+                        .NumberFormat("pt-BR", {
+                          style: "currency",
+                          currency: "BRL",
+                        })
+                        .format(Number(v?.valorPedagio || 0))}`}
+                    >
+                      price_check
+                    </p>
+                  ) : null}
+                </div>
               </LinhaTabela>
             );
           })

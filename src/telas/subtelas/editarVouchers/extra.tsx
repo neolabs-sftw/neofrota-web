@@ -21,10 +21,7 @@ export default function EditarVoucherExtra() {
 
   const { voucherExtraId } = useVoucherExtraId(atob(String(id)));
 
-  console.log("VOUCHER EXTRA AQUI >>>>>>", voucherExtraId);
-
   const adminLogado = useAdminLogado();
-
   const [empresaCliente, setEmpresaCliente] = useState<any>(0);
   const [unidadeEmpresaCliente, setUnidadeEmpresaCliente] = useState<any>(0);
   const [rota, setRota] = useState<any>(0);
@@ -49,6 +46,12 @@ export default function EditarVoucherExtra() {
   const [qntTempoParado, setQntTempoParado] = useState(0);
 
   const [valorPedagio, setValorPedagio] = useState("");
+
+  const { listaPedagios } = usePedagios(String(adminLogado?.operadora?.id));
+
+  const valorPedagioReal = listaPedagios?.find((p:any)=> p.id === valorPedagio)
+
+  console.log(valorPedagioReal)
 
   useEffect(() => {
     if (!voucherExtraId) return;
@@ -118,7 +121,7 @@ export default function EditarVoucherExtra() {
     valorDeslocamentoRepasse: valorDeslocamentoRepasse,
     valorHoraParada: valorHoraParada,
     valorHoraParadaRepasse: valorHoraParadaRepasse,
-    valorPedagio: valorPedagio,
+    valorPedagio: valorPedagioReal?.valor || 0,
     qntTempoParado: qntTempoParado,
   };
 
@@ -261,8 +264,6 @@ function DadosGerais({
   const listaUnidades = listaUnidadesTotal?.filter(
     (u: any) => u.statusUnidadeCliente === true,
   );
-
-  console.log(rota);
 
   useEffect(() => {
     setCarregandoEmpresa(loading);

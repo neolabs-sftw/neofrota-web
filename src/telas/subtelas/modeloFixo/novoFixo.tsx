@@ -1719,7 +1719,7 @@ function DetalhesSaida({
                 <BtnAtivarStyled
                   $cor={configSaida.terca ? Cor.textoFixo : Cor.texto1}
                   $bg={configSaida.terca ? Cor.fixo : Cor.texto2}
-                  onClick={() => atualizarCampo("terca", !configSaida.ter)}
+                  onClick={() => atualizarCampo("terca", !configSaida.terca)}
                 >
                   <p>Ter</p>
                   <p style={{ fontFamily: "Icone", fontSize: 16 }}>
