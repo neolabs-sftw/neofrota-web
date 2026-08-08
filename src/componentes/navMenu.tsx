@@ -117,7 +117,7 @@ function NavMenu({ sidebar, logado }: { sidebar: boolean; logado: any }) {
         { tela: "Roteiros Fixos", icone: "mediation", path: "/modelosvouchersfixos" },
         { tela: "Roteiros Turnos", icone: "mediation", path: "/modelosvouchersturnos" },
         { tela: "Novo Voucher", icone: "mediation", path: "/novovoucher" },
-        { tela: "Rotas", icone: "mediation", path: "/operacao" },
+        { tela: "Rotas", icone: "mediation", path: "/rotas" },
       ],
     },
     {
@@ -189,15 +189,26 @@ function NavMenu({ sidebar, logado }: { sidebar: boolean; logado: any }) {
       itensSubMenu: [],
     },
     {
+      tela: "Empresas",
+      icone: "bubble_chart",
+      path: "/empresas",
+      submenu: false,
+      itensSubMenu: [],
+    },
+    {
+      tela: "Agregados",
+      icone: "directions_car",
+      path: "/agregados",
+      submenu: false,
+      itensSubMenu: [],
+    },
+    {
       tela: "Operação",
       icone: "mediation",
       path: "/operacao",
       submenu: true,
       itensSubMenu: [
-        { tela: "Roteiros Fixos", icone: "mediation", path: "/modelosvouchersfixos" },
-        { tela: "Roteiros Turnos", icone: "mediation", path: "/modelosvouchersturnos" },
         { tela: "Novo Voucher", icone: "mediation", path: "/novovoucher" },
-        { tela: "Rotas", icone: "mediation", path: "/operacao" },
       ],
     },
     {

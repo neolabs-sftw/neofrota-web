@@ -128,16 +128,6 @@ const OptSelect = styled.div<SelectEmpresaStyled>`
   }
 `;
 
-interface DividerHProps {
-  $color: string;
-}
-
-const DividerH = styled.div<DividerHProps>`
-  width: 80%;
-  height: 1px;
-  background-color: ${({ $color }) => $color};
-`;
-
 function ConteudoRotas() {
   const adminLogado = useAdminLogado();
 
@@ -157,19 +147,27 @@ function ConteudoRotas() {
 
   const { listaClientes } = useListaClientes(adminLogado?.operadora.id || "0");
   const { listaPedagios } = usePedagios(adminLogado?.operadora.id || "0");
-  const { listaRotasExtras } = useRotasExtas(
-    empresaSelecionada?.id || "0",
-  );
-
-  // const [listaRotasExtras, setListaRotasExtras] = useState([]);
-
-  // useEffect(() => {
-  //   async function setar() {
-  //     setListaRotasExtras(listaCompleta);
-  //   }
-  // }, [empresaSelecionada]);
+  const { listaRotasExtras } = useRotasExtas(empresaSelecionada?.id || "0");
 
   const [modalRota, setModalRota] = useState(false);
+
+  const [origemBusca, setOrigemBusca] = useState<any>("");
+
+  function normalizarTexto(texto: string | null | undefined) {
+    return (texto || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
+  }
+
+  const listaRotasFinal = listaRotasExtras?.filter((rota: any) => {
+    const origemN = normalizarTexto(rota.origem);
+    const destinoN = normalizarTexto(rota.destino);
+
+    const porOrigem = origemN.includes(normalizarTexto(origemBusca));
+    const porDestino = destinoN.includes(normalizarTexto(origemBusca));
+    return porOrigem || porDestino;
+  });
 
   const [rotaSelecionada, setRotaSelecionada] = useState<{
     id: string;
@@ -230,7 +228,11 @@ function ConteudoRotas() {
           </p>
         </div>
       ) : (
-        <BarraUtilirios empresaSelecionada={empresaSelecionada} />
+        <BarraUtilirios
+          empresaSelecionada={empresaSelecionada}
+          origem={origemBusca}
+          setOrigem={setOrigemBusca}
+        />
       )}
       <div
         style={{
@@ -241,7 +243,7 @@ function ConteudoRotas() {
           gap: 10,
         }}
       >
-        {listaRotasExtras?.map((rota: any) => (
+        {listaRotasFinal?.map((rota: any) => (
           <BtnRota
             key={rota.id}
             rota={rota}
@@ -261,7 +263,15 @@ function ConteudoRotas() {
   );
 }
 
-function BarraUtilirios({ empresaSelecionada }: { empresaSelecionada: any }) {
+function BarraUtilirios({
+  empresaSelecionada,
+  origem,
+  setOrigem,
+}: {
+  empresaSelecionada: any;
+  origem: any;
+  setOrigem: any;
+}) {
   const Cor = useTema().Cor;
   return (
     <div
@@ -279,7 +289,28 @@ function BarraUtilirios({ empresaSelecionada }: { empresaSelecionada: any }) {
         padding: 10,
       }}
     >
-      <DividerH $color={Cor.texto2 + 50} />
+      <div
+        style={{
+          width: "70%",
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "flex-start",
+          gap: 10,
+          zIndex: 8,
+        }}
+      >
+        <p style={{ color: Cor.texto2, fontSize: 12 }}>Campos de Busca:</p>
+        <TextoEntrada
+          placeholder="Busque sua rota aqui..."
+          onChange={(e) => {
+            setOrigem(e.target.value);
+          }}
+          value={origem}
+          type="text"
+          largura="40%"
+        />
+      </div>
       <div
         style={{
           display: "flex",
@@ -293,6 +324,48 @@ function BarraUtilirios({ empresaSelecionada }: { empresaSelecionada: any }) {
         </p>
         <CriarRota empresaSelecionada={empresaSelecionada} />
       </div>
+    </div>
+  );
+}
+
+function TextoEntrada({
+  placeholder,
+  onChange,
+  value,
+  type,
+  largura,
+}: {
+  placeholder: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  value: string;
+  type: string;
+  largura: string;
+}) {
+  const Cor = useTema().Cor;
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "row",
+        width: largura,
+        backgroundColor: Cor.texto2 + 20,
+        padding: 10,
+        borderRadius: 22,
+      }}
+    >
+      <input
+        type={type}
+        placeholder={placeholder}
+        onChange={onChange}
+        value={value}
+        style={{
+          backgroundColor: "transparent",
+          color: Cor.texto1,
+          border: "none",
+          outline: "none",
+          width: "100%",
+        }}
+      />
     </div>
   );
 }

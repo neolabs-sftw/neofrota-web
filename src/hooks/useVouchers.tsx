@@ -499,6 +499,10 @@ const GET_VOUCHERS_FILTROS = gql`
           id
         }
       }
+      modeloTurno {
+        ativo
+        nomeModelo
+      }
       rota {
         id
         tributacao

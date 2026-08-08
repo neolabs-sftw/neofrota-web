@@ -579,7 +579,7 @@ function TabelaVouchersFiltrados({
       </p>
       <p style={{ width: "5%", textAlign: "center" }}>Id</p>
       <p style={{ width: "17%" }}>Cliente / Unidade</p>
-      <p style={{ width: "8%" }}>Solicitante</p>
+      <p style={{ width: "8%" }}>Solici/Cod</p>
       <p style={{ width: "15%" }}>Motorista</p>
       <p style={{ width: "10%" }}>Data / Hora</p>
       <p style={{ width: "15%" }}>Origem - Destino</p>
@@ -642,6 +642,8 @@ function TabelaVouchersFiltrados({
               v.valorViagem +
               v.valorDeslocamento +
               v.valorHoraParada * v.qntTempoParado;
+
+              const admin = useAdminLogado()
             return (
               <LinhaTabela
                 $base={Cor.base2}
@@ -651,7 +653,7 @@ function TabelaVouchersFiltrados({
                 onClick={() => {
                   (setV(v), setM(true));
                 }}
-                onContextMenu={(e) => abrirMiniMenu(e, v.id)}
+                onContextMenu={admin?.funcao === "Oper" ? undefined : (e) => abrirMiniMenu(e, v.id)}
               >
                 {menuAbertoId === v.id && (
                   <div
@@ -852,7 +854,7 @@ function TabelaVouchersFiltrados({
                     padding: 5,
                   }}
                 >
-                  {v.solicitante.nome}
+                {v.natureza === "Extra" ? v.solicitante?.nome || "" : v.natureza === "Fixo" ? v.modeloFixo?.nomeModelo || "" : v.modeloTurno?.nomeModelo || ""} 
                 </p>
                 <div
                   style={{

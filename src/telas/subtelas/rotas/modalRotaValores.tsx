@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { useTema } from "../../../hooks/temaContext";
 import {
@@ -22,7 +22,7 @@ const OverlayModalRota = styled.div<OverlayRotaProps>`
   opacity: ${({ $modal }) => ($modal ? 1 : 0)};
   pointer-events: ${({ $modal }) => ($modal ? "auto" : "none")};
   z-index: 10;
-  display: flex;
+  display: ${({ $modal }) => ($modal ? "flex" : "none")};
   justify-content: center;
   align-items: center;
   trasition: all 0.5s ease-in-out;
@@ -118,13 +118,7 @@ function ModalRotaValores({
 }) {
   const [rotaOrigem, setRotaOrigem] = useState<string>("");
   const [rotaDestino, setRotaDestino] = useState<string>("");
-  const [tributacao, setTributacao] = useState<string>("");
-
-  const { refetch: refetchRotas } = useRotasExtas(
-    rota?.empresaClienteId.id || "",
-  );
-
-  const rotaValor = rota?.rotaValor;
+  const [rotaTributacao, setRotaTributacao] = useState<string>("");
 
   const [rotaValorSedan, setRotaValorSedan] = useState<any>();
   const [rotaValorMiniVan, setRotaValorMiniVan] = useState<any>();
@@ -133,53 +127,70 @@ function ModalRotaValores({
   const [rotaValorOnibus, setRotaValorOnibus] = useState<any>();
   const [rotaValorMaterial, setRotaValorMaterial] = useState<any>();
 
-  const [rotaTempOrigem, setRotaTempOrigem] = useState<string>("");
-  const [rotaTempDestino, setRotaTempDestino] = useState<string>("");
-  const [rotaTempTributacao, setRotaTempTributacao] = useState<string>("");
-  const [rotaTempValorSedan, setRotaTempValorSedan] = useState<any>();
-  const [rotaTempValorMiniVan, setRotaTempValorMiniVan] = useState<any>();
-  const [rotaTempValorVan, setRotaTempValorVan] = useState<any>();
-  const [rotaTempValorMicro, setRotaTempValorMicro] = useState<any>();
-  const [rotaTempValorOnibus, setRotaTempValorOnibus] = useState<any>();
-  const [rotaTempValorMaterial, setRotaTempValorMaterial] = useState<any>();
-
-  useEffect(() => {
-    setRotaOrigem(rota?.origem ?? "");
-    setRotaDestino(rota?.destino ?? "");
-    setTributacao(rota?.tributacao ?? "");
-    setRotaValorSedan(rotaValor?.find((rV: any) => rV?.categoria === "Sedan"));
-    setRotaValorMiniVan(
-      rotaValor?.find((rV: any) => rV?.categoria === "MiniVan"),
-    );
-    setRotaValorVan(rotaValor?.find((rV: any) => rV?.categoria === "Van"));
-    setRotaValorMicro(rotaValor?.find((rV: any) => rV?.categoria === "Micro"));
-    setRotaValorOnibus(
-      rotaValor?.find((rV: any) => rV?.categoria === "Onibus"),
-    );
-    setRotaValorMaterial(
-      rotaValor?.find((rV: any) => rV?.categoria === "Material"),
-    );
-  }, [modalRota]);
-
+  const { refetch: refetchRotas } = useRotasExtas(
+    rota?.empresaClienteId.id || "",
+  );
   const { atualizarRotaComValores, loading } = useUpdateRotaComValores();
 
+  // Quando o modal abre ou a rota muda, preenchemos os estados com os dados reais
+  useEffect(() => {
+    if (modalRota && rota) {
+      setRotaOrigem(rota.origem ?? "");
+      setRotaDestino(rota.destino ?? "");
+      setRotaTributacao(rota.tributacao ?? "");
+
+      const rValor = rota.rotaValor || [];
+      setRotaValorSedan(rValor.find((rV: any) => rV?.categoria === "Sedan"));
+      setRotaValorMiniVan(
+        rValor.find((rV: any) => rV?.categoria === "MiniVan"),
+      );
+      setRotaValorVan(rValor.find((rV: any) => rV?.categoria === "Van"));
+      setRotaValorMicro(rValor.find((rV: any) => rV?.categoria === "Micro"));
+      setRotaValorOnibus(rValor.find((rV: any) => rV?.categoria === "Onibus"));
+      setRotaValorMaterial(
+        rValor.find((rV: any) => rV?.categoria === "Material"),
+      );
+
+    }
+  }, [modalRota, rota]);
+
   async function salvarValores() {
+    const valoresBrutos = [
+      rotaValorMaterial,
+      rotaValorMicro,
+      rotaValorMiniVan,
+      rotaValorOnibus,
+      rotaValorSedan,
+      rotaValorVan,
+    ].filter(Boolean);
+
+    // Mapeia para o exato formato do 'RotaValorUpsertInput' do Backend
+    // Removendo __typename, id e rotaId, e forçando os números
+    const valoresLimpos = valoresBrutos.map((rv: any) => ({
+      categoria: rv.categoria,
+      valorViagem: Number(rv.valorViagem || 0),
+      valorViagemRepasse: Number(rv.valorViagemRepasse || 0),
+      valorHoraParada: Number(rv.valorHoraParada || 0),
+      valorHoraParadaRepasse: Number(rv.valorHoraParadaRepasse || 0),
+      valorDeslocamento: Number(rv.valorDeslocamento || 0),
+      valorDeslocamentoRepasse: Number(rv.valorDeslocamentoRepasse || 0),
+      // Transforma string vazia em null para satisfazer o Float do GraphQL
+      valorPedagio:
+        rv.valorPedagio && rv.valorPedagio !== ""
+          ? Number(rv.valorPedagio)
+          : null,
+    }));
+
     await atualizarRotaComValores({
-      destino: rotaTempDestino ? rotaTempDestino : rotaDestino,
-      origem: rotaTempOrigem ? rotaTempOrigem : rotaOrigem,
+      destino: rotaDestino,
+      origem: rotaOrigem,
       empresaClienteId: rota?.empresaClienteId?.id,
       id: rota?.id,
       operadoraId: rota?.operadoraId?.id,
-      rotaValores: [
-        rotaTempValorMaterial,
-        rotaTempValorMicro,
-        rotaTempValorMiniVan,
-        rotaTempValorOnibus,
-        rotaTempValorSedan,
-        rotaTempValorVan,
-      ],
-      tributacao: rotaTempTributacao,
+      rotaValores: valoresLimpos,
+      tributacao: rotaTributacao,
     });
+
     refetchRotas();
     setModalRota(false);
     window.location.reload();
@@ -315,7 +326,6 @@ function ModalRotaValores({
                   value={rotaOrigem}
                   onChange={(e) => {
                     setRotaOrigem(e.target.value);
-                    setRotaTempOrigem(e.target.value);
                   }}
                 />
               </div>
@@ -381,7 +391,6 @@ function ModalRotaValores({
                   value={rotaDestino}
                   onChange={(e) => {
                     setRotaDestino(e.target.value);
-                    setRotaTempDestino(e.target.value);
                   }}
                 />
               </div>
@@ -395,10 +404,9 @@ function ModalRotaValores({
                 backgroundColor: Cor.texto2 + 20,
                 color: Cor.texto1,
               }}
-              value={tributacao}
+              value={rotaTributacao}
               onChange={(e) => {
-                setTributacao(e.target.value);
-                setRotaTempTributacao(e.target.value);
+                setRotaTributacao(e.target.value);
               }}
             >
               <option
@@ -506,43 +514,37 @@ function ModalRotaValores({
           <LinhaValores
             tipoCarro="Hatch/Sedan"
             rotaValor={rotaValorSedan}
-            // setRotaValor={setRotaValorSedan}
-            setRotaValorTemp={setRotaTempValorSedan}
+            setRotaValor={setRotaValorSedan}
             listaPedagios={listaPedagios}
           />
           <LinhaValores
             tipoCarro="Minivan/7"
             rotaValor={rotaValorMiniVan}
-            // setRotaValor={setRotaValorMiniVan}
-            setRotaValorTemp={setRotaTempValorMiniVan}
+            setRotaValor={setRotaValorMiniVan}
             listaPedagios={listaPedagios}
           />
           <LinhaValores
             tipoCarro="Van"
             rotaValor={rotaValorVan}
-            // setRotaValor={setRotaValorVan}
-            setRotaValorTemp={setRotaTempValorVan}
+            setRotaValor={setRotaValorVan}
             listaPedagios={listaPedagios}
           />
           <LinhaValores
             tipoCarro="Micro"
             rotaValor={rotaValorMicro}
-            // setRotaValor={setRotaValorMicro}
-            setRotaValorTemp={setRotaTempValorMicro}
+            setRotaValor={setRotaValorMicro}
             listaPedagios={listaPedagios}
           />
           <LinhaValores
             tipoCarro="Ônibus"
             rotaValor={rotaValorOnibus}
-            // setRotaValor={setRotaValorOnibus}
-            setRotaValorTemp={setRotaTempValorOnibus}
+            setRotaValor={setRotaValorOnibus}
             listaPedagios={listaPedagios}
           />
           <LinhaValores
             tipoCarro="Material"
             rotaValor={rotaValorMaterial}
-            // setRotaValor={setRotaValorMaterial}
-            setRotaValorTemp={setRotaTempValorMaterial}
+            setRotaValor={setRotaValorMaterial}
             listaPedagios={listaPedagios}
           />
           <DividerH $color={Cor.secundaria + 50} />
@@ -564,9 +566,7 @@ function ModalRotaValores({
                 borderRadius: 22,
               }}
               onClick={() => {
-                // setModalRota(false);
                 salvarValores();
-                // Aqui eu salvo todas as categorias em "LinhaValores" de uma vez só
               }}
             >
               <p
@@ -588,19 +588,17 @@ function ModalRotaValores({
 function LinhaValores({
   tipoCarro,
   rotaValor,
-  // setRotaValor,
-  setRotaValorTemp,
+  setRotaValor,
   listaPedagios,
 }: {
   tipoCarro: string;
   rotaValor: any;
-  // setRotaValor: (updater: any) => void;
-  setRotaValorTemp: (_: any) => void;
+  setRotaValor: any;
   listaPedagios: any[];
 }) {
   const Cor = useTema().Cor;
 
-  // estados locais (inputs)
+  // Estados principais
   const [valorViagem, setValorViagem] = useState<string>("");
   const [valorDeslocamento, setValorDeslocamento] = useState<string>("");
   const [valorHoraParada, setValorHoraParada] = useState<string>("");
@@ -611,19 +609,30 @@ function LinhaValores({
     useState<string>("");
   const [valorPedagio, setValorPedagio] = useState<string>("");
 
-  const [valorTempViagem, setValorTempViagem] = useState<string>("");
-  const [valorTempDeslocamento, setValorTempDeslocamento] =
-    useState<string>("");
-  const [valorTempHoraParada, setValorTempHoraParada] = useState<string>("");
-  const [valorTempViagemRepasse, setValorTempViagemRepasse] =
-    useState<string>("");
+  // CORREÇÃO 1: Começamos com "null" para saber que o usuário ainda não digitou.
+  // Assim, se ele digitar e depois apagar (ficando ""), o sistema aceita o "" (que vira 0) e não puxa o número antigo!
+  const [valorTempViagem, setValorTempViagem] = useState<string | null>(null);
+  const [valorTempDeslocamento, setValorTempDeslocamento] = useState<
+    string | null
+  >(null);
+  const [valorTempHoraParada, setValorTempHoraParada] = useState<string | null>(
+    null,
+  );
+  const [valorTempViagemRepasse, setValorTempViagemRepasse] = useState<
+    string | null
+  >(null);
   const [valorTempDeslocamentoRepasse, setValorTempDeslocamentoRepasse] =
-    useState<string>("");
-  const [valorTempHoraParadaRepasse, setValorTempHoraParadaRepasse] =
-    useState<string>("");
-  const [valorTempPedagio, setValorTempPedagio] = useState<string>("");
+    useState<string | null>(null);
+  const [valorTempHoraParadaRepasse, setValorTempHoraParadaRepasse] = useState<
+    string | null
+  >(null);
+  const [valorTempPedagio, setValorTempPedagio] = useState<string | null>(null);
 
-  // 1) ✅ quando rotaValor (do banco) muda, preenche os campos
+  // Trava para evitar que envie zeros para o pai na hora que o modal abre
+  const isFirstRender = useRef(true);
+
+  // 1) Apenas preenche com os dados do banco.
+  // CORREÇÃO 2: Removemos os setValorTemp...("") daqui para quebrar o loop infinito!
   useEffect(() => {
     setValorViagem(rotaValor?.valorViagem ?? "");
     setValorDeslocamento(rotaValor?.valorDeslocamento ?? "");
@@ -631,57 +640,50 @@ function LinhaValores({
     setValorViagemRepasse(rotaValor?.valorViagemRepasse ?? "");
     setValorDeslocamentoRepasse(rotaValor?.valorDeslocamentoRepasse ?? "");
     setValorHoraParadaRepasse(rotaValor?.valorHoraParadaRepasse ?? "");
+    setValorPedagio(rotaValor?.valorPedagio?.id ?? "");;
+  }, [rotaValor?.id]);
 
-    // aqui escolha o campo certo: valorPedagio OU pedagioId (depende do seu schema)
-    setValorPedagio(
-      rotaValor?.valorPedagio?.id != null
-        ? String(rotaValor?.valorPedagio?.id)
-        : "",
-    );
-    // ou, se no seu caso é "valorPedagio" e não "pedagioId":
-    // setPedagioId(rotaValor?.valorPedagio != null ? String(rotaValor.valorPedagio) : "");
-  }, [rotaValor?.id]); // use um identificador estável
-
-  const toPedagioFk = (v: any) => {
-    const n = Number(v);
-    return n > 0 ? n : null; // ✅ null em vez de 0
-  };
-
+  // 2) Dispara o update para o pai conforme você digita
   useEffect(() => {
-    setRotaValorTemp({
-      categoria: rotaValor?.categoria,
-      valorPedagio: toPedagioFk(
-        Number(valorTempPedagio !== "" ? valorTempPedagio : valorPedagio),
-      ),
+    // Se for a primeira vez que a tela carrega, não faz nada para não apagar os dados do banco.
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
+    // Se valorTemp não for null (ou seja, o usuário interagiu), usa ele. Se não, usa o original do banco.
+    setRotaValor((prev: any) => ({
+      ...prev,
+      categoria: prev?.categoria || rotaValor?.categoria || tipoCarro,
+      valorPedagio: valorTempPedagio !== null ? valorTempPedagio : valorPedagio,
       valorDeslocamento: Number(
-        valorTempDeslocamento !== ""
+        valorTempDeslocamento !== null
           ? valorTempDeslocamento
           : valorDeslocamento,
       ),
       valorDeslocamentoRepasse: Number(
-        valorTempDeslocamentoRepasse !== ""
+        valorTempDeslocamentoRepasse !== null
           ? valorTempDeslocamentoRepasse
           : valorDeslocamentoRepasse,
       ),
       valorHoraParada: Number(
-        valorTempHoraParada !== "" ? valorTempHoraParada : valorHoraParada,
+        valorTempHoraParada !== null ? valorTempHoraParada : valorHoraParada,
       ),
       valorHoraParadaRepasse: Number(
-        valorTempHoraParadaRepasse !== ""
+        valorTempHoraParadaRepasse !== null
           ? valorTempHoraParadaRepasse
-          : valorHoraParada,
+          : valorHoraParadaRepasse,
       ),
       valorViagem: Number(
-        valorTempViagem !== "" ? valorTempViagem : valorViagem,
+        valorTempViagem !== null ? valorTempViagem : valorViagem,
       ),
       valorViagemRepasse: Number(
-        valorTempViagemRepasse !== ""
+        valorTempViagemRepasse !== null
           ? valorTempViagemRepasse
           : valorViagemRepasse,
       ),
-    });
+    }));
   }, [
-    rotaValor?.categoria,
     valorPedagio,
     valorDeslocamento,
     valorDeslocamentoRepasse,
@@ -758,7 +760,7 @@ function LinhaValores({
             justifyContent: "center",
             backgroundColor: Cor.secundaria + 50,
             borderRadius: 22,
-            padding: 5,
+            padding: 10,
           }}
         >
           <select
@@ -791,10 +793,10 @@ function LinhaValores({
             {listaPedagios?.map((p: any) => (
               <option
                 key={p.id}
-                value={String(p.id)}
+                value={p.id}
                 style={{
                   color: Cor.texto1,
-                  backgroundColor: Cor.secundaria + 50,
+                  backgroundColor: Cor.base2,
                   padding: 8,
                 }}
               >
@@ -802,17 +804,6 @@ function LinhaValores({
               </option>
             ))}
           </select>
-
-          <p
-            style={{
-              fontSize: 20,
-              color: Cor.primariaTxt,
-              fontFamily: "Icone",
-              fontWeight: "bold",
-            }}
-          >
-            arrow_drop_down
-          </p>
         </div>
       </div>
     </div>

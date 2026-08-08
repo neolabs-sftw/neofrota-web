@@ -22,6 +22,7 @@ import { useCarroId, useCarros } from "../../../hooks/useCarros";
 import { useCreateVoucher } from "../../../hooks/useVouchers";
 import { useNavigate } from "react-router-dom";
 import { ModalSeletorPassageiro } from "../../../componentes/modalAdicionarPassageiros";
+import ModalListaDeRotas from "../../../componentes/modalListaDeRotas";
 
 function NovoVoucher() {
   return BaseTelas({
@@ -69,7 +70,7 @@ function NovoVoucherConteudo() {
 
   const userId = useAdminLogado();
 
-  const { rota } = useRotaId(rotaExtra || "");
+  const { rota } = useRotaId(rotaExtra?.id || "");
 
   const valores = rota?.rotaValor || [];
 
@@ -119,7 +120,7 @@ function NovoVoucherConteudo() {
       unidadeClienteId: unidadeEmpresaCliente,
       operadoraId: userId?.operadora.id,
       solicitanteId: solicitante,
-      rotaId: rotaExtra,
+      rotaId: rota.id,
       natureza: "Extra",
       valorViagem: tipoCarro?.valorViagem || 0,
       valorViagemRepasse: tipoCarro?.valorViagemRepasse || 0,
@@ -613,6 +614,10 @@ function DetalhesDoVoucher({
     }
   }
 
+  useEffect(() => {
+    setRotaExtra(null)
+  }, [empresaCliente]);
+
   const operId = getOperadoraId();
 
   const { listaRotasExtras } = useRotasExtas(empresaCliente || "0");
@@ -620,7 +625,12 @@ function DetalhesDoVoucher({
   const { listaMotoristas, loading: carregandoMotoristas } =
     useMotorista(operId);
 
-  const { rota, loading: carregandoRota } = useRotaId(rotaExtra || "");
+  // const { rota, loading: carregandoRota } = useRotaId(rotaExtra || "");
+
+  console.log(rotaExtra);
+
+  const rotaValor = rotaExtra?.rotaValor || [];
+
   return (
     <div
       style={{
@@ -659,7 +669,12 @@ function DetalhesDoVoucher({
           >
             Rota:
           </p>
-          <div
+          <ModalListaDeRotas
+            listaRotas={listaRotasExtras}
+            setRotaExtra={setRotaExtra}
+            rotaExtra={rotaExtra}
+          />
+          {/* <div
             style={{
               width: "100%",
               border: `1px solid ${Cor.texto2 + 50}`,
@@ -703,7 +718,7 @@ function DetalhesDoVoucher({
                 );
               })}
             </select>
-          </div>
+          </div> */}
         </div>
         <div style={{ display: "flex", flexDirection: "column", width: "25%" }}>
           <p
@@ -736,7 +751,6 @@ function DetalhesDoVoucher({
               }}
               onChange={(e) => setRotaValor(e.target.value)}
               defaultValue={""}
-              disabled={carregandoRota}
             >
               <option
                 value={""}
@@ -744,7 +758,7 @@ function DetalhesDoVoucher({
               >
                 Defina tipo de Carro
               </option>
-              {rota?.rotaValor.map((tipo: any) => {
+              {rotaValor.map((tipo: any) => {
                 return (
                   <option
                     value={tipo?.id}

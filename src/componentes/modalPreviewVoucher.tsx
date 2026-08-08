@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import assPadrao from "../assets/image/not_sing.png";
 import { useVoucherExtraId, useVoucherFixoId } from "../hooks/useVouchers";
 import CircularProgress from "@mui/material/CircularProgress";
+import { useAdminLogado } from "../hooks/AdminLogado";
 
 interface CxModalProps {
   $border: string;
@@ -85,11 +86,13 @@ function ModalPreviewVoucher({
   const Cor = useTema().Cor;
   const navigate = useNavigate();
 
+  const admin = useAdminLogado();
+
+  console.log(admin)
+
   const { voucherExtraId, loading: loadingExtra } = useVoucherExtraId(
     v?.natureza === "Extra" ? v?.id : null,
   );
-
-  console.log(voucherExtraId)
 
   const { voucherFixoId, loading: loadingFixo } = useVoucherFixoId(
     v?.natureza === "Fixo" || v?.natureza === "Turno" ? v?.id : null,
@@ -252,7 +255,7 @@ function ModalPreviewVoucher({
               }}
             >
               <ResultadoVoucher v={voucher} />
-              <BtnEditarVoucher
+             {admin?.funcao === "Oper" ? null :  <BtnEditarVoucher
                 $bg={Cor.primaria}
                 onClick={() =>
                   navigate(`/editarVoucher/${v.natureza}/${btoa(v.id)}`)
@@ -261,7 +264,7 @@ function ModalPreviewVoucher({
                 <p style={{ color: Cor.base, fontWeight: "500", fontSize: 14 }}>
                   Editar Voucher
                 </p>
-              </BtnEditarVoucher>
+              </BtnEditarVoucher>}
             </div>
           </>
         )}
@@ -771,7 +774,6 @@ function DetalhesDaViagem({ v }: { v: any }) {
 function DetalhesDaViagem2({ v }: { v: any }) {
   const Cor = useTema().Cor;
 
-  console.log(v);
   return (
     <div
       style={{
