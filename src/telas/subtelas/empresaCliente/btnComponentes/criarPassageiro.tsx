@@ -413,7 +413,7 @@ function ModalCriarPassageiro({
                         value={cc.id}
                         style={{ backgroundColor: Cor.base }}
                       >
-                        {cc.nome}
+                        {cc.nome} - {cc.codigo}
                       </option>
                     );
                   })}

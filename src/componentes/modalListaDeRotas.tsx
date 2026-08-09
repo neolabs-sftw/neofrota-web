@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { useTema } from "../hooks/temaContext";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface BtnBuscarRotaProps {
   $cor: string;
@@ -41,6 +41,7 @@ function ModalRota({
   rotaExtra: any;
 }) {
   const [buscarRota, setBuscarRota] = useState<string>("");
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const { Cor } = useTema();
 
@@ -60,6 +61,16 @@ function ModalRota({
       const porDestino = destinoN.includes(normalizarTexto(buscarRota));
       return porOrigem || porDestino;
     }) || [];
+
+  useEffect(() => {
+    if (CxModal && inputRef.current) {
+      // Usamos um pequeno timeout (opcional) apenas para garantir que a transição do CSS
+      // não atrapalhe o foco imediato do navegador.
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 50);
+    }
+  }, [CxModal]);
 
   return (
     <div
@@ -84,7 +95,7 @@ function ModalRota({
       <div
         style={{
           width: "50%",
-          backgroundColor: Cor.base,
+          backgroundColor: Cor.base2,
           borderRadius: 22,
           display: "flex",
           padding: 10,
@@ -117,6 +128,7 @@ function ModalRota({
             largura="80%"
             onChange={(e) => setBuscarRota(e.target.value)}
             value={buscarRota}
+            inputRef={inputRef}
           />
         </div>
         <div
@@ -142,7 +154,7 @@ function ModalRota({
             display: "flex",
             flexDirection: "column",
             gap: 8,
-            backgroundColor: Cor.base2,
+            backgroundColor: Cor.base,
             padding: 8,
             overflow: "auto",
             scrollbarColor: Cor.primaria,
@@ -168,20 +180,10 @@ function ModalRota({
               (r: any) => r.categoria === "Material",
             );
             return (
-              <div
+              <LinhaRota
                 key={r.id}
-                style={{
-                  width: "100%",
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  backgroundColor: Cor.base,
-                  padding: 5,
-                  borderRadius: 8,
-                  cursor: "pointer",
-                  border: `1px solid ${Cor.texto2 + 20}`,
-                }}
+                $bg={Cor.base2}
+                $border={Cor.texto2}
                 onClick={() => {
                   (setRotaExtra(r), setCxModal(false));
                 }}
@@ -220,7 +222,7 @@ function ModalRota({
                   <IconeCategoria rotaValor={valorOnibus} />
                   <IconeCategoria rotaValor={valorMaterial} />
                 </div>
-              </div>
+              </LinhaRota>
             );
           })}
         </div>
@@ -297,6 +299,85 @@ function IconeCategoria({ rotaValor }: { rotaValor: any }) {
   );
 }
 
+interface linhaRotaProps {
+  $border: string;
+  $bg: string;
+}
+
+const LinhaRota = styled.div<linhaRotaProps>`
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  font-weight: 300;
+  font-size: 14px;
+  justify-content: space-between;
+  background-color: ${({ $bg }) => $bg};
+  padding: 5px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid ${({ $border }) => $border + 15};
+  transition: all ease-in-out 0.1s;
+
+  &:hover {
+    background-color: ${({ $border }) => $border + 30};
+    border: 1px solid ${({ $border }) => $border + 30};
+    font-weight: 900;
+  }
+
+  &:active {
+    background-color: ${({ $border }) => $border + 40};
+    border: 1px solid ${({ $border }) => $border + 40};
+    font-weight: 900;
+    scale: 1.01;
+  }
+`;
+
+function TextoEntrada({
+  placeholder,
+  onChange,
+  value,
+  type,
+  largura,
+  inputRef,
+}: {
+  placeholder: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  value: string;
+  type: string;
+  largura: string;
+  inputRef: any;
+}) {
+  const Cor = useTema().Cor;
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "row",
+        width: largura,
+        backgroundColor: Cor.texto2 + 20,
+        padding: 10,
+        borderRadius: 22,
+      }}
+    >
+      <input
+        ref={inputRef}
+        type={type}
+        placeholder={placeholder}
+        onChange={onChange}
+        value={value}
+        style={{
+          backgroundColor: "transparent",
+          color: Cor.texto1,
+          border: "none",
+          outline: "none",
+          width: "100%",
+        }}
+      />
+    </div>
+  );
+}
+
 export default function ModalListaDeRotas({
   listaRotas,
   setRotaExtra,
@@ -308,8 +389,6 @@ export default function ModalListaDeRotas({
 }) {
   const [CxModal, setCxModal] = useState<boolean>();
   const { Cor } = useTema();
-
-  console.log(rotaExtra)
 
   return (
     <>
@@ -346,47 +425,5 @@ export default function ModalListaDeRotas({
         setRotaExtra={setRotaExtra}
       />
     </>
-  );
-}
-
-function TextoEntrada({
-  placeholder,
-  onChange,
-  value,
-  type,
-  largura,
-}: {
-  placeholder: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  value: string;
-  type: string;
-  largura: string;
-}) {
-  const Cor = useTema().Cor;
-  return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "row",
-        width: largura,
-        backgroundColor: Cor.texto2 + 20,
-        padding: 10,
-        borderRadius: 22,
-      }}
-    >
-      <input
-        type={type}
-        placeholder={placeholder}
-        onChange={onChange}
-        value={value}
-        style={{
-          backgroundColor: "transparent",
-          color: Cor.texto1,
-          border: "none",
-          outline: "none",
-          width: "100%",
-        }}
-      />
-    </div>
   );
 }

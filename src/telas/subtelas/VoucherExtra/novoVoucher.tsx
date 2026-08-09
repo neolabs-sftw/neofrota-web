@@ -18,11 +18,12 @@ import { useMotorista, useMotoristaId } from "../../../hooks/useMotorista";
 import { usePassageiros } from "../../../hooks/usePassageiros";
 import { validarVoucher } from "../../../hooks/validarVoucher";
 import { useAdminLogado } from "../../../hooks/AdminLogado";
-import { useCarroId, useCarros } from "../../../hooks/useCarros";
+import { useCarros } from "../../../hooks/useCarros";
 import { useCreateVoucher } from "../../../hooks/useVouchers";
 import { useNavigate } from "react-router-dom";
 import { ModalSeletorPassageiro } from "../../../componentes/modalAdicionarPassageiros";
 import ModalListaDeRotas from "../../../componentes/modalListaDeRotas";
+import ModalListaDeMotoristas from "../../../componentes/modalListaDeMotoristas";
 
 function NovoVoucher() {
   return BaseTelas({
@@ -76,8 +77,8 @@ function NovoVoucherConteudo() {
 
   const tipoCarro = valores.find((v: any) => v.id === rotaValor);
 
-  const { listaCarros: listaCarrosEntrada } = useCarros(motorista || "");
-  const { listaCarros: listaCarrosSaida } = useCarros(motoristaSaida || "");
+  const { listaCarros: listaCarrosEntrada } = useCarros(motorista?.id || "");
+  const { listaCarros: listaCarrosSaida } = useCarros(motoristaSaida?.id || "");
 
   // Atualizações de estado baseadas em useEffects
 
@@ -144,7 +145,7 @@ function NovoVoucherConteudo() {
         dataHoraProgramado: dataHoraEntrada,
         destino: rota.destino,
         origem: rota.origem,
-        motoristaId: motorista,
+        motoristaId: motorista?.id,
         tipoCorrida: "Entrada",
       });
     } else if (tipo === "Saída") {
@@ -154,7 +155,7 @@ function NovoVoucherConteudo() {
         dataHoraProgramado: dataHoraSaida,
         destino: rota.origem,
         origem: rota.destino,
-        motoristaId: motoristaSaida,
+        motoristaId: motoristaSaida?.id,
         tipoCorrida: "Saida",
       });
     } else if (tipo === "Entrada e Saída") {
@@ -164,7 +165,7 @@ function NovoVoucherConteudo() {
         dataHoraProgramado: dataHoraEntrada,
         destino: rota.destino,
         origem: rota.origem,
-        motoristaId: motorista,
+        motoristaId: motorista?.id,
         tipoCorrida: "Entrada",
       });
       vouchers.push({
@@ -173,18 +174,13 @@ function NovoVoucherConteudo() {
         dataHoraProgramado: dataHoraSaida,
         destino: rota.origem,
         origem: rota.destino,
-        motoristaId: motoristaSaida,
+        motoristaId: motoristaSaida?.id,
         tipoCorrida: "Saida",
       });
     } else {
-      // Caso o tipo não seja reconhecido (opcional, mas recomendado)
       alert("Tipo de voucher inválido selecionado.");
       return;
     }
-
-    // Continua o processo só se estiver tudo validado
-    // console.log(`Vouchers a serem lançados: ${vouchers.length}`);
-    // console.log(vouchers);
 
     setLancamentos(vouchers);
     console.log(vouchers);
@@ -259,10 +255,12 @@ function NovoVoucherConteudo() {
         setRotaExtra={setRotaExtra}
         rotaExtra={rotaExtra}
         setRotaValor={setRotaValor}
+        motorista={motorista}
         setMotorista={setMotorista}
         setDataHoraEntrada={setDataHoraEntrada}
         setDataHoraSaida={setDataHoraSaida}
         carregandoEmpresa={carregandoEmpresa}
+        motoristaSaida={motoristaSaida}
         setMotoristaSaida={setMotoristaSaida}
         setQntDeslocamento={setQntDeslocamento}
         qntDeslocamento={qntDeslocamento}
@@ -578,8 +576,10 @@ function DetalhesDoVoucher({
   setTipo,
   setRotaExtra,
   setRotaValor,
+  motorista,
   setMotorista,
   setDataHoraEntrada,
+  motoristaSaida,
   setMotoristaSaida,
   setDataHoraSaida,
   setQntDeslocamento,
@@ -593,8 +593,10 @@ function DetalhesDoVoucher({
   setTipo: any;
   setRotaExtra: any;
   setRotaValor: any;
+  motorista: any;
   setMotorista: any;
   setDataHoraEntrada: any;
+  motoristaSaida: any;
   setMotoristaSaida: any;
   setDataHoraSaida: any;
   setQntDeslocamento: any;
@@ -615,19 +617,14 @@ function DetalhesDoVoucher({
   }
 
   useEffect(() => {
-    setRotaExtra(null)
+    setRotaExtra(null);
   }, [empresaCliente]);
 
   const operId = getOperadoraId();
 
   const { listaRotasExtras } = useRotasExtas(empresaCliente || "0");
 
-  const { listaMotoristas, loading: carregandoMotoristas } =
-    useMotorista(operId);
-
-  // const { rota, loading: carregandoRota } = useRotaId(rotaExtra || "");
-
-  console.log(rotaExtra);
+  const { listaMotoristas } = useMotorista(operId);
 
   const rotaValor = rotaExtra?.rotaValor || [];
 
@@ -674,51 +671,6 @@ function DetalhesDoVoucher({
             setRotaExtra={setRotaExtra}
             rotaExtra={rotaExtra}
           />
-          {/* <div
-            style={{
-              width: "100%",
-              border: `1px solid ${Cor.texto2 + 50}`,
-              padding: 10,
-              borderRadius: 14,
-            }}
-          >
-            <select
-              name=""
-              id=""
-              style={{
-                outline: "none",
-                border: "none",
-                width: "100%",
-                backgroundColor: "transparent",
-                color: Cor.texto1,
-              }}
-              onChange={(e) => setRotaExtra(e.target.value)}
-              defaultValue={""}
-              disabled={carregandoEmpresa}
-            >
-              <option
-                value=""
-                style={{ backgroundColor: Cor.base2, color: Cor.texto2 + 70 }}
-              >
-                Selecione uma Rota
-              </option>
-              {listaRotasExtras?.map((rota: any) => {
-                return (
-                  <option
-                    value={rota?.id}
-                    key={rota?.id}
-                    style={{
-                      backgroundColor: Cor.base2,
-                      padding: 15,
-                      margin: 10,
-                    }}
-                  >
-                    {rota?.origem} X {rota?.destino}
-                  </option>
-                );
-              })}
-            </select>
-          </div> */}
         </div>
         <div style={{ display: "flex", flexDirection: "column", width: "25%" }}>
           <p
@@ -883,51 +835,14 @@ function DetalhesDoVoucher({
           >
             Motorista Entrada:
           </p>
-          <div
-            style={{
-              width: "100%",
-              border: `1px solid ${Cor.texto2 + 50}`,
-              padding: 10,
-              borderRadius: 14,
-            }}
-          >
-            <select
-              name=""
-              id=""
-              style={{
-                outline: "none",
-                border: "none",
-                width: "100%",
-                backgroundColor: "transparent",
-                color: Cor.texto1,
-                opacity:
-                  tipo === "Entrada" || tipo === "Entrada e Saída" ? 1 : 0.5,
-              }}
-              onChange={(e) => setMotorista(e.target.value)}
-              defaultValue={""}
-              disabled={carregandoMotoristas || tipo === "" || tipo === "Saída"}
-            >
-              <option
-                value=""
-                style={{ backgroundColor: Cor.base2, color: Cor.texto2 + 70 }}
-              >
-                Selecione um Motorista
-              </option>
-              {listaMotoristas?.map((motorista: any) => {
-                return (
-                  <option
-                    value={motorista?.id}
-                    key={motorista?.id}
-                    style={{
-                      backgroundColor: Cor.base2,
-                    }}
-                  >
-                    {motorista?.nome}
-                  </option>
-                );
-              })}
-            </select>
-          </div>
+          <ModalListaDeMotoristas
+            listaMotoristas={listaMotoristas}
+            motoristaSelecionado={motorista}
+            habilitar={
+              tipo === "Entrada" || tipo === "Entrada e Saída" ? true : false
+            }
+            setMotorista={setMotorista}
+          />
         </div>
         <div style={{ display: "flex", flexDirection: "column", width: "15%" }}>
           <p
@@ -1017,51 +932,14 @@ function DetalhesDoVoucher({
           >
             Motorista Saída:
           </p>
-          <div
-            style={{
-              width: "100%",
-              border: `1px solid ${Cor.texto2 + 50}`,
-              padding: 10,
-              borderRadius: 14,
-            }}
-          >
-            <select
-              name=""
-              id=""
-              style={{
-                outline: "none",
-                border: "none",
-                width: "100%",
-                backgroundColor: "transparent",
-                color: Cor.texto1,
-              }}
-              onChange={(e) => setMotoristaSaida(e.target.value)}
-              defaultValue={""}
-              disabled={
-                carregandoMotoristas || tipo === "" || tipo === "Entrada"
-              }
-            >
-              <option
-                value=""
-                style={{ backgroundColor: Cor.base2, color: Cor.texto2 + 70 }}
-              >
-                Selecione um Motorista
-              </option>
-              {listaMotoristas?.map((motorista: any) => {
-                return (
-                  <option
-                    value={motorista?.id}
-                    key={motorista?.id}
-                    style={{
-                      backgroundColor: Cor.base2,
-                    }}
-                  >
-                    {motorista?.nome}
-                  </option>
-                );
-              })}
-            </select>
-          </div>
+          <ModalListaDeMotoristas
+            listaMotoristas={listaMotoristas}
+            motoristaSelecionado={motoristaSaida}
+            habilitar={
+              tipo === "Saída" || tipo === "Entrada e Saída" ? true : false
+            }
+            setMotorista={setMotoristaSaida}
+          />
         </div>
         <div style={{ display: "flex", flexDirection: "column", width: "15%" }}>
           <p
@@ -1623,7 +1501,6 @@ function ModalConfirmacao({ v, cxModal }: { v: any; cxModal: boolean }) {
   const { empresaCliente } = useEmpresaCliente(v?.empresaClienteId);
   const { motorista } = useMotoristaId(v?.motoristaId);
   const { unidade } = useUnidadeId(v?.unidadeClienteId);
-  const { carro } = useCarroId(v?.carroId);
 
   return (
     <div
@@ -1754,9 +1631,6 @@ function ModalConfirmacao({ v, cxModal }: { v: any; cxModal: boolean }) {
             <div style={{ display: "flex", flexDirection: "column" }}>
               <p style={{ fontWeight: "bold", color: Cor.primariaTxt }}>
                 {motorista?.nome}
-              </p>
-              <p style={{ color: Cor.texto2, fontSize: 14 }}>
-                {carro?.placa} - {carro?.marca} {carro?.modelo}
               </p>
             </div>
           </div>

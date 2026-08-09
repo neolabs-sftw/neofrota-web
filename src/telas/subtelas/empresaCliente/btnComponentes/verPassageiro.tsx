@@ -112,12 +112,22 @@ function LinhaTabelaPassageiro({
       <p style={{ width: "5%", textAlign: "center", fontWeight: 700 }}>
         {passageiro.horarioEmbarque}h
       </p>
-      <div style={{ width: "30%", textAlign: "left" }}>
+      <div style={{ width: "25%", textAlign: "left" }}>
         <p>
           {passageiro.endRua}, {passageiro.endBairro}, {passageiro.endCidade}
         </p>
       </div>
-      <p style={{ width: "10%", textAlign: "center" }}>
+      <p
+        title={`${passageiro.centroCustoClienteId.nome} / ${passageiro.centroCustoClienteId.codigo}`}
+        style={{
+          width: "15%",
+          textAlign: "center",
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow:"ellipsis"
+        }}
+      >
+        {passageiro.centroCustoClienteId.nome} /{" "}
         {passageiro.centroCustoClienteId.codigo}
       </p>
       <p style={{ width: "10%", textAlign: "center" }}>{passageiro.telefone}</p>
@@ -141,7 +151,9 @@ function LinhaTabelaPassageiro({
             }}
           />
         ) : (
-          <p style={{userSelect: "none"}}>{passageiro.ativo ? "Ativo" : "Inativo"}</p>
+          <p style={{ userSelect: "none" }}>
+            {passageiro.ativo ? "Ativo" : "Inativo"}
+          </p>
         )}
       </BtnAlterarStatus>
     </LinhaPassageiro>
