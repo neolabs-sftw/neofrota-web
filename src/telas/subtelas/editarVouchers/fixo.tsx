@@ -21,8 +21,6 @@ export default function EditarVoucherFixo() {
     atob(String(id)),
   );
 
-  console.log(voucherFixoId);
-
   const adminLogado = useAdminLogado();
 
   const [empresaCliente, setEmpresaCliente] = useState<any>(0);
@@ -2287,8 +2285,9 @@ function SalvarInformacoes({ v, vA }: { v: any; vA: any }) {
 
   const cancelarVoucher = async () => {
     try {
-      const resultado = await editar({ status: "Cancelado" });
+      const resultado = await editar({id: vA.id,  status: "Cancelado" });
       console.log("Voucher editado com sucesso!", resultado);
+      navigate(-1);
     } catch (error) {
       console.error("Erro ao editar voucher:", error);
       alert("Erro ao editar voucher");

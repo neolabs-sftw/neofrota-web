@@ -215,8 +215,6 @@ function LinhaFuncionario({ f, par }: { f: any; par: boolean }) {
   const [lStatus, setLStatus] = useState(false);
   const [lDelete, setLDelete] = useState(false);
 
-  console.log(f);
-
   const { editarAdmin } = useEditarAdminUsuario(String(operadora));
 
   async function alterarStatus() {

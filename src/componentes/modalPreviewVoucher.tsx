@@ -88,8 +88,6 @@ function ModalPreviewVoucher({
 
   const admin = useAdminLogado();
 
-  console.log(admin);
-
   const { voucherExtraId, loading: loadingExtra } = useVoucherExtraId(
     v?.natureza === "Extra" ? v?.id : null,
   );

@@ -49,9 +49,9 @@ export default function EditarVoucherExtra() {
 
   const { listaPedagios } = usePedagios(String(adminLogado?.operadora?.id));
 
-  const valorPedagioReal = listaPedagios?.find((p:any)=> p.id === valorPedagio)
-
-  console.log(valorPedagioReal)
+  const valorPedagioReal = listaPedagios?.find(
+    (p: any) => p.id === valorPedagio,
+  );
 
   useEffect(() => {
     if (!voucherExtraId) return;
@@ -2240,10 +2240,11 @@ function SalvarInformacoes({ v, vA }: { v: any; vA: any }) {
     try {
       // 1. Funções de segurança para limpar dados inválidos
       // Transforma 0 em undefined para que o filtro final o remova (evita erro em DateTime)
-      const checkZero = (val: any) => (val === 0 ? undefined : val);
+      const checkZero = (val: any) =>
+        val === 0 || val === "" ? undefined : val;
       // Força IDs a serem Strings (Apollo lida melhor) e remove se for 0
       const formatId = (val: any) =>
-        val && val !== 0 ? String(val) : undefined;
+        val && val !== 0 && val !== "" ? String(val) : undefined;
 
       // 2. Montagem segura do Payload
       const inputBruto = {

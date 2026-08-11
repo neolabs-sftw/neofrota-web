@@ -588,6 +588,7 @@ function TabelaVouchersFiltrados({
       <p style={{ width: "8%" }}>Valor</p>
     </div>
   );
+  const admin = useAdminLogado();
   const navigate = useNavigate();
   return (
     <div
@@ -644,7 +645,6 @@ function TabelaVouchersFiltrados({
               v.valorPedagio +
               v.valorHoraParada * v.qntTempoParado;
 
-            const admin = useAdminLogado();
             return (
               <LinhaTabela
                 $base={Cor.base2}
@@ -1181,12 +1181,10 @@ function TabelaVouchersFiltrados({
                         fontWeight: "bold",
                         color: Cor.primaria,
                       }}
-                      title={`Pedágio adicionado: ${Intl
-                        .NumberFormat("pt-BR", {
-                          style: "currency",
-                          currency: "BRL",
-                        })
-                        .format(Number(v?.valorPedagio || 0))}`}
+                      title={`Pedágio adicionado: ${Intl.NumberFormat("pt-BR", {
+                        style: "currency",
+                        currency: "BRL",
+                      }).format(Number(v?.valorPedagio || 0))}`}
                     >
                       price_check
                     </p>
