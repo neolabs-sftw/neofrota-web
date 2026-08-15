@@ -129,6 +129,8 @@ export default Relatorios;
 function RelatorioConteudo() {
   const { Cor } = useTema();
 
+  const nomeOperadora = useAdminLogado()?.operadora.nome;
+
   const operadoraId = useAdminLogado()?.operadora.id;
 
   const [visivel, setVisivel] = useState<boolean>(false);
@@ -170,7 +172,10 @@ function RelatorioConteudo() {
     refetch,
   } = useVouchersFiltrados(filtro);
 
-  const { listaVouchersIds } = useVouchersIds(idsParaBusca);
+  const { listaVouchersIds } = useVouchersIds(
+    idsParaBusca,
+    String(operadoraId),
+  );
 
   const listaRelatorio =
     listaVouchersIds && listaVouchersIds.length > 0
@@ -181,18 +186,44 @@ function RelatorioConteudo() {
     useLazyQuery(GET_VOUCHERS_EXPORTACAO, {
       fetchPolicy: "network-only",
     });
+
+  const formatarDataHora = (dataString: string | null | undefined) => {
+    if (!dataString) return "-";
+
+    const data = new Date(dataString);
+
+    // Verifica se a data é válida
+    if (isNaN(data.getTime())) return dataString;
+
+    // Formata para o padrão brasileiro (DD/MM/YYYY HH:MM:SS)
+    return data
+      .toLocaleString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      })
+      .replace(",", "");
+  };
+
   // Passamos o array tipado com a interface que você já criou
   const prepararDadosParaExcel = (vouchers: VoucherExportacao[]) => {
     return vouchers.map((voucher) => {
       // 1. Montamos um objeto base com os dados que vêm antes dos passageiros
       const linhaExcel: any = {
         ID: voucher.id,
+        Observação: voucher.observacao,
         Status: voucher.status,
-        "Data Programada": voucher.dataHoraProgramado,
-        "Data Conclusão": voucher.dataHoraConclusao || "-",
+        "Data Programada": formatarDataHora(voucher.dataHoraProgramado),
+        "Data Conclusão": formatarDataHora(voucher.dataHoraConclusao),
         "Empresa Cliente": voucher.empresaCliente?.nome || "-",
         "Unidade Cliente": voucher.unidadeCliente?.nome || "-",
+        Solicitante: voucher.solicitante?.nome || "-",
         Motorista: voucher.motorista?.nome || "Sem motorista",
+        "Observação Motorista": voucher.observacaoMotorista || "-",
         "Veículo (Placa)": voucher.carro?.placa || "-",
         Origem: voucher.rota?.origem || voucher.origem || "-",
         Destino: voucher.rota?.destino || voucher.destino || "-",
@@ -225,25 +256,146 @@ function RelatorioConteudo() {
           const status = p.statusPresenca || "Sem status";
           const centroCusto =
             p.passageiroId?.centroCustoClienteId?.nome || "Sem Centro de Custo";
+          const centroCustoCod =
+            p.passageiroId?.centroCustoClienteId?.codigo || "--";
           const rateio = p.rateio;
           // Adicionamos uma nova chave ao objeto no formato "Passageiro X"
           // E concatenamos os valores na mesma string
-          linhaExcel[`Passageiro ${index + 1}`] =
-            `${nome}, ${status}, ${centroCusto}, ${rateio}`;
+          // linhaExcel[`Passageiro ${index + 1}`] =
+          //   `${nome}, ${status}, ${centroCusto}, ${rateio}`;
+          linhaExcel[`Passageiro ${index + 1}`] = `${nome}`;
+          linhaExcel[`Passageiro ${index + 1} Status`] = `${status}`;
+          linhaExcel[`Passageiro ${index + 1} CC`] =
+            `${centroCusto} - ${centroCustoCod}`;
+          linhaExcel[`Passageiro ${index + 1} Rateio`] = `${rateio}`;
         });
       } else {
         // Se não houver nenhum passageiro, garantimos que a coluna 1 exista com um aviso
         linhaExcel["Passageiro 1"] = "Sem passageiros";
       }
 
-      // 3. Adicionamos o restante dos dados que ficam após as colunas dos passageiros
-      linhaExcel["Solicitante"] = voucher.solicitante?.nome || "-";
-      linhaExcel["Observação"] = voucher.observacao || "-";
-      linhaExcel["Obs. Motorista"] = voucher.observacaoMotorista || "-";
-
       return linhaExcel;
     });
   };
+
+  // ------------------------------------ FUNÇÃO NOVA PARA EXTRAÇÃO DE RELATÓRIOS -----------------------------------//
+
+  const extrairData = (dataString: string | null | undefined) => {
+    if (!dataString) return "-";
+    const data = new Date(dataString);
+    if (isNaN(data.getTime())) return dataString;
+    return data.toLocaleDateString("pt-BR", { timeZone: "UTC" });
+  };
+
+  const extrairHora = (dataString: string | null | undefined) => {
+    if (!dataString) return "-";
+    const data = new Date(dataString);
+    if (isNaN(data.getTime())) return dataString;
+    return data.toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: "UTC",
+    });
+  };
+
+  const prepararDadosParaExcelCentroCusto = (vouchers: VoucherExportacao[]) => {
+    // Usamos flatMap porque um voucher vai se transformar em MÚLTIPLAS linhas (uma por passageiro)
+    return vouchers.flatMap((voucher) => {
+      // 1. Calculamos apenas o custo de cobrança (o que o cliente paga)
+      const totalCobranca =
+        (voucher.valorViagem || 0) +
+        (voucher.valorDeslocamento || 0) +
+        (voucher.qntTempoParado || 0) * (voucher.valorHoraParada || 0);
+
+      // 2. Montamos os dados base da viagem que vão se repetir para todos os passageiros daquele voucher
+      const dadosBaseViagem = {
+        "ID do Voucher": voucher.id,
+        "Data Programada": extrairData(voucher.dataHoraProgramado),
+        "Hora Programada": extrairHora(voucher.dataHoraProgramado),
+        "Empresa Cliente": voucher.empresaCliente?.nome || "-",
+        "Unidade Cliente": voucher.unidadeCliente?.nome || "-",
+        Solicitante: voucher.solicitante?.nome || "-",
+        Origem: voucher.rota?.origem || voucher.origem || "-",
+        Destino: voucher.rota?.destino || voucher.destino || "-",
+        Natureza: voucher.natureza,
+        "Tipo de Corrida": voucher.tipoCorrida,
+        Motorista: voucher.motorista?.nome || "Sem motorista", // Opcional, mantido para rastreio
+        "Custo Total da Corrida": parseFloat(totalCobranca.toFixed(2)),
+      };
+
+      // 3. Se por acaso a corrida não tiver passageiros cadastrados, geramos uma linha vazia para não perder o custo da viagem
+      if (!voucher.passageiros || voucher.passageiros.length === 0) {
+        return [
+          {
+            ...dadosBaseViagem,
+            Passageiro: "Sem passageiros",
+            "Status Presença": "-",
+            "Centro de Custo": "-",
+            "Código CC": "-",
+            "Rateio (%)": 0,
+            "Custo do Passageiro": parseFloat(totalCobranca.toFixed(2)), // Atribui o custo total já que não há divisão
+          },
+        ];
+      }
+
+      // 4. Mapeamos os passageiros: para cada passageiro, criamos uma linha juntando os dados da viagem com os dados dele
+      return voucher.passageiros.map((p) => {
+        const nome = p.passageiroId?.nome || "Sem nome";
+        const status = p.statusPresenca || "Sem status";
+        const centroCusto =
+          p.passageiroId?.centroCustoClienteId?.nome || "Sem Centro de Custo";
+        const centroCustoCod =
+          p.passageiroId?.centroCustoClienteId?.codigo || "--";
+
+        // O rateio aqui já é o VALOR financeiro calculado (R$)
+        const valorRateio =
+          typeof p.rateio === "number" ? p.rateio : parseFloat(p.rateio) || 0;
+
+        // O Custo do passageiro é exatamente o valor do rateio que veio do banco
+        const custoPassageiro = valorRateio;
+
+        // Agora calculamos a porcentagem que esse valor representa do total da corrida
+        // (Protegido contra divisão por zero, caso a corrida tenha valor 0)
+        const porcentagemRateio =
+          totalCobranca > 0 ? (valorRateio / totalCobranca) * 100 : 0;
+
+        return {
+          ...dadosBaseViagem,
+          Passageiro: nome,
+          "Status Presença": status,
+          "Centro de Custo": centroCusto,
+          "Código CC": centroCustoCod,
+
+          // Exibe o custo exato em Reais
+          "Custo do Passageiro": custoPassageiro,
+
+          // Exibe a porcentagem real na planilha (Ex: 33.33 para 33,33%)
+          "Rateio (%)": parseFloat(porcentagemRateio.toFixed(2)),
+
+          Observação: voucher.observacao || "-",
+        };
+      });
+    });
+  };
+
+  // const ExportarPlanilha = async () => {
+  //     const { data } = await buscarDadosExportacao({
+  //       variables: { filtro },
+  //     });
+
+  //     if (data && data.vouchersFiltrados && data.vouchersFiltrados.length > 0) {
+  //       // 2. Transforma (achata) os dados para o formato do Excel
+  //       const dadosFormatados = prepararDadosParaExcel(data.vouchersFiltrados);
+
+  //       exportarPlanilhaFunc(
+  //         dadosFormatados,
+  //         `Relatorio_${nomeOperadora}_Vouchers_${formatarParaYMD(hoje)}`,
+  //         "xlsx",
+  //       );
+  //     } else {
+  //       alert("Nenhum dado encontrado para os filtros selecionados.");
+  //     }
+  //   };
 
   const ExportarPlanilha = async () => {
     const { data } = await buscarDadosExportacao({
@@ -251,18 +403,32 @@ function RelatorioConteudo() {
     });
 
     if (data && data.vouchersFiltrados && data.vouchersFiltrados.length > 0) {
-      // 2. Transforma (achata) os dados para o formato do Excel
-      const dadosFormatados = prepararDadosParaExcel(data.vouchersFiltrados);
+      const vouchers = data.vouchersFiltrados;
 
+      // 1. Gera os dados no formato antigo (Visão Operacional/Geral)
+      const dadosGerais = prepararDadosParaExcel(vouchers);
+
+      // 2. Gera os dados no formato novo (Visão Financeira/Passageiros)
+      const dadosCentroCusto = prepararDadosParaExcelCentroCusto(vouchers);
+
+      // 3. Exporta o primeiro arquivo (Relatório Geral)
       exportarPlanilhaFunc(
-        dadosFormatados,
-        `Relatorio_NeoFrota_Vouchers_${formatarParaYMD(hoje)}`,
+        dadosGerais,
+        `Relatorio_${nomeOperadora}_Operacional_${formatarParaYMD(hoje)}`,
+        "xlsx",
+      );
+
+      // 4. Exporta o segundo arquivo (Relatório Centro de Custo)
+      exportarPlanilhaFunc(
+        dadosCentroCusto,
+        `Relatorio_${nomeOperadora}_CentroCusto_${formatarParaYMD(hoje)}`,
         "xlsx",
       );
     } else {
       alert("Nenhum dado encontrado para os filtros selecionados.");
     }
   };
+
   return (
     <>
       <div
@@ -1197,7 +1363,7 @@ function TabelaVouchersFiltrados({
       </div>
       <div
         style={{
-          backgroundColor: Cor.texto2 + 90,
+          backgroundColor: Cor.texto1 + 20,
           width: "100%",
           borderRadius: "0 0 16px 16px",
           display: "flex",
@@ -1220,8 +1386,16 @@ function TabelaVouchersFiltrados({
             alignItems: "center",
           }}
         >
-          <p style={{ whiteSpace: "nowrap" }}>
-            {selecionados.length} - Vouchers Selecionados
+          <p
+            style={{
+              whiteSpace: "nowrap",
+              color: selecionados.length > 0 ? Cor.primaria : Cor.texto2,
+            }}
+          >
+            {selecionados.length} -{" "}
+            {selecionados.length > 1
+              ? "Vouchers Selecionados"
+              : "Voucher Selecionado"}
           </p>
           <BtnAcaoEmMassa
             $cor={selecionados.length > 0 ? Cor.primaria : Cor.texto2}
@@ -1288,7 +1462,8 @@ interface BtnAcaoEmMassaProps {
 
 const BtnAcaoEmMassa = styled.div<BtnAcaoEmMassaProps>`
   width: 150px;
-  background-color: ${({ $cor }) => $cor + 90};
+  background-color: ${({ $cor }) => $cor + 50};
+  border: 1px solid ${({ $cor }) => $cor + 90};
   padding: 5px;
   border-radius: 14px;
   display: flex;
@@ -1297,10 +1472,13 @@ const BtnAcaoEmMassa = styled.div<BtnAcaoEmMassaProps>`
   transition: ease-in-out all 0.1s;
   user-select: none;
   cursor: ${({ $cursor }) => $cursor};
+  color: ${({ $cor }) => $cor};
 
   &:hover {
     scale: 1.02;
     background-color: ${({ $cor }) => $cor + "CC"};
+    border: 1px solid ${({ $cor }) => $cor};
+    color: #053058;
   }
 
   &:active {
@@ -1405,6 +1583,17 @@ function ModalEditarMassa({
     setValorViagemRepasse("");
   };
 
+  const ajustarDataParaBackend = (dataString: any) => {
+    if (!dataString) return undefined;
+
+    const data = new Date(dataString);
+    // Pega a diferença do fuso horário em minutos e converte para milissegundos
+    const compensacaoFuso = data.getTimezoneOffset() * 60000;
+
+    // Cria uma nova data subtraindo essa diferença
+    return new Date(data.getTime() - compensacaoFuso);
+  };
+
   const editarEmMassaFunc = async () => {
     if (idsSelecionados.length === 0) {
       alert("Nenhum voucher selecionado preparado para Edição");
@@ -1416,9 +1605,7 @@ function ModalEditarMassa({
       status,
       tipoCorrida,
       motoristaId,
-      dataHoraProgramado: dataHoraProgramado
-        ? new Date(dataHoraProgramado)
-        : undefined,
+      dataHoraProgramado: ajustarDataParaBackend(dataHoraProgramado),
       observacao,
       qntTempoParado,
       valorDeslocamento: valorDeslocamento
@@ -2893,7 +3080,12 @@ function BaseFiltros({
             type="text"
             onChange={(e: any) => setNumerosVouchers(e.target.value)}
           />
-          <BtnFiltrar $cor={Cor.primaria} onClick={() => buscarPorIds()}>
+          <BtnFiltrar
+            $cor={Cor.primaria}
+            onClick={() => {
+              buscarPorIds();
+            }}
+          >
             Buscar
           </BtnFiltrar>
         </div>
