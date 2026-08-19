@@ -187,28 +187,6 @@ function RelatorioConteudo() {
       fetchPolicy: "network-only",
     });
 
-  const formatarDataHora = (dataString: string | null | undefined) => {
-    if (!dataString) return "-";
-
-    const data = new Date(dataString);
-
-    // Verifica se a data é válida
-    if (isNaN(data.getTime())) return dataString;
-
-    // Formata para o padrão brasileiro (DD/MM/YYYY HH:MM:SS)
-    return data
-      .toLocaleString("pt-BR", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false,
-      })
-      .replace(",", "");
-  };
-
    const extrairData = (dataString: string | null | undefined) => {
     if (!dataString) return "-";
     const data = new Date(dataString);
