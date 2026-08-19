@@ -53,8 +53,6 @@ export default function EditarVoucherTurno() {
     (p: any) => p.id === valorPedagio,
   );
 
-  console.log(valorPedagioReal);
-
   useEffect(() => {
     if (!voucherFixoId) return;
 

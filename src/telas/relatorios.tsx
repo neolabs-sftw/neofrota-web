@@ -209,6 +209,25 @@ function RelatorioConteudo() {
       .replace(",", "");
   };
 
+   const extrairData = (dataString: string | null | undefined) => {
+    if (!dataString) return "-";
+    const data = new Date(dataString);
+    if (isNaN(data.getTime())) return dataString;
+    return data.toLocaleDateString("pt-BR", { timeZone: "UTC" });
+  };
+
+  const extrairHora = (dataString: string | null | undefined) => {
+    if (!dataString) return "-";
+    const data = new Date(dataString);
+    if (isNaN(data.getTime())) return dataString;
+    return data.toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      timeZone: "UTC",
+    });
+  };
+
   // Passamos o array tipado com a interface que você já criou
   const prepararDadosParaExcel = (vouchers: VoucherExportacao[]) => {
     return vouchers.map((voucher) => {
@@ -217,8 +236,10 @@ function RelatorioConteudo() {
         ID: voucher.id,
         Observação: voucher.observacao,
         Status: voucher.status,
-        "Data Programada": formatarDataHora(voucher.dataHoraProgramado),
-        "Data Conclusão": formatarDataHora(voucher.dataHoraConclusao),
+        "Data Programada": extrairData(voucher.dataHoraProgramado),
+        "Hora Programada": extrairHora(voucher.dataHoraProgramado),
+        "Data Conclusão": extrairData(voucher.dataHoraConclusao),
+        "Hora Conclusão": extrairHora(voucher.dataHoraConclusao),
         "Empresa Cliente": voucher.empresaCliente?.nome || "-",
         "Unidade Cliente": voucher.unidadeCliente?.nome || "-",
         Solicitante: voucher.solicitante?.nome || "-",
@@ -238,14 +259,17 @@ function RelatorioConteudo() {
         "Valor Deslocamento Repasse": voucher.valorDeslocamentoRepasse || 0,
         "Valor Hora Parada Repasse":
           voucher.valorHoraParadaRepasse * voucher.qntTempoParado || 0,
+        "Valor Pedágio": voucher.valorPedagio || 0,
         "Total Cobrança":
-          voucher.valorViagem +
-            voucher.valorDeslocamento +
-            voucher.qntTempoParado * voucher.valorHoraParada || 0,
+          (voucher.valorViagem || 0) +
+          (voucher.valorDeslocamento || 0) +
+          (voucher.valorPedagio || 0) +
+          (voucher.qntTempoParado || 0) * (voucher.valorHoraParada || 0),
         "Total Repasse":
-          voucher.valorViagemRepasse +
-            voucher.valorDeslocamentoRepasse +
-            voucher.qntTempoParado * voucher.valorHoraParadaRepasse || 0,
+          (voucher.valorViagemRepasse || 0) +
+          (voucher.valorDeslocamentoRepasse || 0) +
+          (voucher.valorPedagio || 0) +
+          (voucher.qntTempoParado || 0) * (voucher.valorHoraParadaRepasse || 0),
       };
 
       // 2. Lógica dinâmica para criar as colunas "Passageiro 1", "Passageiro 2", etc.
@@ -267,7 +291,8 @@ function RelatorioConteudo() {
           linhaExcel[`Passageiro ${index + 1} Status`] = `${status}`;
           linhaExcel[`Passageiro ${index + 1} CC`] =
             `${centroCusto} - ${centroCustoCod}`;
-          linhaExcel[`Passageiro ${index + 1} Rateio`] = `${rateio}`;
+          linhaExcel[`Passageiro ${index + 1} Rateio`] =
+            typeof rateio === "number" ? rateio : parseFloat(rateio) || 0;
         });
       } else {
         // Se não houver nenhum passageiro, garantimos que a coluna 1 exista com um aviso
@@ -280,34 +305,18 @@ function RelatorioConteudo() {
 
   // ------------------------------------ FUNÇÃO NOVA PARA EXTRAÇÃO DE RELATÓRIOS -----------------------------------//
 
-  const extrairData = (dataString: string | null | undefined) => {
-    if (!dataString) return "-";
-    const data = new Date(dataString);
-    if (isNaN(data.getTime())) return dataString;
-    return data.toLocaleDateString("pt-BR", { timeZone: "UTC" });
-  };
-
-  const extrairHora = (dataString: string | null | undefined) => {
-    if (!dataString) return "-";
-    const data = new Date(dataString);
-    if (isNaN(data.getTime())) return dataString;
-    return data.toLocaleTimeString("pt-BR", {
-      hour: "2-digit",
-      minute: "2-digit",
-      timeZone: "UTC",
-    });
-  };
+ 
 
   const prepararDadosParaExcelCentroCusto = (vouchers: VoucherExportacao[]) => {
-    // Usamos flatMap porque um voucher vai se transformar em MÚLTIPLAS linhas (uma por passageiro)
-    return vouchers.flatMap((voucher) => {
-      // 1. Calculamos apenas o custo de cobrança (o que o cliente paga)
+    return vouchers.flatMap((voucher: any) => {
+      // 1. Calculamos o custo total atualizado da cobrança
       const totalCobranca =
         (voucher.valorViagem || 0) +
         (voucher.valorDeslocamento || 0) +
+        (voucher.valorPedagio || 0) +
         (voucher.qntTempoParado || 0) * (voucher.valorHoraParada || 0);
 
-      // 2. Montamos os dados base da viagem que vão se repetir para todos os passageiros daquele voucher
+      // 2. Montamos os dados base da viagem
       const dadosBaseViagem = {
         "ID do Voucher": voucher.id,
         "Data Programada": extrairData(voucher.dataHoraProgramado),
@@ -319,11 +328,11 @@ function RelatorioConteudo() {
         Destino: voucher.rota?.destino || voucher.destino || "-",
         Natureza: voucher.natureza,
         "Tipo de Corrida": voucher.tipoCorrida,
-        Motorista: voucher.motorista?.nome || "Sem motorista", // Opcional, mantido para rastreio
+        Motorista: voucher.motorista?.nome || "Sem motorista",
         "Custo Total da Corrida": parseFloat(totalCobranca.toFixed(2)),
       };
 
-      // 3. Se por acaso a corrida não tiver passageiros cadastrados, geramos uma linha vazia para não perder o custo da viagem
+      // 3. Se não houver passageiros
       if (!voucher.passageiros || voucher.passageiros.length === 0) {
         return [
           {
@@ -333,13 +342,19 @@ function RelatorioConteudo() {
             "Centro de Custo": "-",
             "Código CC": "-",
             "Rateio (%)": 0,
-            "Custo do Passageiro": parseFloat(totalCobranca.toFixed(2)), // Atribui o custo total já que não há divisão
+            "Custo do Passageiro": parseFloat(totalCobranca.toFixed(2)),
           },
         ];
       }
 
-      // 4. Mapeamos os passageiros: para cada passageiro, criamos uma linha juntando os dados da viagem com os dados dele
-      return voucher.passageiros.map((p) => {
+      // NOVO PASSO: Identificar a quantidade exata de passageiros PRESENTES neste voucher
+      const totalConsideradosNoRateio = voucher.passageiros.filter(
+        (p: any) =>
+          p.statusPresenca === "Presente" || p.statusPresenca === "Agendado",
+      ).length;
+
+      // 4. Mapeamos os passageiros
+      return voucher.passageiros.map((p: any) => {
         const nome = p.passageiroId?.nome || "Sem nome";
         const status = p.statusPresenca || "Sem status";
         const centroCusto =
@@ -347,30 +362,35 @@ function RelatorioConteudo() {
         const centroCustoCod =
           p.passageiroId?.centroCustoClienteId?.codigo || "--";
 
-        // O rateio aqui já é o VALOR financeiro calculado (R$)
-        const valorRateio =
-          typeof p.rateio === "number" ? p.rateio : parseFloat(p.rateio) || 0;
+        // Variáveis zeradas por padrão (garante que "Ausente" ou outros fiquem zerados)
+        let custoPassageiro: any = 0;
+        let porcentagemRateio = 0;
 
-        // O Custo do passageiro é exatamente o valor do rateio que veio do banco
-        const custoPassageiro = valorRateio;
+        // Cria a regra: Só participa da divisão de custos quem estiver Presente ou Agendado
+        const participaDaDivisao =
+          status === "Presente" || status === "Agendado";
 
-        // Agora calculamos a porcentagem que esse valor representa do total da corrida
-        // (Protegido contra divisão por zero, caso a corrida tenha valor 0)
-        const porcentagemRateio =
-          totalCobranca > 0 ? (valorRateio / totalCobranca) * 100 : 0;
+        // Aplica o rateio APENAS se o passageiro passar na regra de divisão
+        if (participaDaDivisao && totalConsideradosNoRateio > 0) {
+          // Insere a fórmula do Excel dinamicamente
+          custoPassageiro = {
+            f: `${totalCobranca}/${totalConsideradosNoRateio}`,
+            t: "n",
+          };
 
+          // Calcula a porcentagem igualitária
+          porcentagemRateio = parseFloat(
+            (100 / totalConsideradosNoRateio).toFixed(2),
+          );
+        }
         return {
           ...dadosBaseViagem,
+          "Rateio (%)": porcentagemRateio,
+          "Custo do Passageiro": custoPassageiro,
           Passageiro: nome,
           "Status Presença": status,
           "Centro de Custo": centroCusto,
           "Código CC": centroCustoCod,
-
-          // Exibe o custo exato em Reais
-          "Custo do Passageiro": custoPassageiro,
-
-          // Exibe a porcentagem real na planilha (Ex: 33.33 para 33,33%)
-          "Rateio (%)": parseFloat(porcentagemRateio.toFixed(2)),
 
           Observação: voucher.observacao || "-",
         };
@@ -2552,6 +2572,8 @@ function ResumoValores({
       horaParadaRepasse: 0,
     },
   );
+
+  console.log(totais);
 
   const totalViagem =
     totais.viagem + totais.deslocamento + totais.pedagio + totais.horaParada;

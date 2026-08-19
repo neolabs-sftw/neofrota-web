@@ -45,7 +45,13 @@ export default function EditarVoucherFixo() {
 
   const [qntTempoParado, setQntTempoParado] = useState(0);
 
-  const [valorPedagio, setValorPedagio] = useState("");
+  const [valorPedagio, setValorPedagio] = useState<any>();
+
+   const { listaPedagios } = usePedagios(String(adminLogado?.operadora?.id));
+  
+    const valorPedagioReal = listaPedagios?.find(
+      (p: any) => p.id === valorPedagio,
+    );
 
   useEffect(() => {
     if (!voucherFixoId) return;
@@ -87,7 +93,7 @@ export default function EditarVoucherFixo() {
     setValorDeslocamentoRepasse(voucherFixoId?.valorDeslocamentoRepasse || 0);
     setValorHoraParada(voucherFixoId?.valorHoraParada || 0);
     setValorHoraParadaRepasse(voucherFixoId?.valorHoraParadaRepasse || 0);
-    setValorPedagio(voucherFixoId?.valorPedagio || 0);
+    setValorPedagio(valorPedagioReal?.id || 0);
     setQntTempoParado(voucherFixoId?.qntTempoParado || 0);
   }, [carregandoEmpresa, loadingFixo, voucherFixoId]);
 
@@ -113,7 +119,7 @@ export default function EditarVoucherFixo() {
     valorDeslocamentoRepasse: valorDeslocamentoRepasse,
     valorHoraParada: valorHoraParada,
     valorHoraParadaRepasse: valorHoraParadaRepasse,
-    valorPedagio: valorPedagio,
+    valorPedagio: valorPedagioReal?.valor || 0,
     qntTempoParado: qntTempoParado,
   };
 
