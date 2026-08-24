@@ -12,6 +12,7 @@ import { useUnidadeCliente } from "../../hooks/useUnidadesClientes";
 import { useVouchersFiltrados } from "../../hooks/useVouchers";
 import { useLancamentosOperadora } from "../../hooks/useLancamentos";
 import CircularProgress from "@mui/material/CircularProgress";
+import { gerarExtratoPDF } from "../../hooks/exportarExtrato";
 
 export function Pagamentos() {
   return BaseTelas({
@@ -112,6 +113,8 @@ function PagamentosConteudo() {
         valorEstacionamento: estacionamento,
         qntTempoParado: tempoParado,
         natureza: String(natureza || ""),
+        origem: String(voucher.origem || ""),
+        destino: String(voucher.destino || ""),
         tipoCorrida: String(voucher.tipoCorrida || ""),
         status: String(voucher.status || ""),
         empresaCliente: {
@@ -1163,7 +1166,13 @@ type ColunaOrdenacao =
   | "valoresRepasseSomadosTotal"
   | "totalLiquido";
 
-function ListaMotoristaPagamentos({ f, loading }: { f: any; loading: boolean }) {
+function ListaMotoristaPagamentos({
+  f,
+  loading,
+}: {
+  f: any;
+  loading: boolean;
+}) {
   const { Cor } = useTema();
 
   const [ordenacao, setOrdenacao] = useState<{
@@ -1323,9 +1332,9 @@ function ListaMotoristaPagamentos({ f, loading }: { f: any; loading: boolean }) 
           padding: 5,
         }}
       >
-        <p
+        <div
           style={{
-            width: "30%",
+            width: "28%",
             fontSize: 14,
             fontWeight: "bold",
             color: Cor.texto1,
@@ -1336,15 +1345,15 @@ function ListaMotoristaPagamentos({ f, loading }: { f: any; loading: boolean }) 
           }}
           onClick={() => handleOrdenar("nomeMotorista")}
         >
-          Motorista{" "}
+          <p>Motorista</p>{" "}
           <p style={{ fontFamily: "Icone", color: Cor.secundaria }}>
             {ordenacao.coluna === "nomeMotorista" &&
               (ordenacao.direcao === "asc"
                 ? "arrow_drop_down"
                 : "arrow_drop_up")}
           </p>
-        </p>
-        <p
+        </div>
+        <div
           style={{
             width: "10%",
             fontSize: 14,
@@ -1357,7 +1366,7 @@ function ListaMotoristaPagamentos({ f, loading }: { f: any; loading: boolean }) 
           }}
           onClick={() => handleOrdenar("valoresRepasseSomadosExtras")}
         >
-          Extra{" "}
+          <p>Extra</p>{" "}
           <p style={{ fontFamily: "Icone", color: Cor.secundaria }}>
             {" "}
             {ordenacao.coluna === "valoresRepasseSomadosExtras" &&
@@ -1365,8 +1374,8 @@ function ListaMotoristaPagamentos({ f, loading }: { f: any; loading: boolean }) 
                 ? "arrow_drop_down"
                 : "arrow_drop_up")}
           </p>
-        </p>
-        <p
+        </div>
+        <div
           style={{
             width: "10%",
             fontSize: 14,
@@ -1379,15 +1388,15 @@ function ListaMotoristaPagamentos({ f, loading }: { f: any; loading: boolean }) 
           }}
           onClick={() => handleOrdenar("valoresRepasseSomadosFixos")}
         >
-          Fixos{" "}
+          <p>Fixos</p>{" "}
           <p style={{ fontFamily: "Icone", color: Cor.secundaria }}>
             {ordenacao.coluna === "valoresRepasseSomadosFixos" &&
               (ordenacao.direcao === "asc"
                 ? "arrow_drop_down"
                 : "arrow_drop_up")}
           </p>
-        </p>
-        <p
+        </div>
+        <div
           style={{
             width: "10%",
             fontSize: 14,
@@ -1397,17 +1406,18 @@ function ListaMotoristaPagamentos({ f, loading }: { f: any; loading: boolean }) 
             userSelect: "none",
             display: "flex",
             flexDirection: "row",
-          }}onClick={() => handleOrdenar("valoresRepasseSomadosTurnos")}
+          }}
+          onClick={() => handleOrdenar("valoresRepasseSomadosTurnos")}
         >
-          Turnos{" "}
+          <p>Turnos</p>{" "}
           <p style={{ fontFamily: "Icone", color: Cor.secundaria }}>
             {ordenacao.coluna === "valoresRepasseSomadosTurnos" &&
               (ordenacao.direcao === "asc"
                 ? "arrow_drop_down"
                 : "arrow_drop_up")}
           </p>
-        </p>
-        <p
+        </div>
+        <div
           style={{
             width: "10%",
             fontSize: 14,
@@ -1417,16 +1427,17 @@ function ListaMotoristaPagamentos({ f, loading }: { f: any; loading: boolean }) 
             userSelect: "none",
             display: "flex",
             flexDirection: "row",
-          }}onClick={() => handleOrdenar("valoresRepasseSomadosTotal")}
+          }}
+          onClick={() => handleOrdenar("valoresRepasseSomadosTotal")}
         >
-          Total Bruto{" "}
+          <p>Total Bruto</p>{" "}
           <p style={{ fontFamily: "Icone", color: Cor.secundaria }}>
             {ordenacao.coluna === "valoresRepasseSomadosTotal" &&
               (ordenacao.direcao === "asc"
                 ? "arrow_drop_down"
                 : "arrow_drop_up")}
           </p>
-        </p>
+        </div>
         <p
           style={{
             width: "10%",
@@ -1451,7 +1462,7 @@ function ListaMotoristaPagamentos({ f, loading }: { f: any; loading: boolean }) 
         </p>
         <p
           style={{
-            width: "10%",
+            width: "12%",
             fontSize: 14,
             fontWeight: "bold",
             color: Cor.texto1,
@@ -1487,29 +1498,31 @@ function ListaMotoristaPagamentos({ f, loading }: { f: any; loading: boolean }) 
         }}
       >
         {loading ? (
-                  <div
-                    style={{
-                      width: "100%",
-                      height: 60,
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    <CircularProgress
-                      size={24}
-                      thickness={5}
-                      sx={{
-                        color: Cor.primaria,
-                        "& .MuiCircularProgress-linear": {
-                          strokeLinecap: "round",
-                        },
-                      }}
-                    />
-                  </div>
-                ) : ( listaOrdenada.map((f: any) => {
-          return <LinhaFaturamentoMotorista key={f.motoristaId} m={f} />;
-        }))}
+          <div
+            style={{
+              width: "100%",
+              height: 60,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <CircularProgress
+              size={24}
+              thickness={5}
+              sx={{
+                color: Cor.primaria,
+                "& .MuiCircularProgress-linear": {
+                  strokeLinecap: "round",
+                },
+              }}
+            />
+          </div>
+        ) : (
+          listaOrdenada.map((f: any) => {
+            return <LinhaFaturamentoMotorista key={f.motoristaId} m={f} />;
+          })
+        )}
       </div>
       <div
         style={{
@@ -1535,7 +1548,7 @@ const LinhaFaturamentoStyled = styled.div<LinhaFaturamentoProps>`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  cursor: pointer;
+  align-items: center;
   background-color: ${({ $bg }) => $bg + "01"};
 
   &:hover {
@@ -1593,11 +1606,13 @@ function LinhaFaturamentoMotorista({ m }: { m: any }) {
     resumoLancamentos.totalDescontos.toFixed(2),
   );
 
+  const admin = useAdminLogado();
+
   return (
     <LinhaFaturamentoStyled $bg={Cor.secundaria} $border={Cor.texto2}>
       <p
         style={{
-          width: "30%",
+          width: "28%",
           color: Cor.texto1,
           fontSize: 14,
           paddingTop: 5,
@@ -1729,6 +1744,30 @@ function LinhaFaturamentoMotorista({ m }: { m: any }) {
           ),
         )}
       </p>
+      <div
+        style={{
+          width: "2%",
+          aspectRatio: 1,
+          backgroundColor: Cor.primaria,
+          borderRadius: 4,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+          userSelect: "none",
+        }}
+        onClick={() =>
+          gerarExtratoPDF(
+            m,
+            acc,
+            admin?.operadora.nome || "",
+            String(formatarParaYMD(primeiroDia)),
+            String(formatarParaYMD(ultimoDia)),
+          )
+        }
+      >
+        <p style={{ fontFamily: "Icone", color: Cor.base, fontWeight: "bold" }}>download</p>
+      </div>
     </LinhaFaturamentoStyled>
   );
 }
