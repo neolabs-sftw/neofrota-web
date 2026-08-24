@@ -187,7 +187,7 @@ function RelatorioConteudo() {
       fetchPolicy: "network-only",
     });
 
-   const extrairData = (dataString: string | null | undefined) => {
+  const extrairData = (dataString: string | null | undefined) => {
     if (!dataString) return "-";
     const data = new Date(dataString);
     if (isNaN(data.getTime())) return dataString;
@@ -282,8 +282,6 @@ function RelatorioConteudo() {
   };
 
   // ------------------------------------ FUNÇÃO NOVA PARA EXTRAÇÃO DE RELATÓRIOS -----------------------------------//
-
- 
 
   const prepararDadosParaExcelCentroCusto = (vouchers: VoucherExportacao[]) => {
     return vouchers.flatMap((voucher: any) => {
@@ -769,15 +767,28 @@ function TabelaVouchersFiltrados({
       }}
     >
       {Cabecalho}
+      <style>{`
+          .scrollbox::-webkit-scrollbar {
+            width: 5px;
+          }
+          .scrollbox::-webkit-scrollbar-track {
+            background: ${Cor.texto2 + 30};
+          }
+          .scrollbox::-webkit-scrollbar-thumb {
+            background-color: ${Cor.primaria};
+            border-radius: 10px;
+          }
+        `}</style>
       <div
+        className="scrollbox"
         style={{
           backgroundColor: Cor.base,
           width: "100%",
           height: "88%",
           display: "flex",
           flexDirection: "column",
-          overflow: "scroll",
-          scrollbarWidth: "none",
+          overflow: "auto",
+          scrollbarColor: Cor.primaria,
         }}
       >
         {loading ? (
@@ -2550,8 +2561,6 @@ function ResumoValores({
       horaParadaRepasse: 0,
     },
   );
-
-  console.log(totais);
 
   const totalViagem =
     totais.viagem + totais.deslocamento + totais.pedagio + totais.horaParada;

@@ -981,9 +981,6 @@ function DetalhesMotorista({
     </div>
   );
 }
-
-// const listaFiltro = [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }];
-
 function TabelaLancamentos({
   setLancamentoModal,
   setVisivel,
@@ -995,9 +992,6 @@ function TabelaLancamentos({
 
   const [selecionados, setSelecionados] = useState<any[]>([]);
 
-  //   const [mesSelecionado, setMesSelecionado] = useState<number>(
-  //     new Date().getMonth() + 1,
-  //   );
 
   const mesSelecionado = new Date().getMonth() + 1;
   const anoAtual = new Date().getFullYear();
