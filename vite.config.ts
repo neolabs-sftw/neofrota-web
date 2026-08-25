@@ -7,10 +7,11 @@ import { VitePWA } from "vite-plugin-pwa";
 export default defineConfig({
   plugins: [
     react(),
+
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "apple-touch-icon.png", "mask-icon.svg"],
-      workbox: { maximumFileSizeToCacheInBytes: 5000000 },
+      workbox: { maximumFileSizeToCacheInBytes: 6 * 1024 * 1024 },
       manifest: {
         name: "NeoFrota WebSistema",
         short_name: "NeoFrota",
@@ -37,4 +38,21 @@ export default defineConfig({
     }),
   ],
   base: "/",
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            if (id.includes("react") || id.includes("react-dom")) {
+              return "vendor-react";
+            }
+            if (id.includes("lottie-web") || id.includes("pdfmake")) {
+              return "vendor-heavy";
+            }
+            return "vendor";
+          }
+        },
+      },
+    },
+  },
 });
