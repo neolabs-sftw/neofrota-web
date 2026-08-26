@@ -551,6 +551,11 @@ export const GET_VOUCHERS_EXPORTACAO = gql`
         nomeModelo
         ativo
       }
+      modeloTurno {
+        id
+        nomeModelo
+        ativo
+      }
       adminUsuario {
         id
         nome
@@ -724,6 +729,10 @@ const GET_VOUCHER_FIXO_ID = gql`
         valorDeslocamento
         valorDeslocamentoRepasse
         valorPedagio
+      }
+      modeloTurno {
+        id
+        nomeModelo
       }
       adminUsuario {
         id

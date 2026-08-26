@@ -43,8 +43,16 @@ function NavMenu({ sidebar, logado }: { sidebar: boolean; logado: any }) {
       path: "/operacao",
       submenu: true,
       itensSubMenu: [
-        { tela: "Roteiros Fixos", icone: "mediation", path: "/modelosvouchersfixos" },
-        { tela: "Roteiros Turnos", icone: "mediation", path: "/modelosvouchersturnos" },
+        {
+          tela: "Roteiros Fixos",
+          icone: "mediation",
+          path: "/modelosvouchersfixos",
+        },
+        {
+          tela: "Roteiros Turnos",
+          icone: "mediation",
+          path: "/modelosvouchersturnos",
+        },
         { tela: "Novo Voucher", icone: "mediation", path: "/novovoucher" },
         { tela: "Rotas", icone: "mediation", path: "/Rotas" },
       ],
@@ -64,12 +72,8 @@ function NavMenu({ sidebar, logado }: { sidebar: boolean; logado: any }) {
       tela: "Relatórios",
       icone: "list",
       path: "/relatorios",
-      submenu: true,
-      itensSubMenu: [
-        { tela: "Geral", icone: "list", path: "/relatorios" },
-        { tela: "Fixos", icone: "list", path: "/relatorios" },
-        { tela: "Extras", icone: "list", path: "/relatorios" },
-      ],
+      submenu: false,
+      itensSubMenu: [],
     },
     {
       tela: "Configurações",
@@ -114,8 +118,16 @@ function NavMenu({ sidebar, logado }: { sidebar: boolean; logado: any }) {
       path: "/operacao",
       submenu: true,
       itensSubMenu: [
-        { tela: "Roteiros Fixos", icone: "mediation", path: "/modelosvouchersfixos" },
-        { tela: "Roteiros Turnos", icone: "mediation", path: "/modelosvouchersturnos" },
+        {
+          tela: "Roteiros Fixos",
+          icone: "mediation",
+          path: "/modelosvouchersfixos",
+        },
+        {
+          tela: "Roteiros Turnos",
+          icone: "mediation",
+          path: "/modelosvouchersturnos",
+        },
         { tela: "Novo Voucher", icone: "mediation", path: "/novovoucher" },
         { tela: "Rotas", icone: "mediation", path: "/rotas" },
       ],
@@ -135,12 +147,8 @@ function NavMenu({ sidebar, logado }: { sidebar: boolean; logado: any }) {
       tela: "Relatórios",
       icone: "list",
       path: "/relatorios",
-      submenu: true,
-      itensSubMenu: [
-        { tela: "Geral", icone: "list", path: "/relatorios" },
-        { tela: "Fixos", icone: "list", path: "/relatorios" },
-        { tela: "Extras", icone: "list", path: "/relatorios" },
-      ],
+      submenu: false,
+      itensSubMenu: [],
     },
   ];
   const listaTelasFinc = [
@@ -172,12 +180,8 @@ function NavMenu({ sidebar, logado }: { sidebar: boolean; logado: any }) {
       tela: "Relatórios",
       icone: "list",
       path: "/relatorios",
-      submenu: true,
-      itensSubMenu: [
-        { tela: "Geral", icone: "list", path: "/relatorios" },
-        { tela: "Fixos", icone: "list", path: "/relatorios" },
-        { tela: "Extras", icone: "list", path: "/relatorios" },
-      ],
+      submenu: false,
+      itensSubMenu: [],
     },
   ];
   const listaTelasOper = [
@@ -215,12 +219,8 @@ function NavMenu({ sidebar, logado }: { sidebar: boolean; logado: any }) {
       tela: "Relatórios",
       icone: "list",
       path: "/relatorios",
-      submenu: true,
-      itensSubMenu: [
-        { tela: "Geral", icone: "list", path: "/relatorios" },
-        { tela: "Fixos", icone: "list", path: "/relatorios" },
-        { tela: "Extras", icone: "list", path: "/relatorios" },
-      ],
+      submenu: false,
+      itensSubMenu: [],
     },
   ];
 
@@ -228,10 +228,10 @@ function NavMenu({ sidebar, logado }: { sidebar: boolean; logado: any }) {
     logado.funcao === "Master"
       ? listaTelasMaster
       : logado.funcao === "Admin"
-      ? listaTelasAdmin
-      : logado.funcao === "Finc"
-      ? listaTelasFinc
-      : listaTelasOper;
+        ? listaTelasAdmin
+        : logado.funcao === "Finc"
+          ? listaTelasFinc
+          : listaTelasOper;
 
   const [submenuAberto, setSubmenuAberto] = useState<string | null>(null);
 

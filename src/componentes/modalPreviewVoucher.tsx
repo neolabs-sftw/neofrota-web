@@ -86,6 +86,8 @@ function ModalPreviewVoucher({
   const Cor = useTema().Cor;
   const navigate = useNavigate();
 
+  console.log("ModalPreviewVoucher v", v);
+
   const admin = useAdminLogado();
 
   const { voucherExtraId, loading: loadingExtra } = useVoucherExtraId(
@@ -1090,7 +1092,6 @@ function DetalhesDaViagem2({ v }: { v: any }) {
 
 function Solicitante({ v }: { v: any }) {
   const Cor = useTema().Cor;
-  const natureza = v?.natureza;
 
   return (
     <div
@@ -1101,7 +1102,7 @@ function Solicitante({ v }: { v: any }) {
         alignItems: "center",
         backgroundColor: Cor.texto2 + 20,
         padding: "5px 10px",
-        borderLeft: `12px solid ${natureza === "fixo" ? Cor.fixo : Cor.extra}`,
+        borderLeft: `12px solid ${Cor.extra}`,
         borderTop: `1px solid ${Cor.texto2 + 20}`,
         borderRight: `1px solid ${Cor.texto2 + 20}`,
         borderBottom: `1px solid ${Cor.texto2 + 20}`,
@@ -1113,7 +1114,7 @@ function Solicitante({ v }: { v: any }) {
         style={{
           fontFamily: "Icone",
           fontWeight: "bold",
-          color: natureza === "fixo" ? Cor.fixo : Cor.extra,
+          color: Cor.extra,
           fontSize: 28,
         }}
       >
@@ -1130,7 +1131,7 @@ function Solicitante({ v }: { v: any }) {
           style={{
             fontSize: 20,
             fontWeight: "bold",
-            color: natureza === "fixo" ? Cor.textoFixo : Cor.textoExtra,
+            color: Cor.textoExtra,
           }}
         >
           {v?.solicitante?.nome}
@@ -1143,6 +1144,8 @@ function Solicitante({ v }: { v: any }) {
 function CodigoRoteiro({ v }: { v: any }) {
   const Cor = useTema().Cor;
 
+  const natureza = v?.natureza;
+
   return (
     <div
       style={{
@@ -1152,13 +1155,7 @@ function CodigoRoteiro({ v }: { v: any }) {
         alignItems: "center",
         backgroundColor: Cor.texto2 + 20,
         padding: "5px 10px",
-        borderLeft: `12px solid ${
-          v?.natureza === "Fixo"
-            ? Cor.fixo
-            : v?.natureza === "Turno"
-              ? Cor.turno
-              : Cor.extra
-        }`,
+        borderLeft: `12px solid ${natureza === "Fixo" ? Cor.fixo : Cor.turno}`,
         borderTop: `1px solid ${Cor.texto2 + 20}`,
         borderRight: `1px solid ${Cor.texto2 + 20}`,
         borderBottom: `1px solid ${Cor.texto2 + 20}`,
@@ -1170,12 +1167,7 @@ function CodigoRoteiro({ v }: { v: any }) {
         style={{
           fontFamily: "Icone",
           fontWeight: "bold",
-          color:
-            v?.natureza === "Fixo"
-              ? Cor.fixo
-              : v?.natureza === "Turno"
-                ? Cor.turno
-                : Cor.extra,
+          color: natureza === "Fixo" ? Cor.fixo : Cor.turno,
           fontSize: 28,
         }}
       >
@@ -1185,22 +1177,24 @@ function CodigoRoteiro({ v }: { v: any }) {
         style={{
           display: "flex",
           flexDirection: "column",
+          width: "85%",
         }}
       >
         <p style={{ fontSize: 12, color: Cor.texto2 }}>Código do Roteiro</p>
         <p
           style={{
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
             fontSize: 20,
             fontWeight: "bold",
-            color:
-              v?.natureza === "Fixo"
-                ? Cor.textoFixo
-                : v?.natureza === "Turno"
-                  ? Cor.textoTurno
-                  : Cor.textoExtra,
+            color: natureza === "Fixo" ? Cor.textoFixo : Cor.textoTurno,
           }}
         >
-          {v?.modeloFixo?.nomeModelo}
+          {/* {v?.modeloTurno?.nomeModelo} */}
+          {natureza === "Fixo"
+            ? v?.modeloFixo?.nomeModelo
+            : v?.modeloTurno?.nomeModelo}
         </p>
       </div>
     </div>

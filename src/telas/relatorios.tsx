@@ -67,6 +67,11 @@ interface VoucherExportacao {
     nomeModelo: string;
     ativo: boolean;
   };
+  modeloTurno: {
+    id: string;
+    nomeModelo: string;
+    ativo: boolean;
+  };
   adminUsuario: {
     id: string;
     nome: string;
@@ -226,6 +231,9 @@ function RelatorioConteudo() {
         "Veículo (Placa)": voucher.carro?.placa || "-",
         Origem: voucher.rota?.origem || voucher.origem || "-",
         Destino: voucher.rota?.destino || voucher.destino || "-",
+        "Tributação": voucher.rota?.tributacao || "-",
+        "Cod. Fixo": voucher.modeloFixo?.nomeModelo || "-",
+        "Cod.Turno": voucher.modeloTurno?.nomeModelo || "_",
         Natureza: voucher.natureza,
         "Tipo de Corrida": voucher.tipoCorrida,
         "Valor Viagem": voucher.valorViagem || 0,
@@ -302,6 +310,7 @@ function RelatorioConteudo() {
         Solicitante: voucher.solicitante?.nome || "-",
         Origem: voucher.rota?.origem || voucher.origem || "-",
         Destino: voucher.rota?.destino || voucher.destino || "-",
+        "tributação": voucher.rota?.tributacao || "-",
         Natureza: voucher.natureza,
         "Tipo de Corrida": voucher.tipoCorrida,
         Motorista: voucher.motorista?.nome || "Sem motorista",
