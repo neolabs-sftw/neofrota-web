@@ -1766,7 +1766,9 @@ function LinhaFaturamentoMotorista({ m }: { m: any }) {
           )
         }
       >
-        <p style={{ fontFamily: "Icone", color: Cor.base, fontWeight: "bold" }}>download</p>
+        <p style={{ fontFamily: "Icone", color: Cor.base, fontWeight: "bold" }}>
+          download
+        </p>
       </div>
     </LinhaFaturamentoStyled>
   );

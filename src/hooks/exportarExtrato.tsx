@@ -17,7 +17,10 @@ const formatarMoeda = (valor: number) =>
 
 const extrairDataString = (dataIso: string) => {
   if (!dataIso) return "";
-  return dataIso.split("T")[0]; // Retorna "YYYY-MM-DD"
+
+  const [ano, mes, dia] = dataIso.split("T")[0].split("-");
+
+  return `${dia}/${mes}/${ano}`;
 };
 
 const formatarDataCabecalho = (dataString: string) => {
