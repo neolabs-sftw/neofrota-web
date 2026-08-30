@@ -1071,8 +1071,9 @@ function DetalhesCarro({ carro, motorista }: { carro: any; motorista: any }) {
       .toLowerCase()
       .replace(/\s+/g, "_"); // troca espaços por _
   };
+
   const imgCarro = carro
-    ? `https://iyqleanlhzcnndzuugkg.supabase.co/storage/v1/object/public/neofrotabkt/carros/${normalize(carro.marca)}/${normalize(carro.modelo)}/${normalize(carro.cor)}.png`
+    ? `https://cdn.neofrota.com/storage/v1/object/public/neofrotabkt/carros/${normalize(carro.marca)}/${normalize(carro.modelo)}/${normalize(carro.cor)}.png`
     : "";
 
   return (
@@ -2240,10 +2241,11 @@ function SalvarInformacoes({ v, vA }: { v: any; vA: any }) {
     try {
       // 1. Funções de segurança para limpar dados inválidos
       // Transforma 0 em undefined para que o filtro final o remova (evita erro em DateTime)
-      const checkZero = (val: any) => (val === 0 ? undefined : val);
+      const checkZero = (val: any) =>
+        val === 0 || val === "" ? undefined : val;
       // Força IDs a serem Strings (Apollo lida melhor) e remove se for 0
       const formatId = (val: any) =>
-        val && val !== 0 ? String(val) : undefined;
+        val && val !== 0 && val !== "" ? String(val) : undefined;
 
       // 2. Montagem segura do Payload
       const inputBruto = {
@@ -2310,24 +2312,26 @@ function SalvarInformacoes({ v, vA }: { v: any; vA: any }) {
             : vA.motorista || vA.motoristaId,
         ),
 
-        // 4. Passageiros com formatação segura de ID
         passageiros:
-          vA.passageiros?.length > 0
+          vA.passageiros !== undefined
             ? vA.passageiros.map((p: any) => {
-                if (typeof p !== "object") {
-                  return { id: String(p) };
-                }
+                const isExistente = !!p.passageiroId;
+
                 return {
-                  id: String(p.id || p.passageiroId),
+                  id: isExistente ? String(p.id) : undefined,
+
+                  passageiroId: isExistente
+                    ? String(p.passageiroId?.id || p.passageiroId)
+                    : String(p.id),
+
                   horarioEmbarqueReal: checkZero(p.horarioEmbarqueReal),
                   rateio: p.rateio ? parseFloat(p.rateio) : undefined,
-                  statusPresenca: p.statusPresenca || undefined,
+                  statusPresenca: p.statusPresenca || "Agendado",
                 };
               })
             : undefined,
       };
 
-      // 5. Limpeza Final (agora o checkZero e formatId já cuidaram dos 0s)
       const cleanInput = Object.fromEntries(
         Object.entries(inputBruto).filter(
           ([_, value]) => value !== undefined && value !== null,

@@ -1012,7 +1012,7 @@ function DetalhesCarro({ carro, motorista }: { carro: any; motorista: any }) {
       .replace(/\s+/g, "_"); // troca espaços por _
   };
   const imgCarro = carro
-    ? `https://iyqleanlhzcnndzuugkg.supabase.co/storage/v1/object/public/neofrotabkt/carros/${normalize(carro.marca)}/${normalize(carro.modelo)}/${normalize(carro.cor)}.png`
+    ? `https://cdn.neofrota.com/storage/v1/object/public/neofrotabkt/carros/${normalize(carro.marca)}/${normalize(carro.modelo)}/${normalize(carro.cor)}.png`
     : "";
 
   return (
@@ -2180,12 +2180,11 @@ function SalvarInformacoes({ v, vA }: { v: any; vA: any }) {
     try {
       // 1. Funções de segurança para limpar dados inválidos
       // Transforma 0 em undefined para que o filtro final o remova (evita erro em DateTime)
-      const checkZero = (val: any) => (val === 0 ? undefined : val);
+      const checkZero = (val: any) =>
+        val === 0 || val === "" ? undefined : val;
       // Força IDs a serem Strings (Apollo lida melhor) e remove se for 0
       const formatId = (val: any) =>
-        val && val !== 0 ? String(val) : undefined;
-
-      const checkEmpty = (val: any) => (val === "" ? undefined : val);
+        val && val !== 0 && val !== "" ? String(val) : undefined;
 
       // 2. Montagem segura do Payload
       const inputBruto = {
@@ -2193,15 +2192,12 @@ function SalvarInformacoes({ v, vA }: { v: any; vA: any }) {
         origem: vA.origem,
         destino: vA.destino,
 
-
         // Datas protegidas contra o '0' do useState
-      dataHoraProgramado: checkEmpty(checkZero(vA.dataHoraProgramado)),
-        dataHoraConclusao: checkEmpty(checkZero(vA.dataHoraConclusao)),
+        dataHoraProgramado: checkZero(vA.dataHoraProgramado),
+        dataHoraConclusao: checkZero(vA.dataHoraConclusao),
         dataHoraCriacao: new Date().toISOString(),
         qntTempoParado:
-          vA.qntTempoParado === null || vA.qntTempoParado === ""
-            ? null
-            : Number(vA.qntTempoParado),
+          vA.qntTempoParado === null ? null : Number(vA.qntTempoParado),
 
         // Valores numéricos
         valorViagem: vA.valorViagem ? parseFloat(vA.valorViagem) : undefined,
@@ -2239,13 +2235,15 @@ function SalvarInformacoes({ v, vA }: { v: any; vA: any }) {
         unidadeClienteId: formatId(
           vA.unidadeClienteId || vA.unidadeCliente?.id,
         ),
-        modeloFixoId: formatId(vA.modeloFixoId || vA.modeloFixo?.id),
+        modeloFixoId: null,
+        rotaId: formatId(vA.rota || vA.rotaId || vA.rota?.id),
+        solicitanteId: formatId(
+          vA.solicitante || vA.solicitanteId || vA.solicitante?.id,
+        ),
         adminUsuarioId: adminLogado?.id || 0,
         carroId: formatId(vA.carroId || vA.carro?.id),
-        solicitanteId: null,
         operadoraId: formatId(vA.operadoraId || vA.operadora?.id),
-        modeloTurnoId: formatId(vA.modeloTurnoId || vA.modeloTurno?.id),
-        rotaId: null,
+        modeloTurnoId: null,
 
         motoristaId: formatId(
           typeof vA.motorista === "object"
@@ -2253,24 +2251,26 @@ function SalvarInformacoes({ v, vA }: { v: any; vA: any }) {
             : vA.motorista || vA.motoristaId,
         ),
 
-        // 4. Passageiros com formatação segura de ID
         passageiros:
-          vA.passageiros?.length > 0
+          vA.passageiros !== undefined
             ? vA.passageiros.map((p: any) => {
-                if (typeof p !== "object") {
-                  return { id: String(p) };
-                }
+                const isExistente = !!p.passageiroId;
+
                 return {
-                  id: String(p.id || p.passageiroId),
+                  id: isExistente ? String(p.id) : undefined,
+
+                  passageiroId: isExistente
+                    ? String(p.passageiroId?.id || p.passageiroId)
+                    : String(p.id),
+
                   horarioEmbarqueReal: checkZero(p.horarioEmbarqueReal),
                   rateio: p.rateio ? parseFloat(p.rateio) : undefined,
-                  statusPresenca: p.statusPresenca || undefined,
+                  statusPresenca: p.statusPresenca || "Agendado",
                 };
               })
             : undefined,
       };
 
-      // 5. Limpeza Final (agora o checkZero e formatId já cuidaram dos 0s)
       const cleanInput = Object.fromEntries(
         Object.entries(inputBruto).filter(
           ([_, value]) => value !== undefined && value !== null,
@@ -2291,7 +2291,40 @@ function SalvarInformacoes({ v, vA }: { v: any; vA: any }) {
 
   const cancelarVoucher = async () => {
     try {
-      const resultado = await editar({id: vA.id,  status: "Cancelado" });
+      const resultado = await editar({
+        id: String(vA.id),
+        status: "Cancelado",
+      });
+      console.log("Voucher editado com sucesso!", resultado);
+      navigate(-1);
+    } catch (error) {
+      console.error("Erro ao editar voucher:", error);
+      alert("Erro ao editar voucher");
+    }
+  };
+
+  const redefinirVoucher = async () => {
+    try {
+      const resultado = await editar({
+        id: String(vA.id),
+        status: "Aberto",
+        assinatura: null,
+        dataHoraConclusao: null,
+        passageiros:
+          vA.passageiros?.length > 0
+            ? vA.passageiros.map((p: any) => {
+                if (typeof p !== "object") {
+                  return { id: String(p) };
+                }
+                return {
+                  id: String(p.id || p.passageiroId),
+                  horarioEmbarqueReal: null,
+                  rateio: null,
+                  statusPresenca: "Agendado",
+                };
+              })
+            : undefined,
+      });
       console.log("Voucher editado com sucesso!", resultado);
       navigate(-1);
     } catch (error) {
@@ -2350,7 +2383,7 @@ function SalvarInformacoes({ v, vA }: { v: any; vA: any }) {
         <BtnVouchers $bg={Cor.atencao} onClick={cancelarVoucher}>
           <p>Cancelar</p>
         </BtnVouchers>
-        <BtnVouchers $bg={Cor.ativo}>
+        <BtnVouchers $bg={Cor.ativo} onClick={redefinirVoucher}>
           <p>Redefinir</p>
         </BtnVouchers>
         <BtnVouchers $bg={Cor.secundaria}>Fechar</BtnVouchers>
@@ -2372,6 +2405,7 @@ function SalvarInformacoes({ v, vA }: { v: any; vA: any }) {
     </div>
   );
 }
+
 
 interface BtnVouchers {
   $bg: string;

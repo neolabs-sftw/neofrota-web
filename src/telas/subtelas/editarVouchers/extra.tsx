@@ -33,6 +33,8 @@ export default function EditarVoucherExtra() {
   const [observacao, setObservacao] = useState<any>("");
   const [observacaoMotorista, setObservacaoMotorista] = useState<any>("");
   const [carregandoEmpresa, setCarregandoEmpresa] = useState<boolean>(false);
+  const [origem, setOrigem] = useState("");
+  const [destino, setDestino] = useState("");
   const [passageirosVoucher, setPassageirosVoucher] = useState<any[]>([]);
   const [natureza, setNatureza] = useState("");
   const [tipo, setTipo] = useState("");
@@ -113,6 +115,8 @@ export default function EditarVoucherExtra() {
     observacao: observacao,
     observacaoMotorista: observacaoMotorista,
     natureza: natureza,
+    origem: origem,
+    destino: destino,
     tipoCorrida: tipo,
     passageiros: passageirosVoucher,
     valorViagem: valorViagem,
@@ -172,6 +176,10 @@ export default function EditarVoucherExtra() {
         setTipo={setTipo}
         setNatureza={setNatureza}
         setCarregandoEmpresa={setCarregandoEmpresa}
+        setValorViagem={setValorViagem}
+        setValorViagemRepasse={setValorViagemRepasse}
+        setOrigem={setOrigem}
+        setDestino={setDestino}
       />
       <DetalhesDoVoucher
         motorista={motorista}
@@ -230,6 +238,10 @@ function DadosGerais({
   setTipo,
   setNatureza,
   setCarregandoEmpresa,
+  setValorViagem,
+  setValorViagemRepasse,
+  setOrigem,
+  setDestino
 }: {
   empresaCliente: any;
   unidadeCliente: any;
@@ -244,6 +256,10 @@ function DadosGerais({
   setTipo: any;
   setNatureza: any;
   setCarregandoEmpresa: any;
+  setValorViagem: any;
+  setValorViagemRepasse: any;
+  setOrigem: any;
+  setDestino: any;
 }) {
   const Cor = useTema().Cor;
 
@@ -252,6 +268,20 @@ function DadosGerais({
   const { listaClientes: listaClientesTotal } = useListaClientes(operId || "0");
   const { solicitantes } = useSolicitante(empresaCliente);
   const { listaRotasExtras } = useRotasExtas(empresaCliente);
+
+  const [categoria, setCategoria] = useState<any>("");
+
+  const rotaSelecionada = listaRotasExtras?.find(
+    (r: any) => String(r.id) === String(rota),
+  );
+
+  useEffect(() => {
+    setCategoria("");
+    setValorViagem(0);
+    setValorViagemRepasse(0);
+    setOrigem(tipo === "Entrada" ? rotaSelecionada?.origem || "" : rotaSelecionada?.destino || "");
+    setDestino(tipo === "Entrada" ? rotaSelecionada?.destino || "" : rotaSelecionada?.origem || "");
+  }, [rota]);
 
   const listaClientes = listaClientesTotal?.filter(
     (c: any) => c.statusCliente === true,
@@ -264,6 +294,20 @@ function DadosGerais({
   const listaUnidades = listaUnidadesTotal?.filter(
     (u: any) => u.statusUnidadeCliente === true,
   );
+
+  useEffect(() => {
+    if (rotaSelecionada && categoria) {
+      const itemValor = rotaSelecionada.rotaValor?.find(
+        (v: any) => v.categoria === categoria,
+      );
+
+      setValorViagem(itemValor?.valorViagem ?? 0);
+      setValorViagemRepasse(itemValor?.valorViagemRepasse ?? 0);
+    } else {
+      setValorViagem(0);
+      setValorViagemRepasse(0);
+    }
+  }, [categoria, rotaSelecionada]);
 
   useEffect(() => {
     setCarregandoEmpresa(loading);
@@ -450,7 +494,7 @@ function DadosGerais({
           alignItems: "center",
         }}
       >
-        <div style={{ display: "flex", flexDirection: "column", width: "24%" }}>
+        <div style={{ display: "flex", flexDirection: "column", width: "19%" }}>
           <p
             style={{
               fontSize: 14,
@@ -507,7 +551,7 @@ function DadosGerais({
             </select>
           </div>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", width: "24%" }}>
+        <div style={{ display: "flex", flexDirection: "column", width: "19%" }}>
           <p
             style={{
               fontSize: 14,
@@ -564,7 +608,7 @@ function DadosGerais({
             </select>
           </div>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", width: "24%" }}>
+        <div style={{ display: "flex", flexDirection: "column", width: "25%" }}>
           <p
             style={{
               fontSize: 14,
@@ -584,8 +628,6 @@ function DadosGerais({
             }}
           >
             <select
-              name=""
-              id=""
               style={{
                 outline: "none",
                 border: "none",
@@ -597,30 +639,61 @@ function DadosGerais({
               value={rota}
             >
               <option
-                value={""}
+                value=""
                 style={{ backgroundColor: Cor.base2, color: Cor.texto2 + 70 }}
               >
-                Selecione o Solicitante
+                Selecione a rota
               </option>
-              {listaRotasExtras?.map((r: any) => {
-                return (
-                  <option
-                    value={r?.id}
-                    key={r?.id}
-                    style={{
-                      backgroundColor: Cor.base2,
-                      padding: 15,
-                      margin: 10,
-                    }}
-                  >
-                    {r?.origem} X {r?.destino}
-                  </option>
-                );
-              })}
+              {listaRotasExtras?.map((r: any) => (
+                <option value={r?.id} key={r?.id}  style={{ backgroundColor: Cor.base2, color: Cor.texto2 }}>
+                  {r?.origem} X {r?.destino}
+                </option>
+              ))}
             </select>
           </div>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", width: "24%" }}>
+
+        <div style={{ display: "flex", flexDirection: "column", width: "15%" }}>
+          <p
+            style={{
+              fontSize: 14,
+              color: Cor.textoExtra + 90,
+              fontWeight: "bold",
+              margin: 5,
+            }}
+          >
+            Categoria:
+          </p>
+          <div
+            style={{
+              width: "100%",
+              border: `1px solid ${Cor.texto2 + 50}`,
+              padding: 10,
+              borderRadius: 14,
+            }}
+          >
+            <select
+              style={{
+                outline: "none",
+                border: "none",
+                width: "100%",
+                backgroundColor: "transparent",
+                color: Cor.texto1,
+              }}
+              onChange={(e) => setCategoria(e.target.value)}
+              value={categoria}
+              disabled={!rota}
+            >
+              <option value=""  style={{ backgroundColor: Cor.base2, color: Cor.texto2 + 70 }}>Categoria</option>
+              {rotaSelecionada?.rotaValor?.map((rv: any) => (
+                <option value={rv.categoria} key={rv.id}  style={{ backgroundColor: Cor.base2, color: Cor.texto2 }}>
+                  {rv.categoria}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", width: "19%" }}>
           <p
             style={{
               fontSize: 14,
@@ -1072,7 +1145,7 @@ function DetalhesCarro({ carro, motorista }: { carro: any; motorista: any }) {
       .replace(/\s+/g, "_"); // troca espaços por _
   };
   const imgCarro = carro
-    ? `https://iyqleanlhzcnndzuugkg.supabase.co/storage/v1/object/public/neofrotabkt/carros/${normalize(carro.marca)}/${normalize(carro.modelo)}/${normalize(carro.cor)}.png`
+    ? `https://cdn.neofrota.com/storage/v1/object/public/neofrotabkt/carros/${normalize(carro.marca)}/${normalize(carro.modelo)}/${normalize(carro.cor)}.png`
     : "";
 
   return (
@@ -2311,24 +2384,26 @@ function SalvarInformacoes({ v, vA }: { v: any; vA: any }) {
             : vA.motorista || vA.motoristaId,
         ),
 
-        // 4. Passageiros com formatação segura de ID
         passageiros:
-          vA.passageiros?.length > 0
+          vA.passageiros !== undefined
             ? vA.passageiros.map((p: any) => {
-                if (typeof p !== "object") {
-                  return { id: String(p) };
-                }
+                const isExistente = !!p.passageiroId;
+
                 return {
-                  id: String(p.id || p.passageiroId),
+                  id: isExistente ? String(p.id) : undefined,
+
+                  passageiroId: isExistente
+                    ? String(p.passageiroId?.id || p.passageiroId)
+                    : String(p.id),
+
                   horarioEmbarqueReal: checkZero(p.horarioEmbarqueReal),
                   rateio: p.rateio ? parseFloat(p.rateio) : undefined,
-                  statusPresenca: p.statusPresenca || undefined,
+                  statusPresenca: p.statusPresenca || "Agendado",
                 };
               })
             : undefined,
       };
 
-      // 5. Limpeza Final (agora o checkZero e formatId já cuidaram dos 0s)
       const cleanInput = Object.fromEntries(
         Object.entries(inputBruto).filter(
           ([_, value]) => value !== undefined && value !== null,

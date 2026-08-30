@@ -85,9 +85,7 @@ function ModalPreviewVoucher({
 }) {
   const Cor = useTema().Cor;
   const navigate = useNavigate();
-
-  console.log("ModalPreviewVoucher v", v);
-
+  
   const admin = useAdminLogado();
 
   const { voucherExtraId, loading: loadingExtra } = useVoucherExtraId(

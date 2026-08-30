@@ -19,17 +19,10 @@ type RouteParams = {
   token: string;
 };
 
-//FORMATO DO PAYLOAD A SER CONVERTIDO EM JWT:
-//{
-//   "motoristaId": 66,
-//   "dataInicio": "2026-08-01",
-//   "dataFim": "2026-08-31"
-// }
-
 export default function BaixarPDFExtradoMotorista() {
   const { token } = useParams<RouteParams>();
   const Cor = useTema().Cor;
-  const pdfGeradoRef = useRef(false); // Flag para garantir que o PDF seja baixado apenas uma vez
+  const pdfGeradoRef = useRef(false);
 
   if (!token) {
     return (
