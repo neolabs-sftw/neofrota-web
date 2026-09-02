@@ -47,12 +47,6 @@ export default function EditarVoucherTurno() {
 
   const [valorPedagio, setValorPedagio] = useState("");
 
-  const { listaPedagios } = usePedagios(String(adminLogado?.operadora?.id));
-
-  const valorPedagioReal = listaPedagios?.find(
-    (p: any) => p.id === valorPedagio,
-  );
-
   useEffect(() => {
     if (!voucherFixoId) return;
 
@@ -123,7 +117,7 @@ export default function EditarVoucherTurno() {
     valorDeslocamentoRepasse: valorDeslocamentoRepasse,
     valorHoraParada: valorHoraParada,
     valorHoraParadaRepasse: valorHoraParadaRepasse,
-    valorPedagio: valorPedagioReal?.valor || 0,
+    valorPedagio: valorPedagio || 0,
     qntTempoParado: qntTempoParado,
   };
 
@@ -1801,10 +1795,6 @@ function ValoresFixo({
 
   const { listaPedagios } = usePedagios(String(operadoraId));
 
-  const valorPedagio = listaPedagios.filter((p: any) => p.id === pedagio);
-
-  const pedagioReal = valorPedagio[0]?.valor || 0;
-
   return (
     <div
       style={{
@@ -1887,7 +1877,7 @@ function ValoresFixo({
                   }}
                   value={
                     Number(valorViagem || 0) +
-                    Number(pedagioReal || 0) +
+                    Number(pedagio || 0) +
                     Number(valorDeslocamento || 0) +
                     Number(valorHoraParada || 0) * Number(qntTempoParado || 0)
                   }
@@ -1922,7 +1912,7 @@ function ValoresFixo({
                   }}
                   value={
                     Number(valorViagemRepasse || 0) +
-                    Number(pedagioReal || 0) +
+                    Number(pedagio|| 0) +
                     Number(valorDeslocamentoRepasse || 0) +
                     Number(valorHoraParadaRepasse || 0) *
                       Number(qntTempoParado || 0)
@@ -2207,7 +2197,14 @@ function ValoresFixo({
             </div>
           </div>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", width: "10%" }}>
+         <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            width: "10%",
+            gap: 5,
+          }}
+        >
           <p
             style={{
               fontSize: 14,
@@ -2218,11 +2215,12 @@ function ValoresFixo({
           >
             Pedágio:
           </p>
+
           <div
             style={{
               width: "100%",
               border: `1px solid ${Cor.texto2 + 50}`,
-              padding: 10,
+              padding: 5,
               borderRadius: 14,
             }}
           >
@@ -2234,15 +2232,20 @@ function ValoresFixo({
                 backgroundColor: "transparent",
                 color: Cor.texto1,
               }}
-              value={pedagio || ""}
+              value={pedagio !== undefined && pedagio !== null ? pedagio : ""}
               onChange={(e) => setPedagio(e.target.value)}
             >
-              <option value="">Selecione</option>
+              <option
+                value={0}
+                style={{ backgroundColor: Cor.base, color: Cor.texto1 }}
+              >
+                Sem Pedágio
+              </option>
               {listaPedagios.map((p: any) => {
                 return (
                   <option
-                    style={{ backgroundColor: Cor.base }}
-                    value={p.id}
+                    style={{ backgroundColor: Cor.base, color: Cor.texto1 }}
+                    value={p.valor}
                     key={p.id}
                   >
                     {p.nome}
@@ -2250,6 +2253,42 @@ function ValoresFixo({
                 );
               })}
             </select>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              width: "100%",
+              border: `1px solid ${Cor.texto2 + 50}`,
+              padding: 5,
+              borderRadius: 14,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+            >
+              <span style={{ fontSize: 14, color: Cor.texto1 }}>R$</span>
+              <input
+                type="number"
+                placeholder="0,00"
+                style={{
+                  width: "100%",
+                  border: "none",
+                  outline: "none",
+                  color: Cor.texto1,
+                  fontSize: 14,
+                  backgroundColor: "transparent",
+                }}
+                // 3. MOSTRA O VALOR NO INPUT
+                value={pedagio || ""}
+                disabled
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -2325,14 +2364,12 @@ function SalvarInformacoes({ v, vA }: { v: any; vA: any }) {
           vA.unidadeClienteId || vA.unidadeCliente?.id,
         ),
         modeloFixoId: null,
-        rotaId: formatId(vA.rota || vA.rotaId || vA.rota?.id),
-        solicitanteId: formatId(
-          vA.solicitante || vA.solicitanteId || vA.solicitante?.id,
-        ),
+        modeloTurnoId: formatId(vA.modeloTurnoId || vA.modeloTurno?.id),
+        rotaId: null,
+        solicitanteId: formatId(vA.solicitanteId || vA.solicitante?.id),
         adminUsuarioId: adminLogado?.id || 0,
         carroId: formatId(vA.carroId || vA.carro?.id),
         operadoraId: formatId(vA.operadoraId || vA.operadora?.id),
-        modeloTurnoId: null,
 
         motoristaId: formatId(
           typeof vA.motorista === "object"

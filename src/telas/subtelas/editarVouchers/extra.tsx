@@ -49,13 +49,7 @@ export default function EditarVoucherExtra() {
 
   const [qntTempoParado, setQntTempoParado] = useState(0);
 
-  const [valorPedagio, setValorPedagio] = useState("");
-
-  const { listaPedagios } = usePedagios(String(adminLogado?.operadora?.id));
-
-  const valorPedagioReal = listaPedagios?.find(
-    (p: any) => p.id === valorPedagio,
-  );
+  const [valorPedagio, setValorPedagio] = useState(0);
 
   useEffect(() => {
     if (!voucherExtraId) return;
@@ -127,7 +121,7 @@ export default function EditarVoucherExtra() {
     valorDeslocamentoRepasse: valorDeslocamentoRepasse,
     valorHoraParada: valorHoraParada,
     valorHoraParadaRepasse: valorHoraParadaRepasse,
-    valorPedagio: valorPedagioReal?.valor || 0,
+    valorPedagio: valorPedagio || 0,
     qntTempoParado: qntTempoParado,
   };
 
@@ -1872,16 +1866,6 @@ function ValoresFixo({
 
   const { listaPedagios } = usePedagios(String(operadoraId));
 
-  // Usa find (melhor para 1 item) e garante que ambos são String na comparação
-  const pedagioSelecionado = listaPedagios.find(
-    (p: any) => String(p.id) === String(pedagio),
-  );
-
-  // Extrai o valor em Reais (R$) para usar nas somas
-  const custoPedagio = pedagioSelecionado?.valor || 0;
-
-  console.log("lista Pedagios", listaPedagios);
-
   return (
     <div
       style={{
@@ -1964,7 +1948,7 @@ function ValoresFixo({
                   }}
                   value={
                     Number(valorViagem || 0) +
-                    Number(custoPedagio || 0) +
+                    Number(pedagio || 0) +
                     Number(valorDeslocamento || 0) +
                     Number(valorHoraParada || 0) * Number(qntTempoParado || 0)
                   }
@@ -1999,7 +1983,7 @@ function ValoresFixo({
                   }}
                   value={
                     Number(valorViagemRepasse || 0) +
-                    Number(custoPedagio || 0) +
+                    Number(pedagio || 0) +
                     Number(valorDeslocamentoRepasse || 0) +
                     Number(valorHoraParadaRepasse || 0) *
                       Number(qntTempoParado || 0)
@@ -2284,7 +2268,14 @@ function ValoresFixo({
             </div>
           </div>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", width: "10%" }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            width: "10%",
+            gap: 5,
+          }}
+        >
           <p
             style={{
               fontSize: 14,
@@ -2295,11 +2286,12 @@ function ValoresFixo({
           >
             Pedágio:
           </p>
+
           <div
             style={{
               width: "100%",
               border: `1px solid ${Cor.texto2 + 50}`,
-              padding: 10,
+              padding: 5,
               borderRadius: 14,
             }}
           >
@@ -2311,25 +2303,20 @@ function ValoresFixo({
                 backgroundColor: "transparent",
                 color: Cor.texto1,
               }}
-              value={pedagio?.id || ""}
-              onChange={(e) => {
-                const idSelecionado = e.target.value;
-
-                // 2. Busca na listaPedagios qual é o objeto completo referente a esse ID
-                const objetoCompleto = listaPedagios.find(
-                  (p: any) => String(p.id) === String(idSelecionado),
-                );
-
-                // 3. Envia o objeto completo de volta para o componente Pai
-                setPedagio(objetoCompleto || null);
-              }}
+              value={pedagio !== undefined && pedagio !== null ? pedagio : ""}
+              onChange={(e) => setPedagio(e.target.value)}
             >
-              <option value="0">Selecione</option>
+              <option
+                value={0}
+                style={{ backgroundColor: Cor.base, color: Cor.texto1 }}
+              >
+                Sem Pedágio
+              </option>
               {listaPedagios.map((p: any) => {
                 return (
                   <option
-                    style={{ backgroundColor: Cor.base }}
-                    value={p.id}
+                    style={{ backgroundColor: Cor.base, color: Cor.texto1 }}
+                    value={p.valor}
                     key={p.id}
                   >
                     {p.nome}
@@ -2337,6 +2324,42 @@ function ValoresFixo({
                 );
               })}
             </select>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              width: "100%",
+              border: `1px solid ${Cor.texto2 + 50}`,
+              padding: 5,
+              borderRadius: 14,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+            >
+              <span style={{ fontSize: 14, color: Cor.texto1 }}>R$</span>
+              <input
+                type="number"
+                placeholder="0,00"
+                style={{
+                  width: "100%",
+                  border: "none",
+                  outline: "none",
+                  color: Cor.texto1,
+                  fontSize: 14,
+                  backgroundColor: "transparent",
+                }}
+                // 3. MOSTRA O VALOR NO INPUT
+                value={pedagio || ""}
+                disabled
+              />
+            </div>
           </div>
         </div>
       </div>

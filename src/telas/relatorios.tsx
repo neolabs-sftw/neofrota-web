@@ -215,6 +215,19 @@ function RelatorioConteudo() {
   const prepararDadosParaExcel = (vouchers: VoucherExportacao[]) => {
     return vouchers.map((voucher) => {
       // 1. Montamos um objeto base com os dados que vêm antes dos passageiros
+
+      const totalCobranca =
+        (voucher.valorViagem || 0) +
+        (voucher.valorDeslocamento || 0) +
+        (voucher.valorPedagio || 0) +
+        (voucher.qntTempoParado || 0) * (voucher.valorHoraParada || 0);
+
+      const totalRepasse =
+        (voucher.valorViagemRepasse || 0) +
+        (voucher.valorDeslocamentoRepasse || 0) +
+        (voucher.valorPedagio || 0) +
+        (voucher.qntTempoParado || 0) * (voucher.valorHoraParadaRepasse || 0);
+        
       const linhaExcel: any = {
         ID: voucher.id,
         Observação: voucher.observacao,
@@ -225,15 +238,16 @@ function RelatorioConteudo() {
         "Hora Conclusão": extrairHora(voucher.dataHoraConclusao),
         "Empresa Cliente": voucher.empresaCliente?.nome || "-",
         "Unidade Cliente": voucher.unidadeCliente?.nome || "-",
-        Solicitante: voucher.solicitante?.nome || "-",
         Motorista: voucher.motorista?.nome || "Sem motorista",
         "Observação Motorista": voucher.observacaoMotorista || "-",
         "Veículo (Placa)": voucher.carro?.placa || "-",
         Origem: voucher.rota?.origem || voucher.origem || "-",
         Destino: voucher.rota?.destino || voucher.destino || "-",
         Tributação: voucher.rota?.tributacao || "-",
-        "Cod. Fixo": voucher.modeloFixo?.nomeModelo || "-",
-        "Cod.Turno": voucher.modeloTurno?.nomeModelo || "_",
+        "Cod. Fixo": voucher.natureza === "Fixo" ? voucher.modeloFixo?.nomeModelo || "-" : "-",
+        "Cod.Turno": voucher.natureza === "Turno" ? voucher.modeloTurno?.nomeModelo || "_" : "-",
+        "Rota": voucher.natureza === "Extra" ? `Rota ID: ${voucher.rota.id} - ${voucher.rota.origem} X ${voucher.rota.destino}` : "-",
+        Solicitante: voucher.natureza === "Extra" ? voucher.solicitante?.nome || "-" : "-",
         Natureza: voucher.natureza,
         "Tipo de Corrida": voucher.tipoCorrida,
         "Valor Viagem": voucher.valorViagem || 0,
@@ -246,42 +260,68 @@ function RelatorioConteudo() {
         "Valor Hora Parada Repasse":
           voucher.valorHoraParadaRepasse * voucher.qntTempoParado || 0,
         "Valor Pedágio": voucher.valorPedagio || 0,
-        "Total Cobrança":
-          (voucher.valorViagem || 0) +
-          (voucher.valorDeslocamento || 0) +
-          (voucher.valorPedagio || 0) +
-          (voucher.qntTempoParado || 0) * (voucher.valorHoraParada || 0),
-        "Total Repasse":
-          (voucher.valorViagemRepasse || 0) +
-          (voucher.valorDeslocamentoRepasse || 0) +
-          (voucher.valorPedagio || 0) +
-          (voucher.qntTempoParado || 0) * (voucher.valorHoraParadaRepasse || 0),
+        "Total Cobrança": totalCobranca,
+        "Total Repasse": totalRepasse,
       };
 
       // 2. Lógica dinâmica para criar as colunas "Passageiro 1", "Passageiro 2", etc.
+      // if (voucher.passageiros && voucher.passageiros.length > 0) {
+      //   voucher.passageiros.forEach((p, index) => {
+      //     // Extraímos as informações garantindo que não quebre se vier nulo
+      //     const nome = p.passageiroId?.nome || "Sem nome";
+      //     const status = p.statusPresenca || "Sem status";
+      //     const centroCusto =
+      //       p.passageiroId?.centroCustoClienteId?.nome || "Sem Centro de Custo";
+      //     const centroCustoCod =
+      //       p.passageiroId?.centroCustoClienteId?.codigo || "--";
+      //     const rateio = p.rateio;
+      //     // Adicionamos uma nova chave ao objeto no formato "Passageiro X"
+      //     // E concatenamos os valores na mesma string
+      //     // linhaExcel[`Passageiro ${index + 1}`] =
+      //     //   `${nome}, ${status}, ${centroCusto}, ${rateio}`;
+      //     linhaExcel[`Passageiro ${index + 1}`] = `${nome}`;
+      //     linhaExcel[`Passageiro ${index + 1} Status`] = `${status}`;
+      //     linhaExcel[`Passageiro ${index + 1} CC`] =
+      //       `${centroCusto} - ${centroCustoCod}`;
+      //     linhaExcel[`Passageiro ${index + 1} Rateio`] =
+      //       typeof rateio === "number" ? rateio : parseFloat(rateio) || 0;
+      //   });
+      // } else {
+      //   // Se não houver nenhum passageiro, garantimos que a coluna 1 exista com um aviso
+      //   linhaExcel["Passageiro 1"] = "Sem passageiros";
+      // }
+
       if (voucher.passageiros && voucher.passageiros.length > 0) {
+        
+        // Identifica a quantidade de passageiros válidos para o rateio
+        const totalConsideradosNoRateio = voucher.passageiros.filter(
+          (p: any) =>
+            p.statusPresenca === "Presente" || p.statusPresenca === "Agendado",
+        ).length;
+
         voucher.passageiros.forEach((p, index) => {
-          // Extraímos as informações garantindo que não quebre se vier nulo
           const nome = p.passageiroId?.nome || "Sem nome";
           const status = p.statusPresenca || "Sem status";
-          const centroCusto =
-            p.passageiroId?.centroCustoClienteId?.nome || "Sem Centro de Custo";
-          const centroCustoCod =
-            p.passageiroId?.centroCustoClienteId?.codigo || "--";
-          const rateio = p.rateio;
-          // Adicionamos uma nova chave ao objeto no formato "Passageiro X"
-          // E concatenamos os valores na mesma string
-          // linhaExcel[`Passageiro ${index + 1}`] =
-          //   `${nome}, ${status}, ${centroCusto}, ${rateio}`;
+          const centroCusto = p.passageiroId?.centroCustoClienteId?.nome || "Sem Centro de Custo";
+          const centroCustoCod = p.passageiroId?.centroCustoClienteId?.codigo || "--";
+
+          let custoPassageiro: any = 0;
+          const participaDaDivisao = status === "Presente" || status === "Agendado";
+
+          if (participaDaDivisao && totalConsideradosNoRateio > 0) {
+             custoPassageiro = {
+               f: `${totalCobranca}/${totalConsideradosNoRateio}`,
+               t: "n",
+             };
+          }
+
+          // Mantendo as 4 colunas em sequência na mesma linha Excel
           linhaExcel[`Passageiro ${index + 1}`] = `${nome}`;
           linhaExcel[`Passageiro ${index + 1} Status`] = `${status}`;
-          linhaExcel[`Passageiro ${index + 1} CC`] =
-            `${centroCusto} - ${centroCustoCod}`;
-          linhaExcel[`Passageiro ${index + 1} Rateio`] =
-            typeof rateio === "number" ? rateio : parseFloat(rateio) || 0;
+          linhaExcel[`Passageiro ${index + 1} CC`] = `${centroCusto} - ${centroCustoCod}`;
+          linhaExcel[`Passageiro ${index + 1} Custo (Rateio)`] = custoPassageiro;
         });
       } else {
-        // Se não houver nenhum passageiro, garantimos que a coluna 1 exista com um aviso
         linhaExcel["Passageiro 1"] = "Sem passageiros";
       }
 
@@ -1561,7 +1601,7 @@ function ModalEditarMassa({
   const [valorViagemRepasse, setValorViagemRepasse] = useState<any>();
 
   const operId = useAdminLogado()?.operadora.id;
-  
+
   const { editar, loading } = useEditarVouchersEmMassa();
 
   const limparCampos = () => {
