@@ -907,6 +907,7 @@ function ValoresFixo({
                 color: Cor.texto1,
               }}
               value={valorPedagio || ""}
+              disabled
               onChange={(e) => setValorPedagio(e.target.value)}
             >
               <option value="">Selecione</option>

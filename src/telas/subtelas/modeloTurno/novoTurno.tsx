@@ -38,6 +38,8 @@ function NovoVoucherTurnoConteudo() {
     atob(`${TurnoId}`),
   );
 
+  console.log(mTurno, "mTurno");
+
   const [empresaCliente, setEmpresaCliente] = useState("");
   const [unidadeCliente, setUnidadeCliente] = useState("");
   const [nomeModelo, setNomeModelo] = useState("");
@@ -84,10 +86,8 @@ function NovoVoucherTurnoConteudo() {
       setValorHoraParada(mTurno?.valorHoraParada || 0);
       setValorHoraParadaRepasse(mTurno?.valorHoraParadaRepasse || 0);
 
-      // Correção Pedágio (pegando o ID)
-      setValorPedagio(mTurno.pedagio?.id || "");
+      setValorPedagio(mTurno.pedagio?.valor || "");
 
-      // Correção Passageiros (extraindo IDs do array de objetos)
       const passageirosAtual =
         mTurno?.passageirosTurno?.map((p: any) => {
           return p.passageiro;
@@ -2463,4 +2463,3 @@ function LinhaPassageiro({
     </>
   );
 }
-
