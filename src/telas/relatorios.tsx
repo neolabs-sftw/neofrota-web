@@ -231,7 +231,7 @@ function RelatorioConteudo() {
         "Veículo (Placa)": voucher.carro?.placa || "-",
         Origem: voucher.rota?.origem || voucher.origem || "-",
         Destino: voucher.rota?.destino || voucher.destino || "-",
-        "Tributação": voucher.rota?.tributacao || "-",
+        Tributação: voucher.rota?.tributacao || "-",
         "Cod. Fixo": voucher.modeloFixo?.nomeModelo || "-",
         "Cod.Turno": voucher.modeloTurno?.nomeModelo || "_",
         Natureza: voucher.natureza,
@@ -310,7 +310,7 @@ function RelatorioConteudo() {
         Solicitante: voucher.solicitante?.nome || "-",
         Origem: voucher.rota?.origem || voucher.origem || "-",
         Destino: voucher.rota?.destino || voucher.destino || "-",
-        "tributação": voucher.rota?.tributacao || "-",
+        tributação: voucher.rota?.tributacao || "-",
         Natureza: voucher.natureza,
         "Tipo de Corrida": voucher.tipoCorrida,
         Motorista: voucher.motorista?.nome || "Sem motorista",
@@ -382,25 +382,6 @@ function RelatorioConteudo() {
       });
     });
   };
-
-  // const ExportarPlanilha = async () => {
-  //     const { data } = await buscarDadosExportacao({
-  //       variables: { filtro },
-  //     });
-
-  //     if (data && data.vouchersFiltrados && data.vouchersFiltrados.length > 0) {
-  //       // 2. Transforma (achata) os dados para o formato do Excel
-  //       const dadosFormatados = prepararDadosParaExcel(data.vouchersFiltrados);
-
-  //       exportarPlanilhaFunc(
-  //         dadosFormatados,
-  //         `Relatorio_${nomeOperadora}_Vouchers_${formatarParaYMD(hoje)}`,
-  //         "xlsx",
-  //       );
-  //     } else {
-  //       alert("Nenhum dado encontrado para os filtros selecionados.");
-  //     }
-  //   };
 
   const ExportarPlanilha = async () => {
     const { data } = await buscarDadosExportacao({
@@ -1581,6 +1562,8 @@ function ModalEditarMassa({
 
   const operId = useAdminLogado()?.operadora.id;
 
+  const adminLogado = useAdminLogado();
+
   const { editar, loading } = useEditarVouchersEmMassa();
 
   const limparCampos = () => {
@@ -1600,7 +1583,7 @@ function ModalEditarMassa({
     setValorViagem("");
     setValorViagemRepasse("");
   };
-
+  
   const ajustarDataParaBackend = (dataString: any) => {
     if (!dataString) return undefined;
 
@@ -1618,12 +1601,25 @@ function ModalEditarMassa({
       return;
     }
 
+    function obterDataHoraBrasilia() {
+      const data = new Date();
+
+      // Calcula a diferença de -3 horas em milissegundos
+      const utc3Offset = -3 * 60 * 60 * 1000;
+      const dataBrasil = new Date(data.getTime() + utc3Offset);
+
+      // Converte para ISO, remove os milissegundos (opcional) e troca o Z pelo offset
+      return dataBrasil.toISOString().replace("Z", "-03:00");
+    }
+
     const edit = {
       natureza,
       status,
       tipoCorrida,
       motoristaId,
       dataHoraProgramado: ajustarDataParaBackend(dataHoraProgramado),
+      dataHoraCriacao: obterDataHoraBrasilia(),
+      // adminUsuarioId: adminLogado?.id,
       observacao,
       qntTempoParado,
       valorDeslocamento: valorDeslocamento

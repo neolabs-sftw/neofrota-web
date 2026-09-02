@@ -21,6 +21,8 @@ export default function EditarVoucherFixo() {
     atob(String(id)),
   );
 
+  console.log("voucherFixoId", voucherFixoId);
+
   const adminLogado = useAdminLogado();
 
   const [empresaCliente, setEmpresaCliente] = useState<any>(0);
@@ -32,6 +34,8 @@ export default function EditarVoucherFixo() {
   const [assinatura, setAssinatura] = useState<string>("");
   const [observacao, setObservacao] = useState<any>("");
   const [observacaoMotorista, setObservacaoMotorista] = useState<any>("");
+  const [origem, setOrigem] = useState<any>("");
+  const [destino, setDestino] = useState<any>("");
   const [carregandoEmpresa, setCarregandoEmpresa] = useState<boolean>(false);
   const [passageirosVoucher, setPassageirosVoucher] = useState<any[]>([]);
   const [natureza, setNatureza] = useState("");
@@ -47,11 +51,11 @@ export default function EditarVoucherFixo() {
 
   const [valorPedagio, setValorPedagio] = useState<any>();
 
-   const { listaPedagios } = usePedagios(String(adminLogado?.operadora?.id));
-  
-    const valorPedagioReal = listaPedagios?.find(
-      (p: any) => p.id === valorPedagio,
-    );
+  const { listaPedagios } = usePedagios(String(adminLogado?.operadora?.id));
+
+  const valorPedagioReal = listaPedagios?.find(
+    (p: any) => p.id === valorPedagio,
+  );
 
   useEffect(() => {
     if (!voucherFixoId) return;
@@ -67,6 +71,8 @@ export default function EditarVoucherFixo() {
     setNatureza(voucherFixoId?.natureza || "");
     setTipo(voucherFixoId?.tipoCorrida || "");
     setAssinatura(voucherFixoId?.assinatura || "");
+    setOrigem(voucherFixoId?.origem || "");
+    setDestino(voucherFixoId?.destino || "");
 
     if (voucherFixoId?.status === "Concluido") {
       setPassageirosVoucher(voucherFixoId.passageiros);
@@ -112,6 +118,8 @@ export default function EditarVoucherFixo() {
     observacaoMotorista: observacaoMotorista,
     natureza: natureza,
     tipoCorrida: tipo,
+    origem: origem,
+    destino: destino,
     passageiros: passageirosVoucher,
     valorViagem: valorViagem,
     valorViagemRepasse: valorViagemRepasse,
@@ -168,6 +176,10 @@ export default function EditarVoucherFixo() {
         setTipo={setTipo}
         setNatureza={setNatureza}
         setCarregandoEmpresa={setCarregandoEmpresa}
+        setOrigem={setOrigem}
+        setDestino={setDestino}
+        origem={origem}
+        destino={destino}
       />
       <DetalhesDoVoucher
         motorista={motorista}
@@ -224,6 +236,10 @@ function DadosGerais({
   setTipo,
   setNatureza,
   setCarregandoEmpresa,
+  setOrigem,
+  setDestino,
+  origem,
+  destino,
 }: {
   empresaCliente: any;
   unidadeCliente: any;
@@ -236,6 +252,10 @@ function DadosGerais({
   setTipo: any;
   setNatureza: any;
   setCarregandoEmpresa: any;
+  setOrigem: any;
+  setDestino: any;
+  origem: any;
+  destino: any;
 }) {
   const Cor = useTema().Cor;
 
@@ -301,12 +321,83 @@ function DadosGerais({
         </div>
         <div
           style={{
+            width: "78%",
             display: "flex",
             flexDirection: "row",
             justifyContent: "space-between",
-            gap: 35,
+            gap: 10,
           }}
         >
+          <div
+            style={{
+              width: "25%",
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <p
+              style={{
+                fontSize: 14,
+                color: Cor.textoFixo + 90,
+                fontWeight: "bold",
+                margin: 5,
+              }}
+            >
+              Origem
+            </p>
+            <input
+              placeholder="Origem"
+              value={origem}
+              onChange={(e) => setOrigem(e.target.value)}
+              type="text"
+              style={{
+                width: "100%",
+                color: Cor.texto1,
+                padding: 10,
+                borderRadius: 14,
+                border: `1px solid ${Cor.texto2 + 50}`,
+                outline: "none",
+                backgroundColor: "transparent",
+              }}
+            />
+          </div>
+          <div
+            style={{
+              width: "25%",
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <p
+              style={{
+                fontSize: 14,
+                color: Cor.textoFixo + 90,
+                fontWeight: "bold",
+                margin: 5,
+              }}
+            >
+              Destino
+            </p>
+             <input
+              placeholder="Destino"
+              value={destino}
+              onChange={(e) => setDestino(e.target.value)}
+              type="text"
+              style={{
+                width: "100%",
+                color: Cor.texto1,
+                padding: 10,
+                borderRadius: 14,
+                border: `1px solid ${Cor.texto2 + 50}`,
+                outline: "none",
+                backgroundColor: "transparent",
+              }}
+            />
+          </div>
           <div
             style={{
               width: 200,
@@ -752,8 +843,12 @@ function DetalhesDoVoucher({
                     width: "100%",
                     backgroundColor: "transparent",
                     color: Cor.texto1,
-                    opacity: 1,
+                    opacity:
+                      status === "Concluido" || status === "Cancelado"
+                        ? 0.5
+                        : 1,
                   }}
+                  disabled={status === "Concluido" || status === "Cancelado"}
                   onChange={(e) => {
                     const idSelecionado = e.target.value;
                     if (!idSelecionado) {
@@ -2405,7 +2500,6 @@ function SalvarInformacoes({ v, vA }: { v: any; vA: any }) {
     </div>
   );
 }
-
 
 interface BtnVouchers {
   $bg: string;

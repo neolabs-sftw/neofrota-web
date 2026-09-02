@@ -8,12 +8,11 @@ import { useEffect, useState } from "react";
 import { useMotorista } from "../../../hooks/useMotorista";
 import assPadrao from "../../../assets/image/not_sing.png";
 import { usePassageiros } from "../../../hooks/usePassageiros";
-import { useSolicitante } from "../../../hooks/useSolicitantes";
 import { useVoucherFixoId } from "../../../hooks/useVouchers";
 import { usePedagios } from "../../../hooks/usePedagios";
-import { useRotasExtas } from "../../../hooks/useRotasExtras";
 import styled from "styled-components";
 import { ModalSeletorPassageiro } from "../../../componentes/modalAdicionarPassageiros";
+import { useListaModelosTurnoPrev } from "../../../hooks/useModelosTurnos";
 
 export default function EditarVoucherTurno() {
   const { id } = useParams();
@@ -24,8 +23,7 @@ export default function EditarVoucherTurno() {
   const adminLogado = useAdminLogado();
   const [empresaCliente, setEmpresaCliente] = useState<any>(0);
   const [unidadeEmpresaCliente, setUnidadeEmpresaCliente] = useState<any>(0);
-  const [rota, setRota] = useState<any>(0);
-  const [solicitante, setSolicitante] = useState<any>(0);
+  const [modeloTurno, setModeloTurno] = useState<any>(0);
   const [motorista, setMotorista] = useState<any>(0);
   const [dataHoraProgramada, setDataHoraProgramada] = useState<any>(0);
   const [dataHoraFinalizcao, setDataHoraFinalizacao] = useState<any>(0);
@@ -36,6 +34,8 @@ export default function EditarVoucherTurno() {
   const [passageirosVoucher, setPassageirosVoucher] = useState<any[]>([]);
   const [natureza, setNatureza] = useState("");
   const [tipo, setTipo] = useState("");
+  const [origem, setOrigem] = useState<any>("");
+  const [destino, setDestino] = useState<any>("");
   const [valorViagem, setValorViagem] = useState(0);
   const [valorViagemRepasse, setValorViagemRepasse] = useState(0);
   const [valorDeslocamento, setValorDeslocamento] = useState(0);
@@ -58,8 +58,7 @@ export default function EditarVoucherTurno() {
 
     setEmpresaCliente(voucherFixoId?.empresaCliente?.id || 0);
     setUnidadeEmpresaCliente(voucherFixoId?.unidadeCliente?.id || 0);
-    setRota(voucherFixoId?.rota?.id || 0);
-    setSolicitante(voucherFixoId.solicitante?.id || 0);
+    setModeloTurno(voucherFixoId?.modeloTurno?.id || 0);
     setMotorista(voucherFixoId?.motorista || null);
     setDataHoraProgramada(voucherFixoId?.dataHoraProgramado || "");
     setDataHoraFinalizacao(voucherFixoId?.dataHoraConclusao || "");
@@ -68,6 +67,8 @@ export default function EditarVoucherTurno() {
     setNatureza(voucherFixoId?.natureza || "");
     setTipo(voucherFixoId?.tipoCorrida || "");
     setAssinatura(voucherFixoId?.assinatura || "");
+    setOrigem(voucherFixoId?.origem || "");
+    setDestino(voucherFixoId?.destino || "");
 
     if (voucherFixoId?.status === "Concluido") {
       setPassageirosVoucher(voucherFixoId.passageiros);
@@ -102,8 +103,7 @@ export default function EditarVoucherTurno() {
     ...voucherFixoId,
     empresaClienteId: empresaCliente,
     unidadeClienteId: unidadeEmpresaCliente,
-    rota: rota,
-    solicitante: solicitante,
+    modeloTurnoId: modeloTurno,
     motorista: motorista,
     dataHoraProgramado: dataHoraProgramada,
     dataHoraConclusao: dataHoraFinalizcao,
@@ -114,6 +114,8 @@ export default function EditarVoucherTurno() {
     observacaoMotorista: observacaoMotorista,
     natureza: natureza,
     tipoCorrida: tipo,
+    origem: origem,
+    destino: destino,
     passageiros: passageirosVoucher,
     valorViagem: valorViagem,
     valorViagemRepasse: valorViagemRepasse,
@@ -161,17 +163,19 @@ export default function EditarVoucherTurno() {
       <DadosGerais
         empresaCliente={empresaCliente}
         unidadeCliente={unidadeEmpresaCliente}
-        rota={rota}
-        solicitante={solicitante}
         tipo={tipo}
         natureza={natureza}
         setEmpresaCliente={setEmpresaCliente}
         setUnidadeEmpresaCliente={setUnidadeEmpresaCliente}
-        setRota={setRota}
-        setSolicitante={setSolicitante}
         setTipo={setTipo}
         setNatureza={setNatureza}
         setCarregandoEmpresa={setCarregandoEmpresa}
+        setOrigem={setOrigem}
+        setDestino={setDestino}
+        origem={origem}
+        destino={destino}
+        modeloTurno={modeloTurno}
+        setModeloTurno={setModeloTurno}
       />
       <DetalhesDoVoucher
         motorista={motorista}
@@ -219,39 +223,44 @@ export default function EditarVoucherTurno() {
 function DadosGerais({
   empresaCliente,
   unidadeCliente,
-  rota,
-  solicitante,
   tipo,
+  modeloTurno,
   natureza,
+  setModeloTurno,
   setEmpresaCliente,
   setUnidadeEmpresaCliente,
-  setRota,
-  setSolicitante,
   setTipo,
   setNatureza,
   setCarregandoEmpresa,
+  setOrigem,
+  setDestino,
+  origem,
+  destino,
 }: {
   empresaCliente: any;
   unidadeCliente: any;
-  rota: any;
-  solicitante: any;
   tipo: any;
   natureza: any;
+  modeloTurno: any;
+  setModeloTurno: any;
   setEmpresaCliente: any;
   setUnidadeEmpresaCliente: any;
-  setRota: any;
-  setSolicitante: any;
   setTipo: any;
   setNatureza: any;
   setCarregandoEmpresa: any;
+  setOrigem: any;
+  setDestino: any;
+  origem: any;
+  destino: any;
 }) {
   const Cor = useTema().Cor;
 
   const operId = useAdminLogado()?.operadora.id;
 
   const { listaClientes: listaClientesTotal } = useListaClientes(operId || "0");
-  const { solicitantes } = useSolicitante(empresaCliente);
-  const { listaRotasExtras } = useRotasExtas(empresaCliente);
+  const { listaModelosTurno } = useListaModelosTurnoPrev({
+    empresaClienteId: empresaCliente,
+  });
 
   const listaClientes = listaClientesTotal?.filter(
     (c: any) => c.statusCliente === true,
@@ -305,12 +314,83 @@ function DadosGerais({
         </div>
         <div
           style={{
+            width: "78%",
             display: "flex",
             flexDirection: "row",
             justifyContent: "space-between",
-            gap: 35,
+            gap: 10,
           }}
         >
+          <div
+            style={{
+              width: "25%",
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <p
+              style={{
+                fontSize: 14,
+                color: Cor.textoTurno + 90,
+                fontWeight: "bold",
+                margin: 5,
+              }}
+            >
+              Origem
+            </p>
+            <input
+              placeholder="Origem"
+              value={origem}
+              onChange={(e) => setOrigem(e.target.value)}
+              type="text"
+              style={{
+                width: "100%",
+                color: Cor.texto1,
+                padding: 10,
+                borderRadius: 14,
+                border: `1px solid ${Cor.texto2 + 50}`,
+                outline: "none",
+                backgroundColor: "transparent",
+              }}
+            />
+          </div>
+          <div
+            style={{
+              width: "25%",
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <p
+              style={{
+                fontSize: 14,
+                color: Cor.textoTurno + 90,
+                fontWeight: "bold",
+                margin: 5,
+              }}
+            >
+              Destino
+            </p>
+            <input
+              placeholder="Destino"
+              value={destino}
+              onChange={(e) => setDestino(e.target.value)}
+              type="text"
+              style={{
+                width: "100%",
+                color: Cor.texto1,
+                padding: 10,
+                borderRadius: 14,
+                border: `1px solid ${Cor.texto2 + 50}`,
+                outline: "none",
+                backgroundColor: "transparent",
+              }}
+            />
+          </div>
           <div
             style={{
               width: 200,
@@ -450,7 +530,7 @@ function DadosGerais({
           alignItems: "center",
         }}
       >
-        <div style={{ display: "flex", flexDirection: "column", width: "24%" }}>
+        <div style={{ display: "flex", flexDirection: "column", width: "32%" }}>
           <p
             style={{
               fontSize: 14,
@@ -507,7 +587,7 @@ function DadosGerais({
             </select>
           </div>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", width: "24%" }}>
+        <div style={{ display: "flex", flexDirection: "column", width: "32%" }}>
           <p
             style={{
               fontSize: 14,
@@ -564,7 +644,7 @@ function DadosGerais({
             </select>
           </div>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", width: "24%" }}>
+        <div style={{ display: "flex", flexDirection: "column", width: "32%" }}>
           <p
             style={{
               fontSize: 14,
@@ -573,7 +653,7 @@ function DadosGerais({
               margin: 5,
             }}
           >
-            Rota:
+            Cod. Turno:
           </p>
           <div
             style={{
@@ -593,16 +673,16 @@ function DadosGerais({
                 backgroundColor: "transparent",
                 color: Cor.texto1,
               }}
-              onChange={(e) => setRota(e.target.value)}
-              value={rota}
+              onChange={(e) => setModeloTurno(e.target.value)}
+              value={modeloTurno}
             >
               <option
                 value={""}
                 style={{ backgroundColor: Cor.base2, color: Cor.texto2 + 70 }}
               >
-                Selecione o Solicitante
+                Selecione o Turno
               </option>
-              {listaRotasExtras?.map((r: any) => {
+              {listaModelosTurno?.map((r: any) => {
                 return (
                   <option
                     value={r?.id}
@@ -613,63 +693,7 @@ function DadosGerais({
                       margin: 10,
                     }}
                   >
-                    {r?.origem} X {r?.destino}
-                  </option>
-                );
-              })}
-            </select>
-          </div>
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", width: "24%" }}>
-          <p
-            style={{
-              fontSize: 14,
-              color: Cor.textoTurno + 90,
-              fontWeight: "bold",
-              margin: 5,
-            }}
-          >
-            Solicitante:
-          </p>
-          <div
-            style={{
-              width: "100%",
-              border: `1px solid ${Cor.texto2 + 50}`,
-              padding: 10,
-              borderRadius: 14,
-            }}
-          >
-            <select
-              name=""
-              id=""
-              style={{
-                outline: "none",
-                border: "none",
-                width: "100%",
-                backgroundColor: "transparent",
-                color: Cor.texto1,
-              }}
-              onChange={(e) => setSolicitante(e.target.value)}
-              value={solicitante}
-            >
-              <option
-                value={""}
-                style={{ backgroundColor: Cor.base2, color: Cor.texto2 + 70 }}
-              >
-                Selecione o Solicitante
-              </option>
-              {solicitantes?.map((s: any) => {
-                return (
-                  <option
-                    value={s?.id}
-                    key={s?.id}
-                    style={{
-                      backgroundColor: Cor.base2,
-                      padding: 15,
-                      margin: 10,
-                    }}
-                  >
-                    {s?.nome}
+                    {r?.nomeModelo}
                   </option>
                 );
               })}
@@ -812,8 +836,12 @@ function DetalhesDoVoucher({
                     width: "100%",
                     backgroundColor: "transparent",
                     color: Cor.texto1,
-                    opacity: 1,
+                    opacity:
+                      status === "Concluido" || status === "Cancelado"
+                        ? 0.5
+                        : 1,
                   }}
+                  disabled={status === "Concluido" || status === "Cancelado"}
                   onChange={(e) => {
                     const idSelecionado = e.target.value;
                     if (!idSelecionado) {

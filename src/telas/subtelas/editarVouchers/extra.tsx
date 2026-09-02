@@ -21,6 +21,8 @@ export default function EditarVoucherExtra() {
 
   const { voucherExtraId } = useVoucherExtraId(atob(String(id)));
 
+  console.log("voucherExtraId", voucherExtraId);
+
   const adminLogado = useAdminLogado();
   const [empresaCliente, setEmpresaCliente] = useState<any>(0);
   const [unidadeEmpresaCliente, setUnidadeEmpresaCliente] = useState<any>(0);
@@ -241,7 +243,7 @@ function DadosGerais({
   setValorViagem,
   setValorViagemRepasse,
   setOrigem,
-  setDestino
+  setDestino,
 }: {
   empresaCliente: any;
   unidadeCliente: any;
@@ -279,8 +281,16 @@ function DadosGerais({
     setCategoria("");
     setValorViagem(0);
     setValorViagemRepasse(0);
-    setOrigem(tipo === "Entrada" ? rotaSelecionada?.origem || "" : rotaSelecionada?.destino || "");
-    setDestino(tipo === "Entrada" ? rotaSelecionada?.destino || "" : rotaSelecionada?.origem || "");
+    setOrigem(
+      tipo === "Entrada"
+        ? rotaSelecionada?.origem || ""
+        : rotaSelecionada?.destino || "",
+    );
+    setDestino(
+      tipo === "Entrada"
+        ? rotaSelecionada?.destino || ""
+        : rotaSelecionada?.origem || "",
+    );
   }, [rota]);
 
   const listaClientes = listaClientesTotal?.filter(
@@ -645,7 +655,11 @@ function DadosGerais({
                 Selecione a rota
               </option>
               {listaRotasExtras?.map((r: any) => (
-                <option value={r?.id} key={r?.id}  style={{ backgroundColor: Cor.base2, color: Cor.texto2 }}>
+                <option
+                  value={r?.id}
+                  key={r?.id}
+                  style={{ backgroundColor: Cor.base2, color: Cor.texto2 }}
+                >
                   {r?.origem} X {r?.destino}
                 </option>
               ))}
@@ -684,9 +698,18 @@ function DadosGerais({
               value={categoria}
               disabled={!rota}
             >
-              <option value=""  style={{ backgroundColor: Cor.base2, color: Cor.texto2 + 70 }}>Categoria</option>
+              <option
+                value=""
+                style={{ backgroundColor: Cor.base2, color: Cor.texto2 + 70 }}
+              >
+                Categoria
+              </option>
               {rotaSelecionada?.rotaValor?.map((rv: any) => (
-                <option value={rv.categoria} key={rv.id}  style={{ backgroundColor: Cor.base2, color: Cor.texto2 }}>
+                <option
+                  value={rv.categoria}
+                  key={rv.id}
+                  style={{ backgroundColor: Cor.base2, color: Cor.texto2 }}
+                >
                   {rv.categoria}
                 </option>
               ))}
@@ -885,8 +908,12 @@ function DetalhesDoVoucher({
                     width: "100%",
                     backgroundColor: "transparent",
                     color: Cor.texto1,
-                    opacity: 1,
+                    opacity:
+                      status === "Concluido" || status === "Cancelado"
+                        ? 0.5
+                        : 1,
                   }}
+                  disabled={status === "Concluido" || status === "Cancelado"}
                   onChange={(e) => {
                     const idSelecionado = e.target.value;
                     if (!idSelecionado) {
@@ -1845,9 +1872,15 @@ function ValoresFixo({
 
   const { listaPedagios } = usePedagios(String(operadoraId));
 
-  const valorPedagio = listaPedagios.filter((p: any) => p.id === pedagio);
+  // Usa find (melhor para 1 item) e garante que ambos são String na comparação
+  const pedagioSelecionado = listaPedagios.find(
+    (p: any) => String(p.id) === String(pedagio),
+  );
 
-  const pedagioReal = valorPedagio[0]?.valor || 0;
+  // Extrai o valor em Reais (R$) para usar nas somas
+  const custoPedagio = pedagioSelecionado?.valor || 0;
+
+  console.log("lista Pedagios", listaPedagios);
 
   return (
     <div
@@ -1931,7 +1964,7 @@ function ValoresFixo({
                   }}
                   value={
                     Number(valorViagem || 0) +
-                    Number(pedagioReal || 0) +
+                    Number(custoPedagio || 0) +
                     Number(valorDeslocamento || 0) +
                     Number(valorHoraParada || 0) * Number(qntTempoParado || 0)
                   }
@@ -1966,7 +1999,7 @@ function ValoresFixo({
                   }}
                   value={
                     Number(valorViagemRepasse || 0) +
-                    Number(pedagioReal || 0) +
+                    Number(custoPedagio || 0) +
                     Number(valorDeslocamentoRepasse || 0) +
                     Number(valorHoraParadaRepasse || 0) *
                       Number(qntTempoParado || 0)
@@ -2278,10 +2311,20 @@ function ValoresFixo({
                 backgroundColor: "transparent",
                 color: Cor.texto1,
               }}
-              value={pedagio || ""}
-              onChange={(e) => setPedagio(e.target.value)}
+              value={pedagio?.id || ""}
+              onChange={(e) => {
+                const idSelecionado = e.target.value;
+
+                // 2. Busca na listaPedagios qual é o objeto completo referente a esse ID
+                const objetoCompleto = listaPedagios.find(
+                  (p: any) => String(p.id) === String(idSelecionado),
+                );
+
+                // 3. Envia o objeto completo de volta para o componente Pai
+                setPedagio(objetoCompleto || null);
+              }}
             >
-              <option value="">Selecione</option>
+              <option value="0">Selecione</option>
               {listaPedagios.map((p: any) => {
                 return (
                   <option
