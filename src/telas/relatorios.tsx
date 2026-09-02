@@ -1561,9 +1561,7 @@ function ModalEditarMassa({
   const [valorViagemRepasse, setValorViagemRepasse] = useState<any>();
 
   const operId = useAdminLogado()?.operadora.id;
-
-  const adminLogado = useAdminLogado();
-
+  
   const { editar, loading } = useEditarVouchersEmMassa();
 
   const limparCampos = () => {
@@ -1583,7 +1581,7 @@ function ModalEditarMassa({
     setValorViagem("");
     setValorViagemRepasse("");
   };
-  
+
   const ajustarDataParaBackend = (dataString: any) => {
     if (!dataString) return undefined;
 
