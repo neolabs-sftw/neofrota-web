@@ -3064,6 +3064,18 @@ function BaseFiltros({
     }));
   };
 
+  const handleMudancaExclusiva = (campo: string, valor: string) => {
+    setFiltro((prevFiltro: any) => ({
+      ...prevFiltro,
+      // Zera as três propriedades para garantir a exclusividade
+      modeloFixoId: null,
+      modeloTurnoId: null,
+      rotaId: null,
+      // Sobrescreve apenas o campo que foi alterado pelo usuário
+      [campo]: valor === "" ? null : valor,
+    }));
+  };
+
   const handleFiltrar = () => {
     setFiltroAtivo(filtro);
   };
@@ -3589,7 +3601,7 @@ function BaseFiltros({
                 backgroundColor: "transparent",
                 color: Cor.texto1,
               }}
-              onChange={(e) => handleChange("modeloFixoId", e.target.value)}
+             onChange={(e) => handleMudancaExclusiva("modeloFixoId", e.target.value)}
               value={filtro.modeloFixoId || ""}
             >
               <option
@@ -3653,7 +3665,7 @@ function BaseFiltros({
                 backgroundColor: "transparent",
                 color: Cor.texto1,
               }}
-              onChange={(e) => handleChange("modeloTurnoId", e.target.value)}
+              onChange={(e) => handleMudancaExclusiva("modeloTurnoId", e.target.value)}
               value={filtro.modeloTurnoId || ""}
             >
               <option
@@ -3717,7 +3729,7 @@ function BaseFiltros({
                 backgroundColor: "transparent",
                 color: Cor.texto1,
               }}
-              onChange={(e) => handleChange("rotaId", e.target.value)}
+              onChange={(e) => handleMudancaExclusiva("rotaId", e.target.value)}
               value={filtro.rotaId || ""}
             >
               <option
