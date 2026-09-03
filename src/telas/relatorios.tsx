@@ -21,6 +21,9 @@ import { useLazyQuery } from "@apollo/client";
 import { exportarPlanilhaFunc } from "../hooks/exportarPlanilha";
 import ModalPreviewVoucher from "../componentes/modalPreviewVoucher";
 import { useNavigate } from "react-router-dom";
+import { useModelosFixos } from "../hooks/useModelosFixos";
+import { useListaModelosTurnoPrev } from "../hooks/useModelosTurnos";
+import { useRotasExtas } from "../hooks/useRotasExtras";
 
 function Relatorios() {
   return BaseTelas({
@@ -164,18 +167,21 @@ function RelatorioConteudo() {
     motoristaId: "",
     natureza: "",
     solicitanteId: "",
+    modeloFixoId: "",
+    modeloTurnoId: "",
+    rotaId: "",
     status: "Concluido",
     tipoCorrida: "",
     unidadeClienteId: "",
   });
-
-  const [idsParaBusca, setIdsParaBusca] = useState<string[]>([]);
 
   const {
     listaRelatorio: listaPrincipal,
     loading,
     refetch,
   } = useVouchersFiltrados(filtro);
+
+  const [idsParaBusca, setIdsParaBusca] = useState<string[]>([]);
 
   const { listaVouchersIds } = useVouchersIds(
     idsParaBusca,
@@ -227,7 +233,7 @@ function RelatorioConteudo() {
         (voucher.valorDeslocamentoRepasse || 0) +
         (voucher.valorPedagio || 0) +
         (voucher.qntTempoParado || 0) * (voucher.valorHoraParadaRepasse || 0);
-        
+
       const linhaExcel: any = {
         ID: voucher.id,
         Observação: voucher.observacao,
@@ -244,10 +250,20 @@ function RelatorioConteudo() {
         Origem: voucher.rota?.origem || voucher.origem || "-",
         Destino: voucher.rota?.destino || voucher.destino || "-",
         Tributação: voucher.rota?.tributacao || "-",
-        "Cod. Fixo": voucher.natureza === "Fixo" ? voucher.modeloFixo?.nomeModelo || "-" : "-",
-        "Cod.Turno": voucher.natureza === "Turno" ? voucher.modeloTurno?.nomeModelo || "_" : "-",
-        "Rota": voucher.natureza === "Extra" ? `Rota ID: ${voucher.rota.id} - ${voucher.rota.origem} X ${voucher.rota.destino}` : "-",
-        Solicitante: voucher.natureza === "Extra" ? voucher.solicitante?.nome || "-" : "-",
+        "Cod. Fixo":
+          voucher.natureza === "Fixo"
+            ? voucher.modeloFixo?.nomeModelo || "-"
+            : "-",
+        "Cod.Turno":
+          voucher.natureza === "Turno"
+            ? voucher.modeloTurno?.nomeModelo || "_"
+            : "-",
+        Rota:
+          voucher.natureza === "Extra"
+            ? `Rota ID: ${voucher.rota.id} - ${voucher.rota.origem} X ${voucher.rota.destino}`
+            : "-",
+        Solicitante:
+          voucher.natureza === "Extra" ? voucher.solicitante?.nome || "-" : "-",
         Natureza: voucher.natureza,
         "Tipo de Corrida": voucher.tipoCorrida,
         "Valor Viagem": voucher.valorViagem || 0,
@@ -264,35 +280,7 @@ function RelatorioConteudo() {
         "Total Repasse": totalRepasse,
       };
 
-      // 2. Lógica dinâmica para criar as colunas "Passageiro 1", "Passageiro 2", etc.
-      // if (voucher.passageiros && voucher.passageiros.length > 0) {
-      //   voucher.passageiros.forEach((p, index) => {
-      //     // Extraímos as informações garantindo que não quebre se vier nulo
-      //     const nome = p.passageiroId?.nome || "Sem nome";
-      //     const status = p.statusPresenca || "Sem status";
-      //     const centroCusto =
-      //       p.passageiroId?.centroCustoClienteId?.nome || "Sem Centro de Custo";
-      //     const centroCustoCod =
-      //       p.passageiroId?.centroCustoClienteId?.codigo || "--";
-      //     const rateio = p.rateio;
-      //     // Adicionamos uma nova chave ao objeto no formato "Passageiro X"
-      //     // E concatenamos os valores na mesma string
-      //     // linhaExcel[`Passageiro ${index + 1}`] =
-      //     //   `${nome}, ${status}, ${centroCusto}, ${rateio}`;
-      //     linhaExcel[`Passageiro ${index + 1}`] = `${nome}`;
-      //     linhaExcel[`Passageiro ${index + 1} Status`] = `${status}`;
-      //     linhaExcel[`Passageiro ${index + 1} CC`] =
-      //       `${centroCusto} - ${centroCustoCod}`;
-      //     linhaExcel[`Passageiro ${index + 1} Rateio`] =
-      //       typeof rateio === "number" ? rateio : parseFloat(rateio) || 0;
-      //   });
-      // } else {
-      //   // Se não houver nenhum passageiro, garantimos que a coluna 1 exista com um aviso
-      //   linhaExcel["Passageiro 1"] = "Sem passageiros";
-      // }
-
       if (voucher.passageiros && voucher.passageiros.length > 0) {
-        
         // Identifica a quantidade de passageiros válidos para o rateio
         const totalConsideradosNoRateio = voucher.passageiros.filter(
           (p: any) =>
@@ -302,24 +290,29 @@ function RelatorioConteudo() {
         voucher.passageiros.forEach((p, index) => {
           const nome = p.passageiroId?.nome || "Sem nome";
           const status = p.statusPresenca || "Sem status";
-          const centroCusto = p.passageiroId?.centroCustoClienteId?.nome || "Sem Centro de Custo";
-          const centroCustoCod = p.passageiroId?.centroCustoClienteId?.codigo || "--";
+          const centroCusto =
+            p.passageiroId?.centroCustoClienteId?.nome || "Sem Centro de Custo";
+          const centroCustoCod =
+            p.passageiroId?.centroCustoClienteId?.codigo || "--";
 
           let custoPassageiro: any = 0;
-          const participaDaDivisao = status === "Presente" || status === "Agendado";
+          const participaDaDivisao =
+            status === "Presente" || status === "Agendado";
 
           if (participaDaDivisao && totalConsideradosNoRateio > 0) {
-             custoPassageiro = {
-               f: `${totalCobranca}/${totalConsideradosNoRateio}`,
-               t: "n",
-             };
+            custoPassageiro = {
+              f: `${totalCobranca}/${totalConsideradosNoRateio}`,
+              t: "n",
+            };
           }
 
           // Mantendo as 4 colunas em sequência na mesma linha Excel
           linhaExcel[`Passageiro ${index + 1}`] = `${nome}`;
           linhaExcel[`Passageiro ${index + 1} Status`] = `${status}`;
-          linhaExcel[`Passageiro ${index + 1} CC`] = `${centroCusto} - ${centroCustoCod}`;
-          linhaExcel[`Passageiro ${index + 1} Custo (Rateio)`] = custoPassageiro;
+          linhaExcel[`Passageiro ${index + 1} CC`] =
+            `${centroCusto} - ${centroCustoCod}`;
+          linhaExcel[`Passageiro ${index + 1} Custo (Rateio)`] =
+            custoPassageiro;
         });
       } else {
         linhaExcel["Passageiro 1"] = "Sem passageiros";
@@ -431,16 +424,16 @@ function RelatorioConteudo() {
     if (data && data.vouchersFiltrados && data.vouchersFiltrados.length > 0) {
       const vouchers = data.vouchersFiltrados;
 
-      // 1. Gera os dados no formato antigo (Visão Operacional/Geral)
+      // 1. Gera os dados no formato (Visão Operacional/Geral)
       const dadosGerais = prepararDadosParaExcel(vouchers);
 
-      // 2. Gera os dados no formato novo (Visão Financeira/Passageiros)
+      // 2. Gera os dados no formato (Visão Financeira/Passageiros)
       const dadosCentroCusto = prepararDadosParaExcelCentroCusto(vouchers);
 
       // 3. Exporta o primeiro arquivo (Relatório Geral)
       exportarPlanilhaFunc(
         dadosGerais,
-        `Relatorio_${nomeOperadora}_Operacional_${formatarParaYMD(hoje)}`,
+        `Relatorio_${nomeOperadora}_Geral_${formatarParaYMD(hoje)}`,
         "xlsx",
       );
 
@@ -3046,6 +3039,21 @@ function BaseFiltros({
   const { listaUnidades, loading } = useUnidadeCliente(
     filtro.empresaClienteId || "0",
   );
+  const { listaModelos } = useModelosFixos(String(operId));
+
+  console.log("Lista de Modelos:", listaModelos);
+  const listaModelosEmpresa = listaModelos.filter((modelo: any) => {
+    if (!filtro.empresaClienteId) return true;
+    return modelo.empresaCliente.id === filtro.empresaClienteId;
+  });
+
+  const { listaModelosTurno } = useListaModelosTurnoPrev({
+    empresaClienteId: filtro.empresaClienteId || "0",
+  });
+  const { listaRotasExtras } = useRotasExtas(
+    String(filtro.empresaClienteId || "0"),
+  );
+
   const { solicitantes } = useSolicitante(filtro.empresaClienteId || "0");
   const { listAdminFuncionario } = useListaAdminFuncionario(String(operId));
 
@@ -3521,6 +3529,215 @@ function BaseFiltros({
                     }}
                   >
                     {m?.nome}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+        </div>
+      </div>
+      <div
+        style={{
+          width: "100%",
+          height: 1,
+          backgroundColor: Cor.secundaria + 25,
+        }}
+      />
+      <div
+        style={{
+          width: "100%",
+          display: "flex",
+          flexDirection: "row",
+          gap: 5,
+          justifyContent: "space-between",
+        }}
+      >
+        <div
+          style={{
+            width: "32%",
+            display: "flex",
+            flexDirection: "row",
+            gap: 5,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <p
+            style={{
+              fontSize: 12,
+              color: Cor.texto1,
+              margin: 5,
+            }}
+          >
+            Cod. Roteiro Fixo:
+          </p>
+          <div
+            style={{
+              width: "100%",
+              border: `1px solid ${Cor.texto2 + 50}`,
+              padding: 10,
+              borderRadius: 14,
+            }}
+          >
+            <select
+              name=""
+              id=""
+              style={{
+                outline: "none",
+                border: "none",
+                width: "100%",
+                backgroundColor: "transparent",
+                color: Cor.texto1,
+              }}
+              onChange={(e) => handleChange("modeloFixoId", e.target.value)}
+              value={filtro.modeloFixoId || ""}
+            >
+              <option
+                value={""}
+                style={{ backgroundColor: Cor.base2, color: Cor.texto2 + 70 }}
+              >
+                Todos
+              </option>
+              {listaModelosEmpresa?.map((mF: any) => {
+                return (
+                  <option
+                    value={mF.id}
+                    key={mF?.id}
+                    style={{
+                      backgroundColor: Cor.base2,
+                      padding: 15,
+                      margin: 10,
+                    }}
+                  >
+                    {mF?.nomeModelo}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+        </div>
+        <div
+          style={{
+            width: "32%",
+            display: "flex",
+            flexDirection: "row",
+            gap: 5,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <p
+            style={{
+              fontSize: 12,
+              color: Cor.texto1,
+              margin: 5,
+            }}
+          >
+            Cod. Roteiros Turno:
+          </p>
+          <div
+            style={{
+              width: "100%",
+              border: `1px solid ${Cor.texto2 + 50}`,
+              padding: 10,
+              borderRadius: 14,
+            }}
+          >
+            <select
+              name=""
+              id=""
+              style={{
+                outline: "none",
+                border: "none",
+                width: "100%",
+                backgroundColor: "transparent",
+                color: Cor.texto1,
+              }}
+              onChange={(e) => handleChange("modeloTurnoId", e.target.value)}
+              value={filtro.modeloTurnoId || ""}
+            >
+              <option
+                value={""}
+                style={{ backgroundColor: Cor.base2, color: Cor.texto2 + 70 }}
+              >
+                Todos
+              </option>
+              {listaModelosTurno?.map((mT: any) => {
+                return (
+                  <option
+                    value={mT.id}
+                    key={mT?.id}
+                    style={{
+                      backgroundColor: Cor.base2,
+                      padding: 15,
+                      margin: 10,
+                    }}
+                  >
+                    {mT?.nomeModelo}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+        </div>
+        <div
+          style={{
+            width: "32%",
+            display: "flex",
+            flexDirection: "row",
+            gap: 5,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <p
+            style={{
+              fontSize: 12,
+              color: Cor.texto1,
+              margin: 5,
+            }}
+          >
+            Rota:
+          </p>
+          <div
+            style={{
+              width: "100%",
+              border: `1px solid ${Cor.texto2 + 50}`,
+              padding: 10,
+              borderRadius: 14,
+            }}
+          >
+            <select
+              name=""
+              id=""
+              style={{
+                outline: "none",
+                border: "none",
+                width: "100%",
+                backgroundColor: "transparent",
+                color: Cor.texto1,
+              }}
+              onChange={(e) => handleChange("rotaId", e.target.value)}
+              value={filtro.rotaId || ""}
+            >
+              <option
+                value={""}
+                style={{ backgroundColor: Cor.base2, color: Cor.texto2 + 70 }}
+              >
+                Todos
+              </option>
+              {listaRotasExtras?.map((rE: any) => {
+                return (
+                  <option
+                    value={rE.id}
+                    key={rE?.id}
+                    style={{
+                      backgroundColor: Cor.base2,
+                      padding: 15,
+                      margin: 10,
+                    }}
+                  >
+                    {rE?.origem} - {rE?.destino}
                   </option>
                 );
               })}
