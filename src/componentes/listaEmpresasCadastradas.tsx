@@ -307,7 +307,6 @@ function LinhaEmpresa({ cliente }: { cliente: any }) {
         operadoraId: Number(operadora),
         statusCliente: !cliente.statusCliente,
       });
-      console.log("Status atualizado com sucesso!");
     } catch (err) {
       console.error(error);
     }

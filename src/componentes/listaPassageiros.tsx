@@ -269,7 +269,6 @@ function ModalVerPassageiro({
       let fotoUrlFinal = "";
 
       if (fotoPerfilPassageiro instanceof File) {
-        console.log("A enviar nova foto...");
 
         const nomeImg = `foto_perfil_passageiros/${nome}_${matricula}-${Date.now()}.png`;
         const bucket = "neofrotabkt";
@@ -305,8 +304,6 @@ function ModalVerPassageiro({
         pontoApanha: pontoApanha || "",
         telefone: telefone || "",
       };
-
-      console.log("Enviando para o servidor:", passageiroAlterar);
 
       await atualizarPassageiro(String(passageiro.id), passageiroAlterar);
       refetch();

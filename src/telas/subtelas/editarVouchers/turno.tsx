@@ -1912,7 +1912,7 @@ function ValoresFixo({
                   }}
                   value={
                     Number(valorViagemRepasse || 0) +
-                    Number(pedagio|| 0) +
+                    Number(pedagio || 0) +
                     Number(valorDeslocamentoRepasse || 0) +
                     Number(valorHoraParadaRepasse || 0) *
                       Number(qntTempoParado || 0)
@@ -2197,7 +2197,7 @@ function ValoresFixo({
             </div>
           </div>
         </div>
-         <div
+        <div
           style={{
             display: "flex",
             flexDirection: "column",
@@ -2403,35 +2403,29 @@ function SalvarInformacoes({ v, vA }: { v: any; vA: any }) {
         ),
       );
 
-      console.log("Payload enviado para API:", cleanInput); // Útil para debugar
-
       // 6. Executa a mutation
-      const resultado = await editar(cleanInput);
-      console.log("Voucher editado com sucesso!", resultado);
+      await editar(cleanInput);
       navigate(-1);
     } catch (error) {
-      console.error("Erro ao editar voucher:", error);
       alert("Erro ao editar voucher");
     }
   };
 
   const cancelarVoucher = async () => {
     try {
-      const resultado = await editar({
+      await editar({
         id: String(vA.id),
         status: "Cancelado",
       });
-      console.log("Voucher editado com sucesso!", resultado);
       navigate(-1);
     } catch (error) {
-      console.error("Erro ao editar voucher:", error);
       alert("Erro ao editar voucher");
     }
   };
 
   const redefinirVoucher = async () => {
     try {
-      const resultado = await editar({
+      await editar({
         id: String(vA.id),
         status: "Aberto",
         assinatura: null,
@@ -2451,10 +2445,8 @@ function SalvarInformacoes({ v, vA }: { v: any; vA: any }) {
               })
             : undefined,
       });
-      console.log("Voucher editado com sucesso!", resultado);
       navigate(-1);
     } catch (error) {
-      console.error("Erro ao editar voucher:", error);
       alert("Erro ao editar voucher");
     }
   };

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTema } from "../hooks/temaContext";
 import { gql, useQuery } from "@apollo/client";
 import { jwtDecode } from "jwt-decode";
@@ -6,10 +6,23 @@ import icinativo from "../assets/animations/icinativo.json";
 import { useNavigate } from "react-router-dom";
 import Lottie from "lottie-react";
 
+type ColunaOrdenacao =
+  | "id"
+  | "nome"
+  | "email"
+  | "cpf"
+  | "tipoMotorista"
+  | "statusCnh";
+
 function ListaMotoristasAgregados() {
   const [busca, setBusca] = useState("");
   const Cor = useTema().Cor;
   const navigate = useNavigate();
+
+  const [ordenacao, setOrdenacao] = useState<{
+    coluna: ColunaOrdenacao | null;
+    direcao: "asc" | "desc";
+  }>({ coluna: null, direcao: "asc" });
 
   const GET_MOTORISTAS_OPERADORA_ID = gql`
     query MotoristasOperadora($motoristasOperadoraId: ID!) {
@@ -48,10 +61,11 @@ function ListaMotoristasAgregados() {
 
   const listaMotoristasTotal = data?.motoristasOperadora;
 
-  const listaMotoristas = listaMotoristasTotal?.filter((motorista:any)=> motorista?.tipoMotorista !== "Excluido")
+  const listaMotoristas = listaMotoristasTotal?.filter(
+    (motorista: any) => motorista?.tipoMotorista !== "Excluido",
+  );
 
   const listaMotoristasFiltrada = listaMotoristas?.filter((motorista: any) => {
-
     const isAtivo = motorista.tipoMorista !== "Excluido";
 
     if (!busca) return isAtivo;
@@ -59,6 +73,69 @@ function ListaMotoristasAgregados() {
       isAtivo && motorista.nome.toLowerCase().includes(busca.toLowerCase())
     );
   });
+
+  const handleOrdenar = (coluna: ColunaOrdenacao) => {
+    setOrdenacao((prev) => {
+      if (prev.coluna === coluna) {
+        return { coluna, direcao: prev.direcao === "desc" ? "asc" : "desc" };
+      }
+      return { coluna, direcao: "asc" };
+    });
+  };
+
+const listaOrdenada = useMemo(() => {
+    if (!ordenacao.coluna || !listaMotoristasFiltrada) return listaMotoristasFiltrada;
+
+    return [...listaMotoristasFiltrada].sort((a, b) => {
+      let valorA = a[ordenacao.coluna!];
+      let valorB = b[ordenacao.coluna!];
+
+      // Fallbacks
+      if (valorA === null || valorA === undefined) valorA = "";
+      if (valorB === null || valorB === undefined) valorB = "";
+
+      // 1. Tratamento específico para o ID (Força a leitura como Número)
+      if (ordenacao.coluna === "id") {
+        return ordenacao.direcao === "asc"
+          ? Number(valorA) - Number(valorB)
+          : Number(valorB) - Number(valorA);
+      }
+
+      // 2. Tratamento para Booleanos (ex: statusCnh)
+      if (typeof valorA === "boolean" && typeof valorB === "boolean") {
+        const numA = valorA ? 1 : 0;
+        const numB = valorB ? 1 : 0;
+        return ordenacao.direcao === "asc" ? numA - numB : numB - numA;
+      }
+
+      // 3. Tratamento para Números nativos
+      if (typeof valorA === "number" && typeof valorB === "number") {
+        return ordenacao.direcao === "asc" ? valorA - valorB : valorB - valorA;
+      }
+
+      // 4. Tratamento para Strings
+      const strA = String(valorA).toLowerCase();
+      const strB = String(valorB).toLowerCase();
+
+      // A propriedade 'numeric: true' resolve ordenações de strings mistas com números naturalmente
+      if (ordenacao.direcao === "asc") {
+        return strA.localeCompare(strB, undefined, { numeric: true });
+      } else {
+        return strB.localeCompare(strA, undefined, { numeric: true });
+      }
+    });
+  }, [listaMotoristasFiltrada, ordenacao]);
+  
+  const RenderIconeOrdenacao = ({ coluna }: { coluna: ColunaOrdenacao }) => {
+    if (ordenacao.coluna !== coluna) return null;
+    return (
+      <span
+        style={{ fontFamily: "Icone", fontSize: 14, verticalAlign: "middle" }}
+      >
+        {ordenacao.direcao === "asc" ? "arrow_upward" : "arrow_downward"}
+      </span>
+    );
+  };
 
   return (
     <div
@@ -175,6 +252,7 @@ function ListaMotoristasAgregados() {
               color: ${Cor.texto1};
               font-size: 12px;
               background-color: ${Cor.texto2 + 80};
+              cursor: pointer;
               }
             td {
               text-align: left;
@@ -192,18 +270,30 @@ function ListaMotoristasAgregados() {
         </style>
         <thead>
           <tr>
-            <th style={{ width: "60px", textAlign: "center" }}>Foto</th>
-            <th style={{ width: 30, textAlign: "center" }}>id</th>
-            <th>Nome</th>
-            <th>Email</th>
-            <th style={{ width: 120, textAlign: "center" }}>CPF</th>
-            <th style={{ width: 120, textAlign: "center" }}>Tipo</th>
-            <th style={{ width: 100, textAlign: "center" }}>Validade CNH</th>
-            <th style={{ width: 100, textAlign: "center" }}>Ações</th>
+            <th style={{ width: "60px", textAlign: "center", cursor: "default" }}>Foto</th>
+            <th style={{ width: 60, textAlign: "center" }} onClick={() => handleOrdenar("id")}>
+              ID <RenderIconeOrdenacao coluna="id" />
+            </th>
+            <th onClick={() => handleOrdenar("nome")}>
+              Nome <RenderIconeOrdenacao coluna="nome" />
+            </th>
+            <th onClick={() => handleOrdenar("email")}>
+              Email <RenderIconeOrdenacao coluna="email" />
+            </th>
+            <th style={{ width: 120, textAlign: "center" }} onClick={() => handleOrdenar("cpf")}>
+              CPF <RenderIconeOrdenacao coluna="cpf" />
+            </th>
+            <th style={{ width: 120, textAlign: "center" }} onClick={() => handleOrdenar("tipoMotorista")}>
+              Tipo <RenderIconeOrdenacao coluna="tipoMotorista" />
+            </th>
+            <th style={{ width: 130, textAlign: "center" }} onClick={() => handleOrdenar("statusCnh")}>
+              Validade CNH <RenderIconeOrdenacao coluna="statusCnh" />
+            </th>
+            <th style={{ width: 100, textAlign: "center", cursor: "default" }}>Ações</th>
           </tr>
         </thead>
         <tbody>
-          {listaMotoristasFiltrada?.map((motorista: any) => (
+          {listaOrdenada?.map((motorista: any) => (
             <tr key={motorista.id} style={{ fontSize: 14 }}>
               <td>
                 <img

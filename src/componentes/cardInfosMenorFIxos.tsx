@@ -7,8 +7,6 @@ function CardInfosMenorFixos({}: {}) {
 
   const valorAnterior = 15;
 
-  // console.log(ultimoDia.toISOString());
-
   function mesAtualISO() {
     const now = new Date();
 

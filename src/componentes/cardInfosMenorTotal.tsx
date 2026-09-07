@@ -7,8 +7,6 @@ function CardInfosMenorTotal({ }: {}) {
 
   const valorAnterior = 15;
 
-  // console.log(ultimoDia.toISOString());
-
   function getMonthRangeISO() {
     const now = new Date();
 

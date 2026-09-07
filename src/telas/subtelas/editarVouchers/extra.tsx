@@ -21,8 +21,6 @@ export default function EditarVoucherExtra() {
 
   const { voucherExtraId } = useVoucherExtraId(atob(String(id)));
 
-  console.log("voucherExtraId", voucherExtraId);
-
   const adminLogado = useAdminLogado();
   const [empresaCliente, setEmpresaCliente] = useState<any>(0);
   const [unidadeEmpresaCliente, setUnidadeEmpresaCliente] = useState<any>(0);
@@ -2476,11 +2474,7 @@ function SalvarInformacoes({ v, vA }: { v: any; vA: any }) {
         ),
       );
 
-      console.log("Payload enviado para API:", cleanInput); // Útil para debugar
-
-      // 6. Executa a mutation
-      const resultado = await editar(cleanInput);
-      console.log("Voucher editado com sucesso!", resultado);
+      await editar(cleanInput);
       navigate(-1);
     } catch (error) {
       console.error("Erro ao editar voucher:", error);
@@ -2490,21 +2484,19 @@ function SalvarInformacoes({ v, vA }: { v: any; vA: any }) {
 
   const cancelarVoucher = async () => {
     try {
-      const resultado = await editar({
+      await editar({
         id: String(vA.id),
         status: "Cancelado",
       });
-      console.log("Voucher editado com sucesso!", resultado);
       navigate(-1);
     } catch (error) {
-      console.error("Erro ao editar voucher:", error);
       alert("Erro ao editar voucher");
     }
   };
 
   const redefinirVoucher = async () => {
     try {
-      const resultado = await editar({
+      await editar({
         id: String(vA.id),
         status: "Aberto",
         assinatura: null,
@@ -2524,10 +2516,8 @@ function SalvarInformacoes({ v, vA }: { v: any; vA: any }) {
               })
             : undefined,
       });
-      console.log("Voucher editado com sucesso!", resultado);
       navigate(-1);
     } catch (error) {
-      console.error("Erro ao editar voucher:", error);
       alert("Erro ao editar voucher");
     }
   };

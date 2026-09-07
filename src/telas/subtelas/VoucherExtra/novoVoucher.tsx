@@ -183,7 +183,6 @@ function NovoVoucherConteudo() {
     }
 
     setLancamentos(vouchers);
-    console.log(vouchers);
     setCxConfirmarVoucher(true);
   }
 
@@ -1434,11 +1433,8 @@ function BaseModalConfirmacao({
             alert("Esse motorista não tem um carro atrelado a conta dele.");
             return null;
           }
-          console.log("Enviando:", v);
 
           const lancado = await lancar(v);
-
-          console.log("Retorno:", lancado);
           return { ok: true, v, lancado };
         }),
       );

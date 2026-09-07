@@ -176,15 +176,9 @@ function NovoVoucherConteudo() {
         tipoCorrida: "Saida",
       });
     } else {
-      // Caso o tipo não seja reconhecido (opcional, mas recomendado)
       alert("Tipo de voucher inválido selecionado.");
       return;
     }
-
-    // Continua o processo só se estiver tudo validado
-    // console.log(`Vouchers a serem lançados: ${vouchers.length}`);
-    // console.log(vouchers);
-
     setLancamentos(vouchers);
     setCxConfirmarVoucher(true);
   }
@@ -1535,11 +1529,8 @@ function BaseModalConfirmacao({
             alert("Esse motorista não tem um carro atrelado a conta dele.");
             return null;
           }
-          console.log("Enviando:", v);
 
           const lancado = await lancar(v);
-
-          console.log("Retorno:", lancado);
           return { ok: true, v, lancado };
         }),
       );

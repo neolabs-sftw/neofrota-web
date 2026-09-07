@@ -135,7 +135,6 @@ function LinhaTabelaPassageiro({
         $cor={passageiro.ativo ? Cor.ativo : Cor.inativo}
         onClick={(e) => {
           e.stopPropagation();
-          console.log(passageiro.nome, passageiro.ativo);
           alterarStatusFunc();
         }}
       >

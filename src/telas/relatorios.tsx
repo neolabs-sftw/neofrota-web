@@ -134,6 +134,8 @@ interface VoucherExportacao {
 
 export default Relatorios;
 
+const STORAGE_KEY = "@NeoFrota:FiltroRelatorioVouchers"
+
 function RelatorioConteudo() {
   const { Cor } = useTema();
 
@@ -158,22 +160,36 @@ function RelatorioConteudo() {
   const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
   const ultimoDia = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
 
-  const [filtro, setFiltro] = useState<any>({
-    operadoraId: String(operadoraId),
-    adminUsuarioId: "",
-    dataFim: formatarParaYMD(ultimoDia),
-    dataInicio: formatarParaYMD(primeiroDia),
-    empresaClienteId: "",
-    motoristaId: "",
-    natureza: "",
-    solicitanteId: "",
-    modeloFixoId: "",
-    modeloTurnoId: "",
-    rotaId: "",
-    status: "Concluido",
-    tipoCorrida: "",
-    unidadeClienteId: "",
+  const [filtro, setFiltro] = useState<any>(() => {
+    const salvo = sessionStorage.getItem(STORAGE_KEY);
+    if (salvo) {
+      try {
+        return JSON.parse(salvo);
+      } catch (e) {
+        console.error("Erro ao recuperar filtro do sessionStorage", e);
+      }
+    }
+    return {
+      operadoraId: String(operadoraId),
+      adminUsuarioId: "",
+      dataFim: formatarParaYMD(ultimoDia),
+      dataInicio: formatarParaYMD(primeiroDia),
+      empresaClienteId: "",
+      motoristaId: "",
+      natureza: "",
+      solicitanteId: "",
+      modeloFixoId: "",
+      modeloTurnoId: "",
+      rotaId: "",
+      status: "Concluido",
+      tipoCorrida: "",
+      unidadeClienteId: "",
+    };
   });
+
+  useEffect(() => {
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(filtro));
+  }, [filtro]);
 
   const {
     listaRelatorio: listaPrincipal,
@@ -217,7 +233,6 @@ function RelatorioConteudo() {
     });
   };
 
-  // Passamos o array tipado com a interface que você já criou
   const prepararDadosParaExcel = (vouchers: VoucherExportacao[]) => {
     return vouchers.map((voucher) => {
       // 1. Montamos um objeto base com os dados que vêm antes dos passageiros
@@ -3040,8 +3055,7 @@ function BaseFiltros({
     filtro.empresaClienteId || "0",
   );
   const { listaModelos } = useModelosFixos(String(operId));
-
-  console.log("Lista de Modelos:", listaModelos);
+  
   const listaModelosEmpresa = listaModelos.filter((modelo: any) => {
     if (!filtro.empresaClienteId) return true;
     return modelo.empresaCliente.id === filtro.empresaClienteId;
@@ -3087,6 +3101,41 @@ function BaseFiltros({
       .filter((id) => id !== "");
 
     setIdsParaBusca(idsProcessados);
+  };
+
+  
+  const hoje = new Date();
+  const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+  const ultimoDia = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+
+   const formatarParaYMD = (data: Date) => {
+    const ano = data.getFullYear();
+    const mes = String(data.getMonth() + 1).padStart(2, "0");
+    const dia = String(data.getDate()).padStart(2, "0");
+
+    return `${ano}-${mes}-${dia}`;
+  };
+
+  const operadoraId = useAdminLogado()?.operadora.id || "0";
+
+  const limparFiltros = () => {
+    sessionStorage.removeItem(STORAGE_KEY);
+    setFiltro({
+      operadoraId: String(operadoraId),
+      adminUsuarioId: "",
+      dataFim: formatarParaYMD(ultimoDia),
+      dataInicio: formatarParaYMD(primeiroDia),
+      empresaClienteId: "",
+      motoristaId: "",
+      natureza: "",
+      solicitanteId: "",
+      modeloFixoId: "",
+      modeloTurnoId: "",
+      rotaId: "",
+      status: "Concluido",
+      tipoCorrida: "",
+      unidadeClienteId: "",
+    });
   };
 
   const { Cor } = useTema();
@@ -3775,7 +3824,7 @@ function BaseFiltros({
       >
         <div
           style={{
-            width: "25%",
+            width: "22%",
             display: "flex",
             flexDirection: "row",
             gap: 5,
@@ -3836,7 +3885,7 @@ function BaseFiltros({
         </div>
         <div
           style={{
-            width: "25%",
+            width: "22%",
             display: "flex",
             flexDirection: "row",
             gap: 5,
@@ -3903,7 +3952,7 @@ function BaseFiltros({
         </div>
         <div
           style={{
-            width: "25%",
+            width: "22%",
             display: "flex",
             flexDirection: "row",
             gap: 5,
@@ -3970,7 +4019,7 @@ function BaseFiltros({
         </div>
         <div
           style={{
-            width: "25%",
+            width: "34%",
             display: "flex",
             flexDirection: "row",
             gap: 5,
@@ -3984,18 +4033,48 @@ function BaseFiltros({
           <BtnFiltrar $cor={Cor.texto2} onClick={() => exportarPlanilha()}>
             {carregandoExportacao ? "Exportando..." : "Exportar"}
           </BtnFiltrar>
+          <BtnLimpar $cor={Cor.atencao} onClick={() => limparFiltros()} title="Limpar Filtro de Buscas">
+            <p style={{fontFamily:"Icone", fontSize: 25}}>cleaning_services</p>
+          </BtnLimpar>
         </div>
       </div>
     </div>
   );
 }
 
+
+interface BtnLimparProps {
+  $cor: string;
+}
+
+const BtnLimpar = styled.div<BtnLimparProps>`
+  width: 15%;
+  background-color: ${({ $cor }) => $cor};
+  padding: 6.5px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: ease-in-out all 0.1s;
+  user-select: none;
+  cursor: pointer;
+
+
+  &:hover {
+    scale: 1.02;
+  }
+
+  &:active {
+    scale: 0.98;
+  }
+`;
+
 interface BtnFiltrarProps {
   $cor: string;
 }
 
 const BtnFiltrar = styled.div<BtnFiltrarProps>`
-  width: 48%;
+  width: 45%;
   background-color: ${({ $cor }) => $cor};
   padding: 12px;
   border-radius: 14px;
@@ -4005,6 +4084,7 @@ const BtnFiltrar = styled.div<BtnFiltrarProps>`
   transition: ease-in-out all 0.1s;
   user-select: none;
   cursor: pointer;
+  opacity: 1;
 
   &:hover {
     scale: 1.02;
@@ -4012,6 +4092,7 @@ const BtnFiltrar = styled.div<BtnFiltrarProps>`
 
   &:active {
     scale: 0.98;
+    opacity: 0.2
   }
 `;
 

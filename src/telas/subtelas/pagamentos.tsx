@@ -13,6 +13,7 @@ import { useVouchersFiltrados } from "../../hooks/useVouchers";
 import { useLancamentosOperadora } from "../../hooks/useLancamentos";
 import CircularProgress from "@mui/material/CircularProgress";
 import { gerarExtratoPDF } from "../../hooks/exportarExtrato";
+import { exportarPlanilhaFunc } from "../../hooks/exportarPlanilha";
 
 export function Pagamentos() {
   return BaseTelas({
@@ -437,7 +438,11 @@ function PagamentosConteudo() {
           </p>
         </div>
       </div>
-      <BaseFiltros filtroAtivo={filtro} setFiltroAtivo={setFiltro} />
+      <BaseFiltros
+        filtroAtivo={filtro}
+        setFiltroAtivo={setFiltro}
+        listaValores={listaFinal}
+      />
       <ListaMotoristaPagamentos f={listaFinal} loading={loading} />
     </div>
   );
@@ -475,13 +480,17 @@ const BtnFiltrar = styled.div<BtnFiltrarProps>`
 function BaseFiltros({
   filtroAtivo,
   setFiltroAtivo,
+  listaValores,
 }: {
   filtroAtivo: any;
   setFiltroAtivo: any;
+  listaValores: any;
 }) {
   const [filtro, setFiltro] = useState(filtroAtivo);
 
   const operId = useAdminLogado()?.operadora.id;
+
+  const [carregandoExportacao, setCarregandoExportacao] = useState(false);
 
   const { listaMotoristas } = useMotorista(operId);
   const { listaClientes } = useListaClientes(operId || "0");
@@ -500,6 +509,45 @@ function BaseFiltros({
 
   const handleFiltrar = () => {
     setFiltroAtivo(filtro);
+  };
+
+  const prepararDadosResumoExcel = (lista: MotoristaPagamento[]) => {
+    return lista.map((lancamento) => ({
+      Motorista: lancamento.nomeMotorista || "Sem Nome",
+      // Mantemos os valores como números puros para que o Excel permita formatação monetária e somas automáticas
+      Extra: Number(lancamento.valoresRepasseSomadosExtras || 0),
+      Fixo: Number(lancamento.valoresRepasseSomadosFixos || 0),
+      Turno: Number(lancamento.valoresRepasseSomadosTurnos || 0),
+      Total: Number(lancamento.valoresRepasseSomadosTotal || 0),
+    }));
+  };
+
+  const formatarParaYMD = (data: Date) => {
+    const ano = data.getFullYear();
+    const mes = String(data.getMonth() + 1).padStart(2, "0");
+    const dia = String(data.getDate()).padStart(2, "0");
+
+    return `${ano}-${mes}-${dia}`;
+  };
+
+  const exportarPlanilha = async () => {
+    setCarregandoExportacao(true);
+
+    if (listaValores && listaValores.length > 0) {
+      // 1. Gera os dados do resumo utilizando a lista ordenada atual
+      const dadosResumo = prepararDadosResumoExcel(listaValores);
+
+      // 2. Chama a função de exportação passando os dados formatados, o nome do arquivo e a extensão
+      exportarPlanilhaFunc(
+        dadosResumo,
+        `Relatorio_Pagamento_Motoristas_${formatarParaYMD(new Date())}`,
+        "xlsx",
+      );
+
+      setCarregandoExportacao(false);
+    } else {
+      alert("Nenhum dado encontrado para os filtros selecionados.");
+    }
   };
 
   const { Cor } = useTema();
@@ -1146,16 +1194,26 @@ function BaseFiltros({
           <BtnFiltrar
             $bg={Cor.texto2}
             $texto={Cor.base}
-            onClick={() => {}}
-            // onClick={() => exportarPlanilha()}
+            onClick={() => exportarPlanilha()}
           >
-            {/* {carregandoExportacao ? "Exportando..." : "Exportar"} */}
+            {carregandoExportacao ? "Exportando..." : "Exportar"}
             Exportar
           </BtnFiltrar>
         </div>
       </div>
     </div>
   );
+}
+
+interface MotoristaPagamento {
+  motoristaId: number;
+  nomeMotorista: string;
+  valoresRepasseSomadosExtras: number;
+  valoresRepasseSomadosFixos: number;
+  valoresRepasseSomadosTurnos: number;
+  valoresRepasseSomadosTotal: number;
+  empresas?: any[];
+  vouchers?: any[];
 }
 
 type ColunaOrdenacao =
@@ -1219,6 +1277,41 @@ function ListaMotoristaPagamentos({
     });
   }, [f, ordenacao]);
 
+  const prepararDadosResumoExcel = (lista: MotoristaPagamento[]) => {
+    return lista.map((f:any) => ({
+      Motorista: f.nomeMotorista || "Sem Nome",
+      // Mantemos os valores como números puros para que o Excel permita formatação monetária e somas automáticas
+      Extra: Number(f.valoresRepasseSomadosExtras || 0),
+      Fixo: Number(f.valoresRepasseSomadosFixos || 0),
+      Turno: Number(f.valoresRepasseSomadosTurnos || 0),
+      Total: Number(f.valoresRepasseSomadosTotal || 0),
+    }));
+  };
+
+  const formatarParaYMD = (data: Date) => {
+    const ano = data.getFullYear();
+    const mes = String(data.getMonth() + 1).padStart(2, "0");
+    const dia = String(data.getDate()).padStart(2, "0");
+
+    return `${ano}-${mes}-${dia}`;
+  };
+
+  const ExportarPlanilha = async () => {
+    if (listaOrdenada && listaOrdenada.length > 0) {
+      // 1. Gera os dados do resumo utilizando a lista ordenada atual
+      const dadosResumo = prepararDadosResumoExcel(listaOrdenada);
+
+      // 2. Chama a função de exportação passando os dados formatados, o nome do arquivo e a extensão
+      exportarPlanilhaFunc(
+        dadosResumo,
+        `Relatorio_Pagamento_Motoristas_${formatarParaYMD(new Date())}`,
+        "xlsx",
+      );
+    } else {
+      alert("Nenhum dado encontrado para os filtros selecionados.");
+    }
+  };
+
   return (
     <div
       style={{
@@ -1265,13 +1358,7 @@ function ListaMotoristaPagamentos({
               color: Cor.primaria,
               cursor: "pointer",
             }}
-            // onClick={() =>
-            //   exportarPlanilha(
-            //     lista_unidades,
-            //     `Unidades ${empresa?.nome}`,
-            //     "csv"
-            //   )
-            // }
+            onClick={() => {ExportarPlanilha()}}
           >
             download
           </p>

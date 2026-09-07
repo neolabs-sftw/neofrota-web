@@ -38,8 +38,6 @@ function NovoVoucherTurnoConteudo() {
     atob(`${TurnoId}`),
   );
 
-  console.log(mTurno, "mTurno");
-
   const [empresaCliente, setEmpresaCliente] = useState("");
   const [unidadeCliente, setUnidadeCliente] = useState("");
   const [nomeModelo, setNomeModelo] = useState("");

@@ -79,5 +79,3 @@ const dados = Array.from({ length: 50 }, () => {
     id: randomUUID(),
   };
 });
-
-console.log(dados);

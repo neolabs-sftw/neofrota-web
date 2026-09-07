@@ -6,6 +6,7 @@ import { gql, useQuery } from "@apollo/client";
 import Lottie from "lottie-react";
 import loadingAnimation from "../assets/animations/novologo.json";
 import { jwtDecode } from "jwt-decode";
+import { useLocation } from "react-router-dom";
 
 const GET_USUARIO = gql`
   query Query($adminUsuarioId: ID!) {
@@ -60,6 +61,21 @@ function BaseTelas({ conteudo }: { conteudo: any }) {
   const { loading, error, data } = useQuery(GET_USUARIO, {
     variables: { adminUsuarioId },
   });
+
+  const location = useLocation();
+
+  // Função para manter o filtro de relatório de vouchers apenas na tela de relatório e editar voucher
+
+  useEffect(() => {
+    const currentPath = location.pathname.toLowerCase();
+
+    const isRelatorio = currentPath.includes("relatorio");
+    const isEditarVoucher = currentPath.includes("editarvoucher");
+
+    if (!isRelatorio && !isEditarVoucher) {
+      sessionStorage.removeItem("@NeoFrota:FiltroRelatorioVouchers");
+    }
+  }, [location.pathname]);
 
   if (loading)
     return (
@@ -203,7 +219,7 @@ function BaseTelas({ conteudo }: { conteudo: any }) {
                 transition: "left 0.4s ease-in-out",
                 backdropFilter: "blur(3px)",
                 left: aberto ? "calc(200px - 15px)" : "calc(60px - 15px)",
-                zIndex: 999
+                zIndex: 999,
               }}
               onClick={() => setAberto(!aberto)}
             >
