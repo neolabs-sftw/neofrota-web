@@ -1197,7 +1197,6 @@ function BaseFiltros({
             onClick={() => exportarPlanilha()}
           >
             {carregandoExportacao ? "Exportando..." : "Exportar"}
-            Exportar
           </BtnFiltrar>
         </div>
       </div>
