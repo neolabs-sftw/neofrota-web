@@ -197,7 +197,6 @@ function ModalPreviewVoucher({
               </div>
             </div>
 
-            {/* Renderização dos componentes filhos com o dado COMPLETO (voucher) */}
             <PrimeiraLinha v={voucher} />
             <DetalhesDaViagem v={voucher} />
 
